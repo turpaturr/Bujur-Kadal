@@ -1,17 +1,15 @@
 import { useState } from 'react';
-import { Head, usePage } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import {
     Navbar,
     ProvinceFilter,
     Maps,
     StatCards,
     Footer,
-    WildfirePanel,
     type ProvinceItem,
 } from '@/pages/Components/Dashboard';
 import {
     useWildfireData,
-    PROVINCE_CONFIG,
     type HotspotCategory,
     type SensorSource,
     type WildfireHotspot,
@@ -45,7 +43,7 @@ export default function Dashboard() {
     >('all');
 
     // Sensor yang diaktifkan; default: VIIRS SNPP + NOAA-20
-    const [enabledSensors, setEnabledSensors] = useState<SensorSource[]>([
+    const [enabledSensors] = useState<SensorSource[]>([
         'VIIRS_SNPP',
         'VIIRS_NOAA20',
     ]);
@@ -70,24 +68,6 @@ export default function Dashboard() {
         }
     };
 
-    const handleSelectProvinceByName = (provinceName: string) => {
-        const found = PROVINCE_CONFIG.find((p) => p.name === provinceName);
-        if (found) {
-            setSelectedProvince(found.name);
-            setMapCenter(found.center);
-            setMapZoom(found.zoom);
-            setSelectedHotspot(null);
-            window.scrollTo({ top: 180, behavior: 'smooth' });
-        }
-    };
-
-    const handleSelectHotspot = (hotspot: WildfireHotspot) => {
-        setSelectedHotspot(hotspot);
-        setMapCenter([hotspot.latitude, hotspot.longitude]);
-        setMapZoom(12);
-        window.scrollTo({ top: 180, behavior: 'smooth' });
-    };
-
     const handleResetView = () => {
         setSelectedProvince(null);
         setSelectedHotspot(null);
@@ -103,14 +83,6 @@ export default function Dashboard() {
         window.scrollTo({ top: 220, behavior: 'smooth' });
     };
 
-    const handleToggleSensor = (sensor: SensorSource) => {
-        setEnabledSensors((prev) =>
-            prev.includes(sensor)
-                ? prev.filter((s) => s !== sensor)
-                : [...prev, sensor],
-        );
-    };
-
     return (
         <>
             <Head title="Dashboard Karhutla & Gambut - BorneoCare" />
@@ -122,49 +94,24 @@ export default function Dashboard() {
 
                 {/* 2. Main Content */}
                 <main className="mx-auto w-full max-w-7xl flex-1 space-y-6 px-4 py-6 sm:px-6 lg:px-8">
-                    {/* Admin Command Ribbon */}
+                    {/* Admin Mode Shortcut Banner */}
                     {isAdmin && (
-                        <div className="flex flex-col items-start justify-between gap-3 rounded-2xl bg-gradient-to-r from-[#175246] via-[#1F6F5F] to-[#2FA084] p-4 text-white shadow-sm sm:flex-row sm:items-center sm:p-5">
-                            <div className="flex items-center gap-3">
-                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/30 bg-white/20 shadow-inner backdrop-blur-md">
-                                    <svg
-                                        className="h-5 w-5 text-white"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth="2.2"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                                        />
-                                    </svg>
-                                </div>
-                                <div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-accent text-xs font-bold tracking-wider uppercase">
-                                            Pusat Komando Satgas
-                                        </span>
-                                        <span className="bg-accent h-1.5 w-1.5 animate-pulse rounded-full" />
-                                        <span className="text-[11px] font-medium text-white/80">
-                                            Mode Administrator Aktif
-                                        </span>
-                                    </div>
-                                    <p className="mt-0.5 max-w-xl text-xs text-white/90">
-                                        Otoritas penanganan karhutla: Matriks
-                                        Analisis Spasial satelit NASA FIRMS &
-                                        Klaster Radiasi Panas (FRP) diaktifkan
-                                        khusus untuk akun Administrator.
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="flex shrink-0 items-center gap-2 self-end sm:self-auto">
-                                <span className="rounded-xl border border-white/20 bg-white/15 px-3 py-1.5 text-[11px] font-semibold text-white backdrop-blur-xs">
-                                    Pantauan:{' '}
-                                    <strong>{stats.total} Titik Hotspot</strong>
+                        <div className="flex flex-col items-start justify-between gap-3 rounded-2xl bg-gradient-to-r from-[#175246] to-[#1F6F5F] p-3.5 text-white shadow-xs sm:flex-row sm:items-center sm:p-4">
+                            <div className="flex items-center gap-2.5">
+                                <span className="bg-accent h-2 w-2 shrink-0 animate-pulse rounded-full" />
+                                <span className="text-xs font-semibold text-white/95">
+                                    Anda login sebagai{' '}
+                                    <strong>Administrator</strong>. Buka Command
+                                    Center untuk matriks analisis satelit
+                                    lengkap & manajemen data spasial.
                                 </span>
                             </div>
+                            <Link
+                                href="/admin/dashboard"
+                                className="shrink-0 rounded-xl bg-white px-3.5 py-1.5 text-xs font-bold text-[#1F6F5F] shadow-2xs transition-colors hover:bg-neutral-100"
+                            >
+                                Buka Command Center Admin →
+                            </Link>
                         </div>
                     )}
 
@@ -344,126 +291,101 @@ export default function Dashboard() {
                         />
                     </section>
 
-                    {/* Matriks Analisis Karhutla & Gambut: Khusus untuk Admin */}
-                    {isAdmin ? (
-                        <section className="space-y-3">
-                            <div className="flex items-center justify-between px-1">
-                                <div className="flex items-center gap-2">
-                                    <span className="rounded-full bg-[#1F6F5F] px-2.5 py-1 text-[10px] font-bold tracking-wider text-white uppercase shadow-2xs">
-                                        Panel Khusus Administrator
+                    {/* Panduan Keselamatan & Evakuasi Cepat Warga */}
+                    <section className="rounded-2xl border border-[#EEEEEE] bg-white p-5 shadow-xs sm:p-6">
+                        <div className="mb-5 flex flex-col justify-between gap-3 border-b border-[#EEEEEE] pb-4 sm:flex-row sm:items-center">
+                            <div>
+                                <div className="mb-1 flex items-center gap-2">
+                                    <span className="inline-flex items-center gap-1 rounded-full bg-[#2FA084]/15 px-2.5 py-0.5 text-xs font-bold text-[#1F6F5F]">
+                                        Panduan Warga Siaga
                                     </span>
-                                    <span className="text-xs text-[#262626]/70">
-                                        Matriks Analisis Karhutla, Klaster
-                                        Radiasi Panas (FRP) & Filter Sensor
+                                    <span className="text-xs text-neutral-400">
+                                        ·
+                                    </span>
+                                    <span className="text-xs text-neutral-600">
+                                        Mitigasi Asap & Keselamatan Keluarga
                                     </span>
                                 </div>
+                                <h2 className="font-display text-xl font-bold text-[#1F6F5F]">
+                                    Langkah Perlindungan Diri & Tanggap Asap
+                                    Karhutla
+                                </h2>
+                                <p className="mt-0.5 text-xs text-neutral-600">
+                                    Informasi penting bagi keluarga dan kelompok
+                                    rentan (anak-anak, lansia, ibu hamil) di
+                                    area terdampak kabut asap.
+                                </p>
                             </div>
-                            <WildfirePanel
-                                wildfire={wildfire}
-                                enabledSensors={enabledSensors}
-                                onToggleSensor={handleToggleSensor}
-                                onSelectProvince={handleSelectProvinceByName}
-                                onSelectHotspot={handleSelectHotspot}
-                            />
-                        </section>
-                    ) : (
-                        /* Tampilan Ramah Warga: Panduan Keselamatan & Evakuasi Cepat */
-                        <section className="rounded-2xl border border-[#EEEEEE] bg-white p-5 shadow-xs sm:p-6">
-                            <div className="mb-5 flex flex-col justify-between gap-3 border-b border-[#EEEEEE] pb-4 sm:flex-row sm:items-center">
-                                <div>
-                                    <div className="mb-1 flex items-center gap-2">
-                                        <span className="inline-flex items-center gap-1 rounded-full bg-[#2FA084]/15 px-2.5 py-0.5 text-xs font-bold text-[#1F6F5F]">
-                                            Panduan Warga Siaga
-                                        </span>
-                                        <span className="text-xs text-neutral-400">
-                                            ·
-                                        </span>
-                                        <span className="text-xs text-neutral-600">
-                                            Mitigasi Asap & Keselamatan Keluarga
-                                        </span>
-                                    </div>
-                                    <h2 className="font-display text-xl font-bold text-[#1F6F5F]">
-                                        Langkah Perlindungan Diri & Tanggap Asap
-                                        Karhutla
-                                    </h2>
-                                    <p className="mt-0.5 text-xs text-neutral-600">
-                                        Informasi penting bagi keluarga dan
-                                        kelompok rentan (anak-anak, lansia, ibu
-                                        hamil) di area terdampak kabut asap.
-                                    </p>
-                                </div>
-                                <div className="flex shrink-0 items-center gap-2">
-                                    <a
-                                        href="tel:112"
-                                        className="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-2 text-xs font-bold text-rose-700 transition-colors hover:bg-rose-100"
+                            <div className="flex shrink-0 items-center gap-2">
+                                <a
+                                    href="tel:112"
+                                    className="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-2 text-xs font-bold text-rose-700 transition-colors hover:bg-rose-100"
+                                >
+                                    <svg
+                                        className="h-3.5 w-3.5"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                        viewBox="0 0 24 24"
                                     >
-                                        <svg
-                                            className="h-3.5 w-3.5"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            strokeWidth="2"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                                            />
-                                        </svg>
-                                        <span>Panggilan Darurat 112</span>
-                                    </a>
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                                        />
+                                    </svg>
+                                    <span>Panggilan Darurat 112</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                            <div className="rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-4">
+                                <div className="mb-2.5 flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 text-sm font-bold text-amber-700">
+                                    😷
                                 </div>
+                                <h3 className="mb-1 text-xs font-bold text-neutral-800">
+                                    Gunakan Masker Partikulat N95
+                                </h3>
+                                <p className="text-[11px] leading-relaxed text-neutral-600">
+                                    Masker kain biasa tidak mampu menyaring
+                                    partikel mikro PM2.5 dari kabut asap
+                                    kebakaran lahan. Utamakan masker N95 saat
+                                    beraktivitas di luar.
+                                </p>
                             </div>
 
-                            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                                <div className="rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-4">
-                                    <div className="mb-2.5 flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100 text-sm font-bold text-amber-700">
-                                        😷
-                                    </div>
-                                    <h3 className="mb-1 text-xs font-bold text-neutral-800">
-                                        Gunakan Masker Partikulat N95
-                                    </h3>
-                                    <p className="text-[11px] leading-relaxed text-neutral-600">
-                                        Masker kain biasa tidak mampu menyaring
-                                        partikel mikro PM2.5 dari kabut asap
-                                        kebakaran lahan. Utamakan masker N95
-                                        saat beraktivitas di luar.
-                                    </p>
+                            <div className="rounded-xl border border-[#DCFCE7] bg-[#F0FDF4] p-4">
+                                <div className="mb-2.5 flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-sm font-bold text-emerald-700">
+                                    🛡️
                                 </div>
-
-                                <div className="rounded-xl border border-[#DCFCE7] bg-[#F0FDF4] p-4">
-                                    <div className="mb-2.5 flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-sm font-bold text-emerald-700">
-                                        🛡️
-                                    </div>
-                                    <h3 className="mb-1 text-xs font-bold text-neutral-800">
-                                        Titik Perlindungan Safe Zone
-                                    </h3>
-                                    <p className="text-[11px] leading-relaxed text-neutral-600">
-                                        Bila indeks asap mencapai level Sangat
-                                        Tidak Sehat, segera datangi Safe Zone
-                                        atau shelter evakuasi terdekat dengan
-                                        pasokan oksigen siaga.
-                                    </p>
-                                </div>
-
-                                <div className="rounded-xl border border-[#DBEAFE] bg-[#EFF6FF] p-4">
-                                    <div className="mb-2.5 flex h-8 w-8 items-center justify-center rounded-lg bg-sky-100 text-sm font-bold text-sky-700">
-                                        🏠
-                                    </div>
-                                    <h3 className="mb-1 text-xs font-bold text-neutral-800">
-                                        Tutup Ventilasi Saat Asap Pekat
-                                    </h3>
-                                    <p className="text-[11px] leading-relaxed text-neutral-600">
-                                        Tutup celah pintu dan jendela
-                                        menggunakan kain basah, nyalakan air
-                                        purifier bila ada, dan perbanyak
-                                        konsumsi air putih untuk mencegah
-                                        iritasi saluran napas.
-                                    </p>
-                                </div>
+                                <h3 className="mb-1 text-xs font-bold text-neutral-800">
+                                    Titik Perlindungan Safe Zone
+                                </h3>
+                                <p className="text-[11px] leading-relaxed text-neutral-600">
+                                    Bila indeks asap mencapai level Sangat Tidak
+                                    Sehat, segera datangi Safe Zone atau shelter
+                                    evakuasi terdekat dengan pasokan oksigen
+                                    siaga.
+                                </p>
                             </div>
-                        </section>
-                    )}
+
+                            <div className="rounded-xl border border-[#DBEAFE] bg-[#EFF6FF] p-4">
+                                <div className="mb-2.5 flex h-8 w-8 items-center justify-center rounded-lg bg-sky-100 font-bold text-sky-700">
+                                    🏠
+                                </div>
+                                <h3 className="mb-1 text-xs font-bold text-neutral-800">
+                                    Tutup Ventilasi Saat Asap Pekat
+                                </h3>
+                                <p className="text-[11px] leading-relaxed text-neutral-600">
+                                    Tutup celah pintu dan jendela menggunakan
+                                    kain basah, nyalakan air purifier bila ada,
+                                    dan perbanyak konsumsi air putih untuk
+                                    mencegah iritasi saluran napas.
+                                </p>
+                            </div>
+                        </div>
+                    </section>
                 </main>
 
                 {/* 3. Footer */}

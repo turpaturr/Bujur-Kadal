@@ -22,7 +22,7 @@ test('admin registration creates user with admin role and logs in', function () 
 
     $response = $this->post(route('admin.register.store'), $payload);
 
-    $response->assertRedirect(route('dashboard'));
+    $response->assertRedirect(route('admin.dashboard'));
 
     $user = User::where('email', 'satgas.udara@borneocare.id')->first();
     expect($user)->not->toBeNull()
@@ -79,7 +79,7 @@ test('admin login with valid email and password succeeds', function () {
         'password' => 'SatgasAman123',
     ]);
 
-    $response->assertRedirect(route('dashboard'));
+    $response->assertRedirect(route('admin.dashboard'));
     expect(Auth::id())->toBe($admin->id);
 });
 
@@ -125,6 +125,15 @@ test('authenticated admin can logout through admin logout route', function () {
     expect(Auth::check())->toBeFalse();
 });
 
+test('admin dashboard can be rendered for authenticated admin', function () {
+    $admin = User::factory()->admin()->create();
+
+    $response = $this->actingAs($admin)->get(route('admin.dashboard'));
+
+    $response->assertOk()
+        ->assertInertia(fn ($page) => $page->component('Admin/Dashboard'));
+});
+
 test('non-admin user is blocked by admin middleware from admin routes', function () {
     $warga = User::factory()->create([
         'role' => UserRole::Anggota,
@@ -133,4 +142,8 @@ test('non-admin user is blocked by admin middleware from admin routes', function
     $response = $this->actingAs($warga)->post(route('admin.logout'));
 
     $response->assertForbidden();
+
+    $dashboardResponse = $this->actingAs($warga)->get(route('admin.dashboard'));
+
+    $dashboardResponse->assertForbidden();
 });

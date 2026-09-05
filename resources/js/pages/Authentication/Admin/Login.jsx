@@ -76,7 +76,7 @@ export default function AdminLogin() {
                                         <p className="text-[10px] text-neutral-500 font-mono">admin@borneocare.id</p>
                                     </div>
                                     <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
-                                        Klik Isi Cepat ⚡
+                                        Klik Isi Cepat
                                     </span>
                                 </button>
                             </div>

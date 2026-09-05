@@ -30,6 +30,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     });
 
     Route::middleware(['auth', 'admin'])->group(function () {
+        Route::inertia('/dashboard', 'Admin/Dashboard')->name('dashboard');
         Route::post('/logout', [AdminLoginController::class, 'destroy'])->name('logout');
     });
 });
