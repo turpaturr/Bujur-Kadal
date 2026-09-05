@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\WildfireController;
 use Illuminate\Support\Facades\Route;
 
 // 1. Landing Page (Welcome)
@@ -21,4 +22,8 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::inertia('/dashboard', 'Dashboard')->name('dashboard');
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
+
+    // Proxy NASA FIRMS API (bypasses browser CORS)
+    Route::get('/api/wildfire/hotspots', [WildfireController::class, 'hotspots'])
+        ->name('wildfire.hotspots');
 });

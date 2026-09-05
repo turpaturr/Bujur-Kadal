@@ -1,11 +1,13 @@
 interface StatCardsProps {
     hotspotsCount?: number;
+    isLoadingHotspots?: boolean;
     aqiScore?: number;
     satelliteStatus?: string;
 }
 
 export default function StatCards({
-    hotspotsCount = 3,
+    hotspotsCount,
+    isLoadingHotspots = false,
     aqiScore = 34,
     satelliteStatus = 'Aktif (NASA GIBS & FIRMS)',
 }: StatCardsProps) {
@@ -18,13 +20,19 @@ export default function StatCards({
                         Titik Panas (Hotspots)
                     </span>
                     <div className="text-2xl sm:text-3xl font-bold text-[#262626] mt-1">
-                        {hotspotsCount}{' '}
-                        <span className="text-xs font-medium text-amber-600">
-                            Titik Pantau
-                        </span>
+                        {isLoadingHotspots ? (
+                            <span className="inline-block h-8 w-16 animate-pulse rounded-lg bg-[#CCECEE]/60" />
+                        ) : (
+                            <>
+                                {hotspotsCount ?? '—'}{' '}
+                                <span className="text-xs font-medium text-amber-600">
+                                    Titik Pantau
+                                </span>
+                            </>
+                        )}
                     </div>
                     <p className="text-xs text-[#262626]/70 mt-0.5">
-                        Sensor termal VIIRS / MODIS
+                        Sensor termal VIIRS / MODIS · NASA FIRMS
                     </p>
                 </div>
                 <div className="w-11 h-11 rounded-xl bg-[#CCECEE] flex items-center justify-center text-[#095D7E] shrink-0">

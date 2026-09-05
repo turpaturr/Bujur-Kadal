@@ -6,13 +6,26 @@ import {
     Maps,
     StatCards,
     Footer,
+    WildfirePanel,
     type ProvinceItem,
 } from '@/pages/Components/Dashboard';
+import {
+    useWildfireData,
+    type SensorSource,
+} from '@/hooks/useWildfireData';
 
 export default function Dashboard() {
     const [selectedProvince, setSelectedProvince] = useState<string | null>(null);
     const [mapCenter, setMapCenter] = useState<[number, number]>([0.9619, 114.5548]);
     const [mapZoom, setMapZoom] = useState<number>(6);
+
+    // Sensor yang diaktifkan; defaultnya VIIRS SNPP + NOAA-20
+    const [enabledSensors, setEnabledSensors] = useState<SensorSource[]>([
+        'VIIRS_SNPP',
+        'VIIRS_NOAA20',
+    ]);
+
+    const wildfire = useWildfireData({ enabledSensors, dayRange: 1 });
 
     const handleSelectProvince = (province: ProvinceItem | null) => {
         if (province) {
@@ -30,24 +43,32 @@ export default function Dashboard() {
         setMapZoom(6);
     };
 
+    const handleToggleSensor = (sensor: SensorSource) => {
+        setEnabledSensors((prev) =>
+            prev.includes(sensor)
+                ? prev.filter((s) => s !== sensor)
+                : [...prev, sensor],
+        );
+    };
+
     return (
         <>
             <Head title="Dashboard - BorneoCare" />
 
             {/* Layout Utama: Background Clean Whisper (#F1F9FF) & Teks Charcoal (#262626) */}
-            <div className="min-h-screen bg-[#F1F9FF] text-[#262626] font-sans flex flex-col antialiased">
+            <div className="flex min-h-screen flex-col bg-[#F1F9FF] font-sans text-[#262626] antialiased">
                 {/* 1. Header & Navigation */}
                 <Navbar onReset={handleResetView} />
 
                 {/* 2. Main Content */}
-                <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
+                <main className="mx-auto w-full max-w-7xl flex-1 space-y-5 px-4 py-6 sm:px-6 lg:px-8">
                     {/* Header Peta & Filter Provinsi */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-[#CCECEE] shadow-xs">
+                    <div className="flex flex-col justify-between gap-3 rounded-2xl border border-[#CCECEE] bg-white p-4 shadow-xs sm:flex-row sm:items-center">
                         <div>
-                            <h1 className="text-lg font-bold text-[#095D7E] tracking-tight">
+                            <h1 className="text-lg font-bold tracking-tight text-[#095D7E]">
                                 Peta Spasial Pulau Borneo
                             </h1>
-                            <p className="text-xs text-[#262626]/70 mt-0.5">
+                            <p className="mt-0.5 text-xs text-[#262626]/70">
                                 Pantau citra satelit NASA dan deteksi titik panas lingkungan secara langsung.
                             </p>
                         </div>
@@ -59,19 +80,32 @@ export default function Dashboard() {
                         />
                     </div>
 
-                    {/* Komponen Peta Leaflet (Posisi di Atas) */}
-                    <section className="bg-white rounded-2xl border border-[#CCECEE] shadow-xs p-3 sm:p-4 overflow-hidden">
+                    {/* Komponen Peta Leaflet */}
+                    <section className="overflow-hidden rounded-2xl border border-[#CCECEE] bg-white p-3 shadow-xs sm:p-4">
                         <Maps
                             key={`${mapCenter[0]}-${mapCenter[1]}-${mapZoom}`}
                             center={mapCenter}
                             zoom={mapZoom}
-                            className="h-[460px] sm:h-[520px] w-full rounded-xl border border-[#CCECEE]/70"
+                            className="h-[460px] w-full rounded-xl border border-[#CCECEE]/70 sm:h-[520px]"
+                            wildfireHotspots={wildfire.hotspots}
                         />
                     </section>
 
-                    {/* Kartu Ringkasan Metrik (Simple & Bersih) */}
+                    {/* Wildfire Tracker Panel */}
                     <section>
-                        <StatCards />
+                        <WildfirePanel
+                            wildfire={wildfire}
+                            enabledSensors={enabledSensors}
+                            onToggleSensor={handleToggleSensor}
+                        />
+                    </section>
+
+                    {/* Kartu Ringkasan Metrik */}
+                    <section>
+                        <StatCards
+                            hotspotsCount={wildfire.stats.total}
+                            isLoadingHotspots={wildfire.isLoading}
+                        />
                     </section>
                 </main>
 
