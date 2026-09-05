@@ -40,6 +40,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 
     Route::post('/family/members', [FamilyMemberController::class, 'store'])->name('family.members.store');
+    Route::put('/family/members/{member}', [FamilyMemberController::class, 'update'])->name('family.members.update');
     Route::delete('/family/members/{member}', [FamilyMemberController::class, 'destroy'])->name('family.members.destroy');
 
     Route::get('/api/wildfire/hotspots', [WildfireController::class, 'hotspots'])

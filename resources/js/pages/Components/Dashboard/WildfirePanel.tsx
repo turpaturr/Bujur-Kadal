@@ -18,6 +18,7 @@ interface WildfirePanelProps {
     familyMembers?: FamilyMemberItem[];
     isHeadOfFamily?: boolean;
     onOpenAddMember?: () => void;
+    onOpenEditMember?: (member: any) => void;
 }
 
 const SENSOR_INFO: Record<SensorSource, { name: string; tag: string }> = {
@@ -35,6 +36,7 @@ export default function WildfirePanel({
     familyMembers,
     isHeadOfFamily,
     onOpenAddMember,
+    onOpenEditMember,
 }: WildfirePanelProps) {
     const { stats, hotspots, isLoading, error, lastUpdated, refresh } = wildfire;
     const [activeTab, setActiveTab] = useState<'family' | 'provinces' | 'clusters' | 'guide'>(
@@ -120,18 +122,7 @@ export default function WildfirePanel({
                         </button>
                     </div>
 
-                    {isHeadOfFamily && onOpenAddMember && (
-                        <button
-                            type="button"
-                            onClick={onOpenAddMember}
-                            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#2FA084] text-white hover:bg-[#1F6F5F] text-xs font-bold shadow-xs transition-all cursor-pointer"
-                        >
-                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M12 4v16m8-8H4" />
-                            </svg>
-                            <span>+ Tambah Anggota</span>
-                        </button>
-                    )}
+
                 </div>
             </div>
 
@@ -142,6 +133,7 @@ export default function WildfirePanel({
                         members={familyMembers ?? []}
                         isHeadOfFamily={Boolean(isHeadOfFamily)}
                         onOpenAddModal={onOpenAddMember ?? (() => {})}
+                        onOpenEditModal={onOpenEditMember ?? (() => {})}
                     />
                 ) : isLoading ? (
                     <div className="space-y-3">
