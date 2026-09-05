@@ -50,7 +50,7 @@ test('full 5-step registration creates family, user, health profile and logs in'
 
     $response = $this->post(route('register.store'), $payload);
 
-    $response->assertRedirect(route('dashboard'));
+    $response->assertRedirect(route('home'));
 
     // Assert Family created
     $family = Family::where('no_kk', '6472010101010002')->first();
@@ -105,7 +105,7 @@ test('rapid login with nik and 6-digit pin succeeds', function () {
         'pin' => '654321',
     ]);
 
-    $response->assertRedirect(route('dashboard'));
+    $response->assertRedirect(route('home'));
     expect(Auth::id())->toBe($user->id);
 });
 

@@ -23,7 +23,7 @@ class RegisterController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('auth/register');
+        return Inertia::render('Authentication/Register/Index');
     }
 
     /**
@@ -83,6 +83,6 @@ class RegisterController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard'));
+        return redirect()->route('home');
     }
 }

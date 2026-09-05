@@ -17,7 +17,7 @@ class LoginController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('auth/login');
+        return Inertia::render('Authentication/Login/Index');
     }
 
     /**
@@ -29,7 +29,7 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard'));
+        return redirect()->route('home');
     }
 
     /**
