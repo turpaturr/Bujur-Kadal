@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Enums\UserRole;
+use App\Models\Family;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -13,9 +15,9 @@ use Illuminate\Support\Str;
 class UserFactory extends Factory
 {
     /**
-     * The current password being used by the factory.
+     * The current PIN being used by the factory.
      */
-    protected static ?string $password;
+    protected static ?string $pin;
 
     /**
      * Define the model's default state.
@@ -25,21 +27,36 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
+            'family_id' => null,
+            'nik' => fake()->unique()->numerify('################'), // 16 digit NIK
             'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
-            'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
+            'whatsapp_number' => fake()->numerify('628##########'),
+            'pin' => static::$pin ??= Hash::make('123456'),
+            'role' => fake()->randomElement(UserRole::cases()),
+            'home_address' => fake()->address(),
+            'home_latitude' => fake()->latitude(-4.5, 4.5), // Borneo latitude range approx
+            'home_longitude' => fake()->longitude(108.5, 119.0), // Borneo longitude range approx
             'remember_token' => Str::random(10),
         ];
     }
 
     /**
-     * Indicate that the model's email address should be unverified.
+     * Indicate that the user belongs to a family.
      */
-    public function unverified(): static
+    public function forFamily(?Family $family = null): static
     {
-        return $this->state(fn (array $attributes) => [
-            'email_verified_at' => null,
+        return $this->state(fn () => [
+            'family_id' => $family?->id ?? Family::factory(),
+        ]);
+    }
+
+    /**
+     * Indicate that the user is a Kepala Keluarga.
+     */
+    public function kepalaKeluarga(): static
+    {
+        return $this->state(fn () => [
+            'role' => UserRole::KepalaKeluarga,
         ]);
     }
 }
