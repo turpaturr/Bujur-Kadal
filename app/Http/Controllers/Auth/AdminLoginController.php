@@ -17,7 +17,7 @@ class AdminLoginController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('Authentication/Admin/Login');
+        return Inertia::render('Authentication/Login/Index', ['defaultType' => 'admin']);
     }
 
     /**

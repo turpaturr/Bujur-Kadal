@@ -10,7 +10,6 @@ import {
     CitizensListView,
     TriageView,
     FacilitiesView,
-    CheckupReservationsView,
     type AdminReservationItem,
 } from '@/pages/Components/DashboardAdmin';
 import type { AdminMenuType } from '@/pages/Components/DashboardAdmin/AdminSidebar';
@@ -217,14 +216,6 @@ export default function DashboardAdmin({
             );
         }
 
-        if (activeMenu === 'triage') {
-            return (
-                <CheckupReservationsView
-                    reservations={localReservations}
-                />
-            );
-        }
-
         if (activeMenu === 'facilities') {
             return <FacilitiesView />;
         }
@@ -278,7 +269,6 @@ export default function DashboardAdmin({
                     onMenuChange={setActiveMenu}
                     isMobileOpen={isMobileSidebarOpen}
                     onCloseMobile={() => setIsMobileSidebarOpen(false)}
-                    pendingReservationsCount={localPendingCount}
                 />
 
                 <div className="flex-1 flex flex-col overflow-hidden">
@@ -287,9 +277,7 @@ export default function DashboardAdmin({
                         title={
                             activeMenu === 'citizens'
                                 ? 'Data Warga Terdaftar'
-                                : activeMenu === 'triage'
-                                  ? 'Reservasi Medical Checkup & Faskes'
-                                  : activeMenu === 'facilities'
+                                : activeMenu === 'facilities'
                                     ? 'Fasilitas Kesehatan'
                                     : 'Peta Sebaran Spasial & Titik Api'
                         }
