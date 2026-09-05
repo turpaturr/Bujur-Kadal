@@ -41,39 +41,73 @@ export const BORNEO_PROVINCES: ProvinceItem[] = [
 interface ProvinceFilterProps {
     selectedProvince: string | null;
     onSelect: (province: ProvinceItem | null) => void;
+    countsByProvince?: Record<string, number>;
+    totalCount?: number;
 }
 
 export default function ProvinceFilter({
     selectedProvince,
     onSelect,
+    countsByProvince = {},
+    totalCount,
 }: ProvinceFilterProps) {
     return (
-        <div className="flex flex-wrap items-center gap-1.5">
+        <div className="flex flex-wrap items-center gap-2">
+            {/* Tombol Seluruh Borneo */}
             <button
                 type="button"
                 onClick={() => onSelect(null)}
-                className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
                     selectedProvince === null
-                        ? 'bg-[#14967F] text-white shadow-xs'
-                        : 'bg-[#CCECEE]/50 text-[#095D7E] hover:bg-[#CCECEE]'
+                        ? 'bg-[#2FA084] text-white shadow-xs font-bold'
+                        : 'bg-[#EEEEEE] text-[#1F6F5F] hover:bg-[#2FA084]/15'
                 }`}
             >
-                Seluruh Borneo
+                <span>Seluruh Borneo</span>
+                {totalCount !== undefined && totalCount > 0 && (
+                    <span
+                        className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                            selectedProvince === null
+                                ? 'bg-white/20 text-white'
+                                : 'bg-white text-[#1F6F5F] border border-[#EEEEEE]'
+                        }`}
+                    >
+                        {totalCount.toLocaleString('id-ID')}
+                    </span>
+                )}
             </button>
-            {BORNEO_PROVINCES.map((prov) => (
-                <button
-                    key={prov.name}
-                    type="button"
-                    onClick={() => onSelect(prov)}
-                    className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
-                        selectedProvince === prov.name
-                            ? 'bg-[#14967F] text-white shadow-xs'
-                            : 'bg-[#CCECEE]/50 text-[#095D7E] hover:bg-[#CCECEE]'
-                    }`}
-                >
-                    {prov.shortName}
-                </button>
-            ))}
+
+            {/* Tombol 5 Provinsi */}
+            {BORNEO_PROVINCES.map((prov) => {
+                const count = countsByProvince[prov.name] ?? 0;
+                const isSelected = selectedProvince === prov.name;
+
+                return (
+                    <button
+                        key={prov.name}
+                        type="button"
+                        onClick={() => onSelect(prov)}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                            isSelected
+                                ? 'bg-[#2FA084] text-white shadow-xs font-bold'
+                                : 'bg-[#EEEEEE] text-[#1F6F5F] hover:bg-[#2FA084]/15'
+                        }`}
+                    >
+                        <span>{prov.shortName}</span>
+                        {count > 0 && (
+                            <span
+                                className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                                    isSelected
+                                        ? 'bg-white/20 text-white'
+                                        : 'bg-white text-[#1F6F5F] border border-[#EEEEEE]'
+                                }`}
+                            >
+                                {count.toLocaleString('id-ID')}
+                            </span>
+                        )}
+                    </button>
+                );
+            })}
         </div>
     );
 }

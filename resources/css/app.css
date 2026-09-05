@@ -15,19 +15,17 @@
     --font-serif:
         'Fraunces', Georgia, Cambria, 'Times New Roman', Times, serif;
 
-    --font-heading:
-        'Fraunces', Georgia, Cambria, 'Times New Roman', Times, serif;
+    --color-primary: #2fa084;
+    --color-primary-dark: #1f6f5f;
+    --color-accent: #6fcf97;
+    --color-surface: #eeeeee;
+}
 
-    --color-primary: #2FA084;
-    --color-primary-dark: #1F6F5F;
-    --color-accent: #6FCF97;
-    --color-surface: #EEEEEE;
-
-    --color-borneo-teal: #14967F;
-    --color-trust-blue: #095D7E;
-    --color-oxygen-blue: #CCECEE;
-    --color-charcoal: #262626;
-    --color-clean-whisper: #F1F9FF;
+:root {
+    --color-primary: #2fa084;
+    --color-primary-dark: #1f6f5f;
+    --color-accent: #6fcf97;
+    --color-surface: #eeeeee;
 }
 
 @keyframes spin-slow {

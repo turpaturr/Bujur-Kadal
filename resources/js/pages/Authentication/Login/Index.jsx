@@ -56,6 +56,75 @@ export default function LoginIndex() {
                                 </span>
                             </div>
 
+                            {/* Akun Uji Coba / Demo Seeder */}
+                            <div className="mb-6 p-3 rounded-2xl bg-[#F1F9FF] border border-[#CCECEE] text-xs">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-[11px] font-bold text-[#095D7E] flex items-center gap-1.5">
+                                        <span className="w-2 h-2 rounded-full bg-[#14967F] animate-pulse"></span>
+                                        Akun Demo (Klik untuk Isi Cepat):
+                                    </span>
+                                    <span className="text-[10px] text-slate-500 font-mono">PIN: 123456</span>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setData((prev) => ({
+                                                ...prev,
+                                                nik: '6472010101900001',
+                                                pin: '123456',
+                                            }));
+                                        }}
+                                        className="text-left px-2.5 py-1.5 rounded-xl bg-white border border-[#CCECEE] hover:border-[#14967F] text-[11px] transition-all group shadow-2xs cursor-pointer"
+                                    >
+                                        <p className="font-bold text-[#095D7E] group-hover:text-[#14967F]">Budi Pratama</p>
+                                        <p className="text-[10px] text-rose-500 font-medium">Kepala Keluarga (Rentan)</p>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setData((prev) => ({
+                                                ...prev,
+                                                nik: '6472011504950002',
+                                                pin: '123456',
+                                            }));
+                                        }}
+                                        className="text-left px-2.5 py-1.5 rounded-xl bg-white border border-[#CCECEE] hover:border-[#14967F] text-[11px] transition-all group shadow-2xs cursor-pointer"
+                                    >
+                                        <p className="font-bold text-[#095D7E] group-hover:text-[#14967F]">Siti Rahma</p>
+                                        <p className="text-[10px] text-emerald-600 font-medium">Anggota (Non-Rentan)</p>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setData((prev) => ({
+                                                ...prev,
+                                                nik: '6271012005980003',
+                                                pin: '123456',
+                                            }));
+                                        }}
+                                        className="text-left px-2.5 py-1.5 rounded-xl bg-white border border-[#CCECEE] hover:border-[#14967F] text-[11px] transition-all group shadow-2xs cursor-pointer"
+                                    >
+                                        <p className="font-bold text-[#095D7E] group-hover:text-[#14967F]">Ahmad Fauzi</p>
+                                        <p className="text-[10px] text-sky-600 font-medium">Relawan / Pendatang</p>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setData((prev) => ({
+                                                ...prev,
+                                                nik: '6271010503550004',
+                                                pin: '123456',
+                                            }));
+                                        }}
+                                        className="text-left px-2.5 py-1.5 rounded-xl bg-white border border-[#CCECEE] hover:border-[#14967F] text-[11px] transition-all group shadow-2xs cursor-pointer"
+                                    >
+                                        <p className="font-bold text-[#095D7E] group-hover:text-[#14967F]">Haji Syahrani</p>
+                                        <p className="text-[10px] text-amber-600 font-medium">Lansia (Sangat Rentan)</p>
+                                    </button>
+                                </div>
+                            </div>
+
                             <form onSubmit={handleSubmit} className="space-y-4">
                                 {/* Input NIK */}
                                 <div>
