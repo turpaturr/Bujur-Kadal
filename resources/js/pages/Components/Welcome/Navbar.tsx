@@ -33,7 +33,7 @@ export function Navbar() {
               href="/dashboard"
               className="hidden md:inline-flex items-center gap-1.5 rounded-full px-5 py-2 text-xs font-semibold bg-[#2FA084] hover:bg-[#1F6F5F] text-white shadow-xs transition-colors"
             >
-              Dashboard ({auth.user.name})
+              Masuk Dashboard
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           ) : (
