@@ -8,7 +8,7 @@ import {
     AdminTopBar,
     CitizensListView,
     TriageView,
-    HouseholdDetailModal,
+    FacilitiesView,
 } from '@/pages/Components/DashboardAdmin';
 import type { AdminMenuType } from '@/pages/Components/DashboardAdmin/AdminSidebar';
 import type { HotspotCategory, ConfidenceLevel } from '@/hooks/useWildfireData';
@@ -171,11 +171,7 @@ export default function DashboardAdmin({
         }
 
         if (activeMenu === 'facilities') {
-            return (
-                <div className="flex items-center justify-center h-64 bg-white rounded-xl border border-[#EEEEEE]">
-                    <p className="text-gray-500 font-medium">Modul Manajemen Faskes akan segera hadir.</p>
-                </div>
-            );
+            return <FacilitiesView />;
         }
 
         // Default 'maps'

@@ -14,12 +14,14 @@ import {
     createHotspotMarker,
     createUserHomeLayers,
     createRegisteredUserMarker,
+    createClinicMarker,
     MapHud,
     MapLegend,
     type MapsProps,
     type RegisteredUserLocation,
     type RegisteredFamilyMember,
 } from './Maps/index';
+import { KALIMANTAN_CLINICS } from '@/data/kalimantanClinics';
 
 // Re-export untuk backward-compatibility konsumen
 export {
@@ -54,18 +56,33 @@ export function Maps({
     onSelectUserLocation,
     showRegisteredUsers = true,
     onToggleRegisteredUsers,
+    showClinics = true,
+    onToggleClinics,
 }: MapsProps) {
     const mapContainerRef = useRef<HTMLDivElement | null>(null);
     const mapInstanceRef = useRef<L.Map | null>(null);
     const hotspotLayerRef = useRef<L.LayerGroup | null>(null);
     const userLayerRef = useRef<L.LayerGroup | null>(null);
     const registeredUsersLayerRef = useRef<L.LayerGroup | null>(null);
+    const clinicsLayerRef = useRef<L.LayerGroup | null>(null);
     const provinceLayerRef = useRef<L.GeoJSON | null>(null);
 
     const [activeBasemap, setActiveBasemap] = useState<'osm' | 'nasa'>('osm');
     const [localShowRegisteredUsers, setLocalShowRegisteredUsers] = useState<boolean>(true);
     const shouldShowRegisteredUsers =
         showRegisteredUsers !== undefined ? showRegisteredUsers : localShowRegisteredUsers;
+
+    const [localShowClinics, setLocalShowClinics] = useState<boolean>(true);
+    const shouldShowClinics =
+        showClinics !== undefined ? showClinics : localShowClinics;
+
+    const handleToggleClinics = () => {
+        if (onToggleClinics) {
+            onToggleClinics();
+        } else {
+            setLocalShowClinics((prev) => !prev);
+        }
+    };
 
     const osmLayerRef = useRef<L.TileLayer | null>(null);
     const nasaLayerRef = useRef<L.TileLayer | null>(null);
@@ -157,6 +174,9 @@ export function Maps({
         const registeredUsersLayer = L.layerGroup().addTo(map);
         registeredUsersLayerRef.current = registeredUsersLayer;
 
+        const clinicsLayer = L.layerGroup().addTo(map);
+        clinicsLayerRef.current = clinicsLayer;
+
         const resizeTimeout = setTimeout(() => {
             map.invalidateSize();
         }, 150);
@@ -171,6 +191,7 @@ export function Maps({
                 hotspotLayerRef.current = null;
                 userLayerRef.current = null;
                 registeredUsersLayerRef.current = null;
+                clinicsLayerRef.current = null;
                 provinceLayerRef.current = null;
             }
         };
@@ -379,6 +400,23 @@ export function Maps({
         }
     }, [selectedUserLocation]);
 
+    // 10. Render Seluruh Fasilitas Kesehatan / Klinik Kalimantan (1.848 Faskes)
+    useEffect(() => {
+        const layer = clinicsLayerRef.current;
+        if (!layer) return;
+
+        layer.clearLayers();
+
+        if (!shouldShowClinics) {
+            return;
+        }
+
+        for (const clinic of KALIMANTAN_CLINICS) {
+            const marker = createClinicMarker(clinic);
+            layer.addLayer(marker);
+        }
+    }, [shouldShowClinics]);
+
     const handleToggleRegisteredUsers = () => {
         if (onToggleRegisteredUsers) {
             onToggleRegisteredUsers();
@@ -431,6 +469,9 @@ export function Maps({
                     registeredUsers.length > 0 ? handleToggleRegisteredUsers : undefined
                 }
                 onResetFilters={onResetFilters}
+                showClinics={shouldShowClinics}
+                onToggleClinics={handleToggleClinics}
+                clinicsCount={KALIMANTAN_CLINICS.length}
             />
         </div>
     );

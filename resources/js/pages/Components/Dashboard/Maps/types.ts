@@ -63,5 +63,8 @@ export interface MapsProps {
     onSelectUserLocation?: (user: RegisteredUserLocation | null) => void;
     showRegisteredUsers?: boolean;
     onToggleRegisteredUsers?: () => void;
+    // Layer Klinik & Faskes Kalimantan
+    showClinics?: boolean;
+    onToggleClinics?: () => void;
 }
 
