@@ -22,12 +22,14 @@ interface UserReservationInboxModalProps {
     isOpen: boolean;
     onClose: () => void;
     reservations: UserReservationItem[];
+    mode?: 'modal' | 'page';
 }
 
 export default function UserReservationInboxModal({
     isOpen,
     onClose,
     reservations = [],
+    mode = 'modal',
 }: UserReservationInboxModalProps) {
     const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
 
@@ -43,8 +45,8 @@ export default function UserReservationInboxModal({
     const rejectedCount = reservations.filter((r) => r.status === 'rejected').length;
 
     return (
-        <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-            <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden flex flex-col max-h-[90vh]">
+        <div className={mode === 'page' ? 'min-h-full' : 'fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200'}>
+            <div className={`relative w-full bg-white overflow-hidden flex flex-col ${mode === 'page' ? 'min-h-screen' : 'max-w-2xl rounded-2xl shadow-2xl border border-gray-100 max-h-[90vh]'}`}>
                 {/* Header Modal */}
                 <div className="bg-gradient-to-r from-[#1F6F5F] to-[#2FA084] p-5 text-white shrink-0">
                     <div className="flex items-center justify-between">
@@ -66,6 +68,7 @@ export default function UserReservationInboxModal({
                             type="button"
                             onClick={onClose}
                             className="w-8 h-8 rounded-full bg-white/15 hover:bg-white/30 text-white flex items-center justify-center transition-colors cursor-pointer"
+                            aria-label="Kembali ke dashboard"
                         >
                             ✕
                         </button>
@@ -107,7 +110,7 @@ export default function UserReservationInboxModal({
                                     : 'bg-white/15 text-white hover:bg-white/25',
                             )}
                         >
-                            ⏳ Menunggu ({pendingCount})
+                             Menunggu ({pendingCount})
                         </button>
                         <button
                             type="button"

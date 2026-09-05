@@ -6,6 +6,7 @@ use App\Enums\UserRole;
 use App\Models\CheckupReservation;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -82,6 +83,85 @@ class DashboardController extends Controller
             'hasCompletedFamilyDocs' => count($familyMembers) > 1,
             'userReservations' => $userReservations,
             'unreadReservationsCount' => $unreadReservationsCount,
+        ]);
+    }
+
+    public function family(Request $request): Response
+    {
+        $user = $request->user();
+        $familyMembers = $this->familyMembers($user);
+
+        return Inertia::render('Family', [
+            'familyMembers' => $familyMembers,
+            'isHeadOfFamily' => $user?->role === UserRole::KepalaKeluarga,
+            'hasCompletedFamilyDocs' => count($familyMembers) > 1,
+        ]);
+    }
+
+    public function reservations(Request $request): Response
+    {
+        $userReservations = $this->reservationsFor($request->user());
+
+        return Inertia::render('Reservations', [
+            'userReservations' => $userReservations,
+            'unreadReservationsCount' => $userReservations->where('is_read', false)->count(),
+        ]);
+    }
+
+    private function familyMembers(?User $user): array
+    {
+        if (! $user?->family_id) {
+            return [];
+        }
+
+        return User::with('healthProfile')
+            ->where('family_id', $user->family_id)
+            ->orderByRaw("CASE WHEN role = 'kepala_keluarga' THEN 1 WHEN role = 'anggota' THEN 2 ELSE 3 END")
+            ->orderBy('created_at', 'asc')
+            ->get()
+            ->map(fn (User $member): array => [
+                'id' => $member->id,
+                'name' => $member->name,
+                'nik_masked' => $member->nik_masked ?? (strlen((string) $member->nik) === 64 ? '6472••••••••'.substr((string) $member->id, -4) : $member->nik),
+                'role' => $member->role->value,
+                'birth_date' => $member->birth_date?->format('Y-m-d'),
+                'gender' => $member->gender,
+                'occupation' => $member->occupation,
+                'is_head' => $member->role === UserRole::KepalaKeluarga,
+                'health_profile' => $member->healthProfile ? [
+                    'is_vulnerable' => (bool) $member->healthProfile->is_vulnerable,
+                    'vulnerability_category' => $member->healthProfile->vulnerability_category ?? ($member->healthProfile->is_vulnerable ? 'penyakit_bawaan' : 'tidak_rentan'),
+                    'comorbidity_notes' => $member->healthProfile->comorbidity_notes,
+                ] : null,
+            ])->all();
+    }
+
+    private function reservationsFor(?User $user): Collection
+    {
+        if (! $user) {
+            return collect();
+        }
+
+        return CheckupReservation::where(function ($query) use ($user) {
+            $query->where('user_id', $user->id);
+            if ($user->family_id) {
+                $query->orWhere('family_id', $user->family_id);
+            }
+        })->orderBy('created_at', 'desc')->get()->map(fn ($reservation): array => [
+            'id' => $reservation->id,
+            'clinic_id' => $reservation->clinic_id,
+            'clinic_name' => $reservation->clinic_name,
+            'clinic_address' => $reservation->clinic_address,
+            'patient_name' => $reservation->patient_name,
+            'patient_role' => $reservation->patient_role,
+            'checkup_date' => $reservation->checkup_date?->format('Y-m-d'),
+            'checkup_time' => $reservation->checkup_time,
+            'symptoms' => $reservation->symptoms,
+            'status' => $reservation->status,
+            'is_read' => (bool) $reservation->is_read,
+            'admin_notes' => $reservation->admin_notes,
+            'created_at' => $reservation->created_at?->diffForHumans(),
+            'created_at_raw' => $reservation->created_at?->toISOString(),
         ]);
     }
 }
