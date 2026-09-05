@@ -148,21 +148,17 @@ export function Maps({
         osmLayer.addTo(map);
         osmLayerRef.current = osmLayer;
 
-        // Base Layer 2: NASA GIBS True Color
-        const yesterday = new Date();
-        yesterday.setUTCDate(yesterday.getUTCDate() - 1);
-        const gibsDate = yesterday.toISOString().split('T')[0];
-
-        const nasaLayer = L.tileLayer(
-            `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/${gibsDate}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg`,
+        // Base Layer 2: Citra Satelit Resolusi Tinggi (Esri World Imagery) - Mulus Tanpa Garis Hitam, Detail Hingga Zoom 18
+        const satelliteLayer = L.tileLayer(
+            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
             {
                 minZoom: 5,
-                maxZoom: 9,
+                maxZoom: 18,
                 noWrap: true,
-                attribution: 'NASA EOSDIS GIBS',
+                attribution: 'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community',
             },
         );
-        nasaLayerRef.current = nasaLayer;
+        nasaLayerRef.current = satelliteLayer;
 
         // Layer Groups
         const hotspotLayer = L.layerGroup().addTo(map);
