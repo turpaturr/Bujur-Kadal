@@ -29,71 +29,76 @@ export const NASA_API_KEY: string =
     (import.meta.env.VITE_NASA_API_KEY as string | undefined) ??
     '';
 
-/** Warna marker hotspot berdasarkan level confidence */
-const CONFIDENCE_COLORS: Record<ConfidenceLevel, string> = {
-    high: '#ef4444',    // Merah intens
-    nominal: '#f97316', // Oranye
-    low: '#eab308',     // Kuning
+/** Warna marker hotspot berdasarkan kategori ramah pengguna */
+const CATEGORY_COLORS: Record<string, string> = {
+    active_fire: '#ef4444',  // Merah intens (Api menyala)
+    smoke_peat: '#f97316',   // Oranye (Bara gambut penghasil asap)
+    heat_anomaly: '#eab308', // Kuning (Panas ekstrem)
 };
 
-const CONFIDENCE_FILL_OPACITY: Record<ConfidenceLevel, number> = {
-    high: 0.85,
-    nominal: 0.70,
-    low: 0.55,
+const CATEGORY_FILL_OPACITY: Record<string, number> = {
+    active_fire: 0.85,
+    smoke_peat: 0.75,
+    heat_anomaly: 0.60,
 };
-
-function formatTime(acqTime: string): string {
-    if (!acqTime || acqTime.length < 3) {
-        return acqTime || '-';
-    }
-    const padded = acqTime.padStart(4, '0');
-    return `${padded.slice(0, 2)}:${padded.slice(2)} UTC`;
-}
 
 function buildPopupHtml(hotspot: WildfireHotspot): string {
-    const levelLabel: Record<ConfidenceLevel, string> = {
-        high: '🔴 Tinggi',
-        nominal: '🟠 Sedang',
-        low: '🟡 Rendah',
-    };
-    const color = CONFIDENCE_COLORS[hotspot.confidenceLevel];
+    const isFire = hotspot.category === 'active_fire';
+    const isPeat = hotspot.category === 'smoke_peat';
+
+    const categoryTitle = isFire
+        ? 'Kebakaran Aktif'
+        : isPeat
+          ? 'Potensi Asap & Gambut'
+          : 'Suhu Panas Ekstrem';
+
+    const badgeText = isFire
+        ? 'Bahaya Api Nyata'
+        : isPeat
+          ? 'Pemicu Kabut Asap'
+          : 'Lahan Rawan Kering';
+
+    const intensity = hotspot.frp >= 15
+        ? 'Tinggi / Kuat'
+        : hotspot.frp >= 5
+          ? 'Sedang'
+          : 'Awal / Ringan';
+
+    const advice = isFire
+        ? 'Hindari mendekati area titik kebakaran. Prioritaskan keselamatan keluarga.'
+        : isPeat
+          ? 'Waspada kepulan kabut asap tebal. Tutup ventilasi rumah & gunakan masker jika bau menyengat.'
+          : 'Suhu permukaan sangat terik. Waspada percikan api dan jangan membakar lahan.';
+
+    const color = CATEGORY_COLORS[hotspot.category] ?? '#ef4444';
 
     return `
-        <div style="font-family: 'Figtree', sans-serif; font-size: 12px; min-width: 220px; line-height: 1.4; color: #262626;">
+        <div style="font-family: 'Figtree', sans-serif; font-size: 12px; min-width: 230px; line-height: 1.4; color: #262626;">
             <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #EEEEEE; padding-bottom: 6px; margin-bottom: 8px;">
-                <div style="display: flex; align-items: center; gap: 4px; font-weight: 700; color: ${color}; font-size: 13px;">
-                    <span>🔥 Titik Api Aktif</span>
-                </div>
-                <span style="font-size: 10px; font-weight: 700; background: ${color}20; color: ${color}; padding: 2px 6px; border-radius: 4px;">
-                    ${levelLabel[hotspot.confidenceLevel]}
+                <span style="font-weight: 700; color: ${color}; font-size: 13px;">
+                    ${categoryTitle}
+                </span>
+                <span style="font-size: 10px; font-weight: 700; background: ${color}18; color: ${color}; padding: 2px 6px; border-radius: 6px;">
+                    ${badgeText}
                 </span>
             </div>
-            <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 8px;">
                 <tr>
-                    <td style="color: #666; padding: 2px 0;">Koordinat:</td>
-                    <td style="font-weight: 600; text-align: right; font-family: monospace;">${hotspot.latitude.toFixed(4)}°, ${hotspot.longitude.toFixed(4)}°</td>
+                    <td style="color: #666; padding: 2px 0;">Wilayah:</td>
+                    <td style="font-weight: 700; text-align: right; color: #1F6F5F;">${hotspot.province ?? 'Kalimantan'}</td>
                 </tr>
                 <tr>
-                    <td style="color: #666; padding: 2px 0;">Provinsi:</td>
-                    <td style="font-weight: 600; text-align: right; color: #1F6F5F;">${hotspot.province ?? 'Kalimantan'}</td>
+                    <td style="color: #666; padding: 2px 0;">Kekuatan Api:</td>
+                    <td style="font-weight: 700; text-align: right; color: ${color};">${intensity}</td>
                 </tr>
                 <tr>
-                    <td style="color: #666; padding: 2px 0;">Energi Api (FRP):</td>
-                    <td style="font-weight: 700; text-align: right; color: #d97706;">${hotspot.frp > 0 ? hotspot.frp.toFixed(1) + ' MW' : '-'}</td>
-                </tr>
-                <tr>
-                    <td style="color: #666; padding: 2px 0;">Waktu Akuisisi:</td>
-                    <td style="font-weight: 600; text-align: right;">${hotspot.acquisitionDate} (${formatTime(hotspot.acquisitionTime)})</td>
-                </tr>
-                <tr>
-                    <td style="color: #666; padding: 2px 0;">Satelit / Sensor:</td>
-                    <td style="font-weight: 600; text-align: right;">${hotspot.satellite} · ${hotspot.source.replace('_NRT', '')}</td>
-                </tr>
-                <tr>
-                    <td style="color: #666; padding: 2px 0;">Fase Deteksi:</td>
+                    <td style="color: #666; padding: 2px 0;">Waktu Pantau:</td>
                     <td style="font-weight: 600; text-align: right;">${hotspot.daynight === 'N' ? '🌙 Malam Hari' : '☀️ Siang Hari'}</td>
                 </tr>
             </table>
+            <div style="background: #F9FAFB; border: 1px solid #EEEEEE; border-radius: 8px; padding: 6px 8px; font-size: 10.5px; color: #4B5563; line-height: 1.35;">
+                <strong style="color: #1F6F5F;">Tips Warga:</strong> ${advice}
+            </div>
         </div>
     `;
 }
@@ -120,7 +125,6 @@ export function Maps({
     const mapInstanceRef = useRef<L.Map | null>(null);
     const hotspotLayerRef = useRef<L.LayerGroup | null>(null);
     const [activeBasemap, setActiveBasemap] = useState<'osm' | 'nasa'>('osm');
-    const [filterConfidence, setFilterConfidence] = useState<'all' | 'high'>('all');
     const osmLayerRef = useRef<L.TileLayer | null>(null);
     const nasaLayerRef = useRef<L.TileLayer | null>(null);
 
@@ -235,38 +239,33 @@ export function Maps({
 
         layer.clearLayers();
 
-        const filtered =
-            filterConfidence === 'high'
-                ? wildfireHotspots.filter((h) => h.confidenceLevel === 'high')
-                : wildfireHotspots;
+        for (const hotspot of wildfireHotspots) {
+            const color = CATEGORY_COLORS[hotspot.category] ?? '#ef4444';
+            const fillOpacity = CATEGORY_FILL_OPACITY[hotspot.category] ?? 0.75;
 
-        for (const hotspot of filtered) {
-            const color = CONFIDENCE_COLORS[hotspot.confidenceLevel];
-            const fillOpacity = CONFIDENCE_FILL_OPACITY[hotspot.confidenceLevel];
-
-            // Ukuran proporsional dengan FRP: min 4.5px, max 13px
-            const radius = Math.min(13, Math.max(4.5, 4.5 + hotspot.frp / 25));
+            // Ukuran proporsional dengan intensitas api: min 4.5px, max 11px
+            const radius = Math.min(11, Math.max(4.5, 4.5 + hotspot.frp / 25));
 
             const marker = L.circleMarker(
                 [hotspot.latitude, hotspot.longitude],
                 {
                     radius,
-                    color: hotspot.confidenceLevel === 'high' ? '#b91c1c' : color,
+                    color: hotspot.category === 'active_fire' ? '#b91c1c' : color,
                     fillColor: color,
                     fillOpacity,
-                    weight: hotspot.confidenceLevel === 'high' ? 2 : 1,
+                    weight: hotspot.category === 'active_fire' ? 2 : 1,
                     opacity: 0.9,
                 },
             );
 
             marker.bindPopup(buildPopupHtml(hotspot), {
-                maxWidth: 280,
+                maxWidth: 260,
                 className: 'wildfire-popup-custom',
             });
 
             layer.addLayer(marker);
         }
-    }, [wildfireHotspots, filterConfidence]);
+    }, [wildfireHotspots]);
 
     // 5. FlyTo jika hotspot spesifik dipilih dari list
     useEffect(() => {
@@ -279,31 +278,25 @@ export function Maps({
         });
     }, [selectedHotspot]);
 
-    const renderedCount =
-        filterConfidence === 'high'
-            ? wildfireHotspots.filter((h) => h.confidenceLevel === 'high').length
-            : wildfireHotspots.length;
-
     return (
         <div
             className={cn(
-                'relative w-full h-[520px] rounded-2xl overflow-hidden border border-[#EEEEEE] shadow-sm z-0',
+                'relative w-full h-[520px] rounded-2xl overflow-hidden border border-[#EEEEEE] shadow-xs z-0',
                 className,
             )}
         >
             {/* Map Container */}
             <div ref={mapContainerRef} className="w-full h-full" />
 
-            {/* Top Left Floating HUD: Basemap Switcher & Confidence Filter */}
-            <div className="absolute top-3 left-3 z-[1000] flex flex-wrap items-center gap-2">
-                {/* Basemap Switcher */}
-                <div className="bg-white/90 backdrop-blur-md p-1 rounded-xl border border-[#EEEEEE] shadow-xs flex items-center gap-1">
+            {/* Top Left Floating HUD: Basemap Switcher */}
+            <div className="absolute top-3 left-3 z-[1000] flex items-center gap-2">
+                <div className="bg-white/95 backdrop-blur-md p-1 rounded-xl border border-[#EEEEEE] shadow-2xs flex items-center gap-1">
                     <button
                         type="button"
                         onClick={() => setActiveBasemap('osm')}
                         className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all ${
                             activeBasemap === 'osm'
-                                ? 'bg-[#2FA084] text-white shadow-xs font-bold'
+                                ? 'bg-[#2FA084] text-white shadow-2xs font-bold'
                                 : 'text-[#1F6F5F] hover:bg-[#EEEEEE]'
                         }`}
                     >
@@ -314,76 +307,46 @@ export function Maps({
                         onClick={() => setActiveBasemap('nasa')}
                         className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all ${
                             activeBasemap === 'nasa'
-                                ? 'bg-[#2FA084] text-white shadow-xs font-bold'
+                                ? 'bg-[#2FA084] text-white shadow-2xs font-bold'
                                 : 'text-[#1F6F5F] hover:bg-[#EEEEEE]'
                         }`}
                     >
-                        Satelit NASA
-                    </button>
-                </div>
-
-                {/* Filter Confidence Toggle */}
-                <div className="bg-white/90 backdrop-blur-md p-1 rounded-xl border border-[#EEEEEE] shadow-xs flex items-center gap-1">
-                    <button
-                        type="button"
-                        onClick={() => setFilterConfidence('all')}
-                        className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all ${
-                            filterConfidence === 'all'
-                                ? 'bg-[#1F6F5F] text-white font-bold'
-                                : 'text-[#1F6F5F] hover:bg-[#EEEEEE]'
-                        }`}
-                    >
-                        Semua ({wildfireHotspots.length})
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setFilterConfidence('high')}
-                        className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all ${
-                            filterConfidence === 'high'
-                                ? 'bg-red-600 text-white font-bold'
-                                : 'text-red-700 hover:bg-red-50'
-                        }`}
-                    >
-                        🔴 Akurasi Tinggi
+                        Citra Satelit
                     </button>
                 </div>
             </div>
 
             {/* Top Right Floating HUD: Live Count Pill */}
-            <div className="absolute top-3 right-3 z-[1000] hidden sm:block">
-                <div className="bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-xl border border-[#EEEEEE] shadow-xs flex items-center gap-2">
+            <div className="absolute top-3 right-3 z-[1000]">
+                <div className="bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-xl border border-[#EEEEEE] shadow-2xs flex items-center gap-2">
                     <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
                     </span>
                     <span className="text-xs font-bold text-[#1F6F5F]">
-                        {renderedCount.toLocaleString('id-ID')} Titik Api Tampil
+                        {wildfireHotspots.length.toLocaleString('id-ID')} Titik Terpantau
                     </span>
                 </div>
             </div>
 
-            {/* Bottom Left Floating Legend */}
-            <div className="absolute bottom-3 left-3 z-[1000] bg-white/95 backdrop-blur-md p-3 rounded-xl border border-[#EEEEEE] shadow-xs max-w-[210px] text-xs">
-                <div className="font-bold text-[#1F6F5F] mb-1.5 flex items-center justify-between text-[11px] uppercase tracking-wider">
-                    <span>Legenda Api</span>
-                    <span className="text-[10px] text-[#262626]/50">VIIRS/MODIS</span>
+            {/* Bottom Left Floating Legend Sederhana Ramah Pengguna */}
+            <div className="absolute bottom-3 left-3 z-[1000] bg-white/95 backdrop-blur-md p-2.5 sm:p-3 rounded-xl border border-[#EEEEEE] shadow-2xs text-xs">
+                <div className="font-bold text-[#1F6F5F] mb-1.5 text-[10.5px] uppercase tracking-wider">
+                    Tanda Bahaya
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-1.5 text-[11px] text-[#262626]/80">
                     <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-red-500 shrink-0 ring-1 ring-red-600"></span>
-                        <span className="text-[#262626]/80 text-[11px]">Tinggi (Confidence ≥80%)</span>
+                        <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>
+                        <span>Api Aktif</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-orange-500 shrink-0"></span>
-                        <span className="text-[#262626]/80 text-[11px]">Sedang (Nominal)</span>
+                        <span className="w-2 h-2 rounded-full bg-orange-500 shrink-0"></span>
+                        <span>Asap & Gambut</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-yellow-400 shrink-0"></span>
-                        <span className="text-[#262626]/80 text-[11px]">Rendah</span>
+                        <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0"></span>
+                        <span>Panas Ekstrem</span>
                     </div>
-                </div>
-                <div className="mt-2 pt-1.5 border-t border-[#EEEEEE] text-[10px] text-[#262626]/60">
-                    Radius lingkaran ∝ Radiasi Api (FRP MW)
                 </div>
             </div>
         </div>
