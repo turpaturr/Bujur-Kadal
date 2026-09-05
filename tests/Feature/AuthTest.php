@@ -4,6 +4,7 @@ use App\Enums\UserRole;
 use App\Models\Family;
 use App\Models\HealthProfile;
 use App\Models\User;
+use Database\Seeders\AuthenticationSeeder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
@@ -131,4 +132,60 @@ test('authenticated user can logout', function () {
 
     $response->assertRedirect('/');
     expect(Auth::check())->toBeFalse();
+});
+
+test('authentication seeder seeds test users that can log in', function () {
+    $this->seed(AuthenticationSeeder::class);
+
+    // Test Budi Pratama (Kepala Keluarga Rentan)
+    $response = $this->post(route('login.store'), [
+        'nik' => '6472010101900001',
+        'pin' => '123456',
+    ]);
+    $response->assertRedirect(route('home'));
+    expect(Auth::user()->name)->toBe('Budi Pratama (Kepala Keluarga)')
+        ->and(Auth::user()->healthProfile->is_vulnerable)->toBeTrue();
+
+    Auth::logout();
+
+    // Test Siti Rahma (Anggota Non-Rentan)
+    $response = $this->post(route('login.store'), [
+        'nik' => '6472011504950002',
+        'pin' => '123456',
+    ]);
+    $response->assertRedirect(route('home'));
+    expect(Auth::user()->name)->toBe('Siti Rahma (Anggota Keluarga)')
+        ->and(Auth::user()->healthProfile->is_vulnerable)->toBeFalse();
+
+    Auth::logout();
+
+    // Test Ahmad Fauzi (Pendatang / Relawan)
+    $response = $this->post(route('login.store'), [
+        'nik' => '6271012005980003',
+        'pin' => '123456',
+    ]);
+    $response->assertRedirect(route('home'));
+    expect(Auth::user()->name)->toBe('Ahmad Fauzi (Relawan / Pendatang)');
+
+    Auth::logout();
+
+    // Test Haji Syahrani (Lansia Rentan)
+    $response = $this->post(route('login.store'), [
+        'nik' => '6271010503550004',
+        'pin' => '123456',
+    ]);
+    $response->assertRedirect(route('home'));
+    expect(Auth::user()->name)->toBe('Haji Syahrani (Lansia Rentan)')
+        ->and(Auth::user()->healthProfile->is_vulnerable)->toBeTrue();
+
+    Auth::logout();
+
+    // Test Dewi Lestari (Ibu Hamil Rentan)
+    $response = $this->post(route('login.store'), [
+        'nik' => '6171011010910005',
+        'pin' => '123456',
+    ]);
+    $response->assertRedirect(route('home'));
+    expect(Auth::user()->name)->toBe('Dewi Lestari (Ibu Hamil)')
+        ->and(Auth::user()->healthProfile->is_vulnerable)->toBeTrue();
 });

@@ -6,7 +6,6 @@ use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'Welcome')->name('home');
 Route::inertia('/dashboard', 'Dashboard')->name('dashboard');
-Route::inertia('/', 'Authentication/Login/Index')->name('home');
 
 Route::middleware('guest')->group(function () {
     Route::get('/register', [RegisterController::class, 'create'])->name('register');
