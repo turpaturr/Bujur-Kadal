@@ -4,7 +4,6 @@ use App\Enums\UserRole;
 use App\Models\Family;
 use App\Models\HealthProfile;
 use App\Models\User;
-use Database\Seeders\AuthenticationSeeder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 

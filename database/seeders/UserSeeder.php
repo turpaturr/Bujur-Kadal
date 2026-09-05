@@ -163,5 +163,22 @@ class UserSeeder extends Seeder
                 'comorbidity_notes' => 'Ibu Hamil Trimester 3, Alergi Debu dan Asap Pekat Karhutla',
             ]
         );
+
+        // =========================================================================
+        // AKUN ADMINISTRATOR / PETUGAS SIAGA (Email & Password)
+        // =========================================================================
+        User::updateOrCreate(
+            ['email' => 'admin@borneocare.id'],
+            [
+                'name' => 'Komandan Satgas Karhutla',
+                'password' => Hash::make('admin12345'),
+                'role' => UserRole::Admin,
+                'family_id' => null,
+                'nik' => null,
+                'whatsapp_number' => '81199887766',
+                'pin' => null,
+                'home_address' => 'Pos Komando Penanggulangan Bencana Provinsi Kalimantan',
+            ]
+        );
     }
 }
