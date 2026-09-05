@@ -10,6 +10,7 @@ import {
     CitizensListView,
     TriageView,
     FacilitiesView,
+    CheckupReservationsView,
     type AdminReservationItem,
 } from '@/pages/Components/DashboardAdmin';
 import type { AdminMenuType } from '@/pages/Components/DashboardAdmin/AdminSidebar';
@@ -207,6 +208,14 @@ export default function DashboardAdmin({
 
     // Helper rendering content based on active menu
     const renderContent = () => {
+        if (activeMenu === 'reservations') {
+            return (
+                <CheckupReservationsView
+                    reservations={localReservations}
+                />
+            );
+        }
+
         if (activeMenu === 'citizens') {
             return (
                 <CitizensListView
@@ -269,17 +278,20 @@ export default function DashboardAdmin({
                     onMenuChange={setActiveMenu}
                     isMobileOpen={isMobileSidebarOpen}
                     onCloseMobile={() => setIsMobileSidebarOpen(false)}
+                    pendingReservationsCount={localPendingCount}
                 />
 
                 <div className="flex-1 flex flex-col overflow-hidden">
                     <AdminTopBar
                         onOpenMobile={() => setIsMobileSidebarOpen(true)}
                         title={
-                            activeMenu === 'citizens'
-                                ? 'Data Warga Terdaftar'
-                                : activeMenu === 'facilities'
-                                    ? 'Fasilitas Kesehatan'
-                                    : 'Peta Sebaran Spasial & Titik Api'
+                            activeMenu === 'reservations'
+                                ? 'Kotak Masuk Reservasi Medical Checkup'
+                                : activeMenu === 'citizens'
+                                    ? 'Data Warga Terdaftar'
+                                    : activeMenu === 'facilities'
+                                        ? 'Fasilitas Kesehatan'
+                                        : 'Peta Sebaran Spasial & Titik Api'
                         }
                     />
 

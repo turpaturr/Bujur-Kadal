@@ -11,6 +11,7 @@ interface PageProps {
     auth?: { user?: { name?: string } | null };
     userReservations?: UserReservationItem[];
     unreadReservationsCount?: number;
+    [key: string]: unknown;
 }
 
 export default function Reservations() {
@@ -38,13 +39,15 @@ export default function Reservations() {
                 />
                 <div className="flex flex-1 flex-col overflow-hidden">
                     <AdminTopBar onOpenMobile={() => setIsMobileSidebarOpen(true)} title="Kotak Masuk Faskes" />
-                    <main className="flex-1 overflow-y-auto">
-                        <UserReservationInboxModal
-                            isOpen
-                            mode="page"
-                            onClose={() => router.visit('/dashboard')}
-                            reservations={localReservations}
-                        />
+                    <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+                        <div className="mx-auto max-w-7xl space-y-6">
+                            <UserReservationInboxModal
+                                isOpen
+                                mode="page"
+                                onClose={() => router.visit('/dashboard')}
+                                reservations={localReservations}
+                            />
+                        </div>
                     </main>
                 </div>
             </div>

@@ -1,19 +1,21 @@
 import { Link } from '@inertiajs/react';
 import { 
     MapPin, 
+    Mailbox,
     List, 
     Building, 
     LogOut, 
     X 
 } from '@/pages/Components/Dashboard/Icons';
 
-export type AdminMenuType = 'maps' | 'citizens' | 'facilities';
+export type AdminMenuType = 'maps' | 'reservations' | 'citizens' | 'facilities';
 
 interface AdminSidebarProps {
     activeMenu: AdminMenuType;
     onMenuChange: (menu: AdminMenuType) => void;
     isMobileOpen: boolean;
     onCloseMobile: () => void;
+    pendingReservationsCount?: number;
 }
 
 export default function AdminSidebar({
@@ -21,17 +23,24 @@ export default function AdminSidebar({
     onMenuChange,
     isMobileOpen,
     onCloseMobile,
+    pendingReservationsCount = 0,
 }: AdminSidebarProps) {
     const navItems: Array<{
         id: AdminMenuType;
         label: string;
-        icon: typeof MapPin;
+        icon: typeof MapPin | typeof Mailbox;
         badge?: number;
     }> = [
         { id: 'maps', label: 'Monitoring Spasial', icon: MapPin },
+        { 
+            id: 'reservations', 
+            label: 'Kotak Masuk Reservasi', 
+            icon: Mailbox, 
+            badge: pendingReservationsCount 
+        },
         { id: 'citizens', label: 'Daftar Warga & Keluarga', icon: List },
         { id: 'facilities', label: 'Manajemen Faskes', icon: Building },
-    ] as const;
+    ];
 
     const baseClasses = "fixed inset-y-0 left-0 z-50 w-64 transform bg-white border-r border-[#EEEEEE] transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0";
     const mobileClasses = isMobileOpen ? "translate-x-0" : "-translate-x-full";

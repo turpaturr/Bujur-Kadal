@@ -45,45 +45,45 @@ export default function UserReservationInboxModal({
     const rejectedCount = reservations.filter((r) => r.status === 'rejected').length;
 
     return (
-        <div className={mode === 'page' ? 'min-h-full' : 'fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200'}>
-            <div className={`relative w-full bg-white overflow-hidden flex flex-col ${mode === 'page' ? 'min-h-screen' : 'max-w-2xl rounded-2xl shadow-2xl border border-gray-100 max-h-[90vh]'}`}>
-                {/* Header Modal */}
-                <div className="bg-gradient-to-r from-[#1F6F5F] to-[#2FA084] p-5 text-white shrink-0">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center text-white text-lg shadow-2xs">
-                                📬
-                            </div>
-                            <div>
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-200 block">
-                                    Kotak Masuk Warga
-                                </span>
-                                <h3 className="font-display text-lg font-bold leading-tight">
-                                    Notifikasi &amp; Riwayat Reservasi Faskes
-                                </h3>
-                            </div>
+        <div className={mode === 'page' ? 'w-full' : 'fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200'}>
+            <div className={`relative w-full bg-white overflow-hidden flex flex-col ${mode === 'page' ? 'rounded-2xl border border-[#EEEEEE] shadow-xs' : 'max-w-2xl rounded-2xl shadow-2xl border border-[#EEEEEE] max-h-[90vh]'}`}>
+                {/* Header Clean Putih (Sesuai Desain Status Anggota Keluarga) */}
+                <div className="border-b border-[#EEEEEE] bg-white p-5 sm:p-6 shrink-0">
+                    <div className="flex items-start justify-between gap-4">
+                        <div>
+                            <p className="text-xs font-bold uppercase tracking-wider text-[#2FA084]">
+                                Kotak Masuk Warga
+                            </p>
+                            <h2 className="mt-1 font-display text-xl sm:text-2xl font-bold text-[#1F6F5F]">
+                                Notifikasi &amp; Riwayat Reservasi Faskes
+                            </h2>
+                            <p className="mt-1 max-w-3xl text-sm text-[#262626]/70">
+                                Pantau status konfirmasi jadwal medical checkup dan pemeriksaan kesehatan di faskes Kalimantan.
+                            </p>
                         </div>
 
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="w-8 h-8 rounded-full bg-white/15 hover:bg-white/30 text-white flex items-center justify-center transition-colors cursor-pointer"
-                            aria-label="Kembali ke dashboard"
-                        >
-                            ✕
-                        </button>
+                        {mode !== 'page' && (
+                            <button
+                                type="button"
+                                onClick={onClose}
+                                className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-800 flex items-center justify-center transition-colors cursor-pointer shrink-0"
+                                aria-label="Tutup modal"
+                            >
+                                ✕
+                            </button>
+                        )}
                     </div>
 
                     {/* Filter Tabs */}
-                    <div className="mt-4 flex items-center gap-1.5 overflow-x-auto pb-1">
+                    <div className="mt-4 flex items-center gap-2 overflow-x-auto pb-1">
                         <button
                             type="button"
                             onClick={() => setFilterStatus('all')}
                             className={cn(
-                                'px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap',
+                                'px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap',
                                 filterStatus === 'all'
-                                    ? 'bg-white text-[#1F6F5F] shadow-xs'
-                                    : 'bg-white/15 text-white hover:bg-white/25',
+                                    ? 'bg-[#1F6F5F] text-white shadow-xs'
+                                    : 'bg-[#F4F4F5] text-gray-600 hover:bg-gray-200',
                             )}
                         >
                             Semua ({reservations.length})
@@ -92,10 +92,10 @@ export default function UserReservationInboxModal({
                             type="button"
                             onClick={() => setFilterStatus('approved')}
                             className={cn(
-                                'px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap',
+                                'px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap',
                                 filterStatus === 'approved'
-                                    ? 'bg-emerald-500 text-white shadow-xs'
-                                    : 'bg-white/15 text-white hover:bg-white/25',
+                                    ? 'bg-emerald-600 text-white shadow-xs'
+                                    : 'bg-[#F4F4F5] text-gray-600 hover:bg-gray-200',
                             )}
                         >
                             ✓ Disetujui ({approvedCount})
@@ -104,22 +104,22 @@ export default function UserReservationInboxModal({
                             type="button"
                             onClick={() => setFilterStatus('pending')}
                             className={cn(
-                                'px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap',
+                                'px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap',
                                 filterStatus === 'pending'
-                                    ? 'bg-amber-400 text-amber-950 shadow-xs'
-                                    : 'bg-white/15 text-white hover:bg-white/25',
+                                    ? 'bg-amber-500 text-white shadow-xs'
+                                    : 'bg-[#F4F4F5] text-gray-600 hover:bg-gray-200',
                             )}
                         >
-                             Menunggu ({pendingCount})
+                            Menunggu ({pendingCount})
                         </button>
                         <button
                             type="button"
                             onClick={() => setFilterStatus('rejected')}
                             className={cn(
-                                'px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap',
+                                'px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap',
                                 filterStatus === 'rejected'
-                                    ? 'bg-rose-500 text-white shadow-xs'
-                                    : 'bg-white/15 text-white hover:bg-white/25',
+                                    ? 'bg-rose-600 text-white shadow-xs'
+                                    : 'bg-[#F4F4F5] text-gray-600 hover:bg-gray-200',
                             )}
                         >
                             ✕ Ditolak ({rejectedCount})
@@ -187,10 +187,10 @@ export default function UserReservationInboxModal({
 
                                         <div className="text-left sm:text-right">
                                             <div className="text-xs font-bold text-[#1F6F5F]">
-                                                📅 {item.checkup_date}
+                                                {item.checkup_date}
                                             </div>
                                             <div className="text-[11px] font-mono text-gray-600">
-                                                ⏰ Pukul {item.checkup_time} WITA
+                                                Pukul {item.checkup_time} WITA
                                             </div>
                                         </div>
                                     </div>
@@ -230,7 +230,7 @@ export default function UserReservationInboxModal({
                                             )}
                                         >
                                             <span className="text-sm">
-                                                {isApproved ? '📋' : isRejected ? 'ℹ️' : '💬'}
+                                                {isApproved ? '💬' : isRejected ? '⚠️' : 'ℹ️'}
                                             </span>
                                             <div className="min-w-0 flex-1">
                                                 <strong className="block text-[11px] font-bold">
@@ -252,17 +252,23 @@ export default function UserReservationInboxModal({
                     )}
                 </div>
 
-                {/* Footer Modal */}
-                <div className="p-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500 shrink-0">
-                    <span>Layanan koordinasi fasilitas kesehatan tanggap bencana ISPA Kalimantan.</span>
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="px-4 py-2 rounded-xl bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold transition-colors cursor-pointer"
-                    >
-                        Tutup
-                    </button>
-                </div>
+                {/* Footer */}
+                {mode !== 'page' ? (
+                    <div className="p-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500 shrink-0">
+                        <span>Layanan koordinasi fasilitas kesehatan tanggap bencana ISPA Kalimantan.</span>
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="px-4 py-2 rounded-xl bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold transition-colors cursor-pointer"
+                        >
+                            Tutup
+                        </button>
+                    </div>
+                ) : (
+                    <div className="p-4 bg-gray-50/60 border-t border-gray-100 text-xs text-gray-500 shrink-0">
+                        <span>Layanan koordinasi fasilitas kesehatan tanggap bencana ISPA Kalimantan.</span>
+                    </div>
+                )}
             </div>
         </div>
     );
