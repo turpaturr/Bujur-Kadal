@@ -14,43 +14,70 @@ use Illuminate\Support\Facades\Route;
 Route::inertia('/', 'Welcome')->name('home');
 
 Route::middleware('guest')->group(function () {
-    Route::get('/register', [RegisterController::class, 'create'])->name('register');
-    Route::post('/register/step-1', [RegisterController::class, 'validateStep1'])->name('register.step1');
-    Route::post('/register', [RegisterController::class, 'store'])->name('register.store');
+    Route::controller(RegisterController::class)->group(function () {
+        Route::get('/register', 'create')->name('register');
+        Route::post('/register/step-1', 'validateStep1')->name('register.step1');
+        Route::post('/register', 'store')->name('register.store');
+    });
 
-    Route::get('/login', [LoginController::class, 'create'])->name('login');
-    Route::post('/login', [LoginController::class, 'store'])->name('login.store');
+    Route::controller(LoginController::class)->group(function () {
+        Route::get('/login', 'create')->name('login');
+        Route::post('/login', 'store')->name('login.store');
+    });
 });
 
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware('guest')->group(function () {
-        Route::get('/login', [AdminLoginController::class, 'create'])->name('login');
-        Route::post('/login', [AdminLoginController::class, 'store'])->name('login.store');
-        Route::get('/register', [AdminRegisterController::class, 'create'])->name('register');
-        Route::post('/register', [AdminRegisterController::class, 'store'])->name('register.store');
+        Route::controller(AdminLoginController::class)->group(function () {
+            Route::get('/login', 'create')->name('login');
+            Route::post('/login', 'store')->name('login.store');
+        });
+
+        Route::controller(AdminRegisterController::class)->group(function () {
+            Route::get('/register', 'create')->name('register');
+            Route::post('/register', 'store')->name('register.store');
+        });
     });
 
     Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/dashboard', [DashboardAdminController::class, 'index'])->name('dashboard');
         Route::post('/logout', [AdminLoginController::class, 'destroy'])->name('logout');
 
-        Route::post('/checkup-reservations/{reservation}/approve', [DashboardAdminController::class, 'approveReservation'])->name('checkup-reservations.approve');
-        Route::post('/checkup-reservations/{reservation}/reject', [DashboardAdminController::class, 'rejectReservation'])->name('checkup-reservations.reject');
+        Route::prefix('checkup-reservations/{reservation}')
+            ->name('checkup-reservations.')
+            ->controller(DashboardAdminController::class)
+            ->group(function () {
+                Route::post('/approve', 'approveReservation')->name('approve');
+                Route::post('/reject', 'rejectReservation')->name('reject');
+            });
     });
 });
 
 Route::middleware('auth')->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/family', [DashboardController::class, 'family'])->name('family');
-    Route::get('/reservations', [DashboardController::class, 'reservations'])->name('reservations');
+    Route::controller(DashboardController::class)->group(function () {
+        Route::get('/dashboard', 'index')->name('dashboard');
+        Route::get('/family', 'family')->name('family');
+        Route::get('/reservations', 'reservations')->name('reservations');
+    });
+
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 
-    Route::post('/family/members', [FamilyMemberController::class, 'store'])->name('family.members.store');
-    Route::put('/family/members/{member}', [FamilyMemberController::class, 'update'])->name('family.members.update');
-    Route::delete('/family/members/{member}', [FamilyMemberController::class, 'destroy'])->name('family.members.destroy');
+    Route::prefix('family/members')
+        ->name('family.members.')
+        ->controller(FamilyMemberController::class)
+        ->group(function () {
+            Route::post('/', 'store')->name('store');
+            Route::put('/{member}', 'update')->name('update');
+            Route::delete('/{member}', 'destroy')->name('destroy');
+        });
 
-    Route::post('/checkup-reservations', [CheckupReservationController::class, 'store'])->name('checkup-reservations.store');
-    Route::post('/checkup-reservations/mark-as-read', [CheckupReservationController::class, 'markAsRead'])->name('checkup-reservations.mark-as-read');
+    Route::prefix('checkup-reservations')
+        ->name('checkup-reservations.')
+        ->controller(CheckupReservationController::class)
+        ->group(function () {
+            Route::post('/', 'store')->name('store');
+            Route::post('/mark-as-read', 'markAsRead')->name('mark-as-read');
+        });
 
     Route::get('/api/wildfire/hotspots', [WildfireController::class, 'hotspots'])
         ->name('wildfire.hotspots');

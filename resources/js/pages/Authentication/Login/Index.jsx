@@ -34,16 +34,16 @@ export default function LoginIndex({ defaultType = 'warga' }) {
     return (
         <>
             <Head title="Masuk - BorneoCare" />
-            
+
             {/* Background minimalis dengan subtle radial gradient */}
             <div className="min-h-screen flex items-center justify-center p-4 bg-[#FAFAFA] relative overflow-hidden font-sans">
-                
+
                 {/* Subtle soft blobs for depth */}
                 <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#2FA084]/5 rounded-full blur-3xl pointer-events-none mix-blend-multiply"></div>
                 <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#1F6F5F]/5 rounded-full blur-3xl pointer-events-none mix-blend-multiply"></div>
 
                 <div className="w-full max-w-[420px] relative z-10">
-                    
+
                     {/* Header Logo */}
                     <div className="text-center mb-8">
                         <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-tr from-[#1F6F5F] to-[#2FA084] shadow-lg mb-4">
@@ -57,7 +57,7 @@ export default function LoginIndex({ defaultType = 'warga' }) {
 
                     {/* Main Card */}
                     <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 p-6 sm:p-8">
-                        
+
                         {/* Segmented Control / Toggle */}
                         <div className="flex p-1 bg-gray-50/80 rounded-xl mb-8 border border-gray-100/80">
                             <button
@@ -196,7 +196,7 @@ export default function LoginIndex({ defaultType = 'warga' }) {
                         {/* Fast Demo Data Loader */}
                         <div className="mt-8 border-t border-gray-100 pt-6">
                             <p className="text-[11px] font-medium text-gray-400 text-center mb-3">AKUN DEMO CEPAT</p>
-                            
+
                             {loginType === 'warga' ? (
                                 <div className="grid grid-cols-2 gap-2">
                                     <button
