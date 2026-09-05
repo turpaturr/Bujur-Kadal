@@ -178,20 +178,21 @@ export default function WildfirePanel({
                         ))}
                     </div>
                 ) : activeTab === 'clusters' ? (
-                    /* TAB 2: Daftar Titik Api Kritis */
+                    /* TAB 2: Daftar Titik Pantauan Kritis */
                     <div className="space-y-2">
                         <div className="text-xs text-[#262626]/70 mb-2">
-                            Titik-titik api dengan radiasi termal (FRP) paling intens, dipilah berdasarkan klasifikasi tanda bahaya.
+                            Titik-titik anomali termal dengan radiasi (FRP) dan suhu tertinggi, dipilah berdasarkan tingkat potensi kebakaran.
                         </div>
 
                         <div className="overflow-x-auto">
                             <table className="w-full text-left text-xs border-collapse">
                                 <thead>
                                     <tr className="border-b border-[#EEEEEE] text-[11px] font-bold text-[#1F6F5F] uppercase tracking-wider">
-                                        <th className="py-2 px-2">Klasifikasi Tanda</th>
+                                        <th className="py-2 px-2">Potensi Kebakaran</th>
+                                        <th className="py-2 px-2 text-right">Suhu Permukaan</th>
                                         <th className="py-2 px-2">Koordinat</th>
                                         <th className="py-2 px-2">Provinsi</th>
-                                        <th className="py-2 px-2 text-right">Energi Api (FRP)</th>
+                                        <th className="py-2 px-2 text-right">Radiasi (FRP)</th>
                                         <th className="py-2 px-2">Fase</th>
                                         <th className="py-2 px-2 text-right">Aksi</th>
                                     </tr>
@@ -199,6 +200,7 @@ export default function WildfirePanel({
                                 <tbody className="divide-y divide-[#EEEEEE]">
                                     {topHotspots.map((h) => {
                                         const cat = HOTSPOT_CATEGORIES[h.category];
+                                        const tempC = (h.brightness - 273.15).toFixed(1);
                                         return (
                                             <tr key={h.id} className="hover:bg-[#2FA084]/5 transition-colors">
                                                 <td className="py-2.5 px-2">
@@ -207,7 +209,10 @@ export default function WildfirePanel({
                                                         <span>{cat.title}</span>
                                                     </span>
                                                 </td>
-                                                <td className="py-2.5 px-2 font-mono font-bold text-[#262626]">
+                                                <td className="py-2.5 px-2 text-right font-mono font-bold text-[#1F6F5F]">
+                                                    {tempC}°C
+                                                </td>
+                                                <td className="py-2.5 px-2 font-mono text-[#262626]">
                                                     {h.latitude.toFixed(4)}°, {h.longitude.toFixed(4)}°
                                                 </td>
                                                 <td className="py-2.5 px-2 text-[#1F6F5F] font-semibold">
@@ -229,7 +234,7 @@ export default function WildfirePanel({
                                                     <button
                                                         type="button"
                                                         onClick={() => onSelectHotspot?.(h)}
-                                                        className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-[#2FA084] text-white hover:bg-[#1F6F5F] transition-colors shadow-2xs"
+                                                        className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-[#2FA084] text-white hover:bg-[#1F6F5F] transition-colors shadow-2xs cursor-pointer"
                                                     >
                                                         Fokus di Peta
                                                     </button>
@@ -242,48 +247,48 @@ export default function WildfirePanel({
                         </div>
                     </div>
                 ) : (
-                    /* TAB 3: Panduan Klasifikasi Tanda */
+                    /* TAB 3: Panduan Klasifikasi Tingkat Potensi */
                     <div className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            {/* Box 1: Kebakaran Aktif */}
+                            {/* Box 1: Potensi Tinggi */}
                             <div className="p-4 rounded-xl border border-rose-200 bg-rose-50/50 space-y-2">
                                 <div className="flex items-center gap-2">
-                                    <span className="text-xl">🔥</span>
+                                    <span className="w-3.5 h-3.5 rounded-full bg-[#B91C1C] shrink-0"></span>
                                     <div>
-                                        <h4 className="font-bold text-rose-800 text-sm">Kebakaran Aktif</h4>
-                                        <span className="text-[10px] text-rose-600 uppercase font-semibold">Flaming Wildfire</span>
+                                        <h4 className="font-bold text-rose-900 text-sm">Potensi Kebakaran Tinggi</h4>
+                                        <span className="text-[10px] text-rose-700 uppercase font-semibold">Suhu &ge; 70&deg;C atau FRP &ge; 12 MW</span>
                                     </div>
                                 </div>
                                 <p className="text-xs text-[#262626]/80 leading-relaxed">
-                                    Titik di mana radiasi panas sangat tinggi dengan keyakinan kuat bahwa api menyala terbuka di vegetasi atau tajuk pohon. Menjadi prioritas pemadaman regu darat & water bombing helikopter.
+                                    Titik anomali termal bersuhu ekstrem dan radiasi masif. Mengindikasikan potensi kebakaran tajuk atau kobaran api nyata terbuka. Menjadi prioritas pemadaman regu darat dan water bombing.
                                 </p>
                             </div>
 
-                            {/* Box 2: Potensi Asap & Gambut */}
-                            <div className="p-4 rounded-xl border border-orange-200 bg-orange-50/50 space-y-2">
+                            {/* Box 2: Potensi Sedang */}
+                            <div className="p-4 rounded-xl border border-yellow-200 bg-yellow-50/50 space-y-2">
                                 <div className="flex items-center gap-2">
-                                    <span className="text-xl">💨</span>
+                                    <span className="w-3.5 h-3.5 rounded-full bg-[#E5A910] shrink-0"></span>
                                     <div>
-                                        <h4 className="font-bold text-orange-800 text-sm">Potensi Asap & Gambut</h4>
-                                        <span className="text-[10px] text-orange-600 uppercase font-semibold">Peatland Smoldering</span>
+                                        <h4 className="font-bold text-yellow-900 text-sm">Potensi Kebakaran Sedang</h4>
+                                        <span className="text-[10px] text-yellow-800 uppercase font-semibold">Suhu 60&deg;C &ndash; 69.9&deg;C / FRP 5 &ndash; 11.9 MW</span>
                                     </div>
                                 </div>
                                 <p className="text-xs text-[#262626]/80 leading-relaxed">
-                                    Bara di lapisan tanah gambut atau pembakaran semak lembap. Seringkali tidak terlihat api tinggi menjulang di atas pohon, namun memancarkan asap pekat kelabu yang menjadi biang kabut asap (ISPU/AQI buruk).
+                                    Suhu tanah panas sedang di atas batas normal. Berpotensi berasal dari bara di lapisan tanah gambut (*smoldering*) atau sisa pembakaran yang memicu kabut asap pekat.
                                 </p>
                             </div>
 
-                            {/* Box 3: Panas Berlebih */}
-                            <div className="p-4 rounded-xl border border-amber-200 bg-amber-50/50 space-y-2">
+                            {/* Box 3: Potensi Rendah */}
+                            <div className="p-4 rounded-xl border border-emerald-200 bg-emerald-50/50 space-y-2">
                                 <div className="flex items-center gap-2">
-                                    <span className="text-xl">☀️</span>
+                                    <span className="w-3.5 h-3.5 rounded-full bg-[#15803D] shrink-0"></span>
                                     <div>
-                                        <h4 className="font-bold text-amber-900 text-sm">Panas Berlebih</h4>
-                                        <span className="text-[10px] text-amber-700 uppercase font-semibold">Thermal Anomaly</span>
+                                        <h4 className="font-bold text-emerald-900 text-sm">Potensi Kebakaran Rendah</h4>
+                                        <span className="text-[10px] text-emerald-800 uppercase font-semibold">Suhu &lt; 60&deg;C dan FRP &lt; 5 MW</span>
                                     </div>
                                 </div>
                                 <p className="text-xs text-[#262626]/80 leading-relaxed">
-                                    Suhu tanah di atas normal akibat terik matahari ekstrem pada lahan gersang, atap industri, atau vegetasi yang sangat kering. Berfungsi sebagai peringatan dini area rawan tersulut api.
+                                    Suhu permukaan hangat normal atau anomali termal rendah terkendali. Merupakan pantulan panas permukaan tanah/lahan kering alami dengan risiko kebakaran rendah.
                                 </p>
                             </div>
                         </div>

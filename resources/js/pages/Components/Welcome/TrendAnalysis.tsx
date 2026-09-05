@@ -223,7 +223,7 @@ export default function TrendAnalysis() {
                                     Periode {activePoint.data.week}
                                 </span>
                                 <span className="text-[10px] uppercase font-semibold px-2 py-0.5 rounded-full bg-white/10 text-white/90">
-                                    {hoveredIdx === 5 ? 'Puncak' : hoveredIdx >= 3 ? 'Eskalasi' : 'Awal Siklus'}
+                                    {hoveredIdx === 5 ? 'Puncak' : hoveredIdx !== null && hoveredIdx >= 3 ? 'Eskalasi' : 'Awal Siklus'}
                                 </span>
                             </div>
 

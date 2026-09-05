@@ -31,10 +31,10 @@ export const NASA_API_KEY: string =
     (import.meta.env.VITE_NASA_API_KEY as string | undefined) ??
     '';
 
-// Batas wilayah koordinat Pulau Kalimantan (Borneo)
+// Batas wilayah koordinat Pulau Kalimantan (Borneo) diperluas agar auto-pan popup tidak terpotong
 export const KALIMANTAN_BOUNDS: L.LatLngBoundsExpression = [
-    [-5.5, 107.0], // Barat Daya (Batas Selatan Kalsel / Laut Jawa / Selat Karimata)
-    [7.8, 121.0],  // Timur Laut (Batas Utara Kaltara-Sabah / Laut Sulu / Selat Makassar)
+    [-8.5, 104.0], // Barat Daya (ruang leluasa ke arah Laut Jawa & Selat Karimata)
+    [11.5, 124.0], // Timur Laut (ruang leluasa ke arah Laut Sulu & Laut Cina Selatan)
 ];
 
 /** Warna pembeda khas untuk setiap 5 provinsi di Kalimantan */
@@ -81,7 +81,7 @@ export const PROVINCE_COLORS: Record<
  * - Tinggi = Merah Pekat (#B91C1C)
  */
 export const CONFIDENCE_COLORS: Record<ConfidenceLevel, string> = {
-    high: '#B91C1C',    // Merah Pekat (Bahaya Karhutla Nyata)
+    high: '#B91C1C',    // Merah Pekat (Potensi Bahaya Karhutla Tinggi)
     nominal: '#E5A910', // Kuning Pekat (Waspada Asap & Bara Gambut)
     low: '#15803D',     // Hijau Tua (Rendah & Relatif Aman)
 };
@@ -92,27 +92,32 @@ export const CONFIDENCE_FILL_OPACITY: Record<ConfidenceLevel, number> = {
     low: 0.65,
 };
 
-/** Panduan Penjelasan Informatif untuk Orang Awam */
+/**
+ * Standar Minimum Suhu & Penjelasan Informatif Valid (Tanpa Overclaim):
+ * - Tinggi: Suhu >= 70°C atau FRP >= 12 MW
+ * - Sedang: Suhu 60°C - 69.9°C atau FRP 5.0 - 11.9 MW
+ * - Rendah: Suhu < 60°C dan FRP < 5.0 MW
+ */
 export const CONFIDENCE_DESCRIPTIONS: Record<
     ConfidenceLevel,
     { title: string; subtitle: string; desc: string; advice: string }
 > = {
     high: {
-        title: 'Tinggi (Merah Pekat)',
-        subtitle: 'Bahaya Karhutla Aktif',
-        desc: 'Kobaran api terbuka terdeteksi bersuhu tinggi & intensitas radiasi panas kuat. Sangat berisiko menghasilkan asap tebal beracun.',
-        advice: 'Tutup rapat pintu & jendela. Gunakan masker N95 jika terpaksa keluar, atau segera lakukan evakuasi jika dekat permukiman.',
+        title: 'Potensi Kebakaran Tinggi (Merah)',
+        subtitle: 'Anomali Panas Ekstrem (≥ 70°C / FRP ≥ 12 MW)',
+        desc: 'Suhu permukaan tanah terdeteksi ≥ 70°C atau radiasi panas FRP sangat kuat (≥ 12 MW). Mengindikasikan potensi kebakaran tajuk atau kobaran api nyata yang membahayakan.',
+        advice: 'Waspada tinggi jika berada di sekitar lokasi. Tutup ventilasi bila tercium asap, kenakan masker N95, dan segera laporkan ke posko.',
     },
     nominal: {
-        title: 'Sedang (Kuning Pekat)',
-        subtitle: 'Waspada Asap & Bara Gambut',
-        desc: 'Terdeteksi anomali panas sedang atau bara pembakaran bawah tanah (gambut). Berpotensi memicu kabut asap tipis hingga sedang.',
-        advice: 'Kelompok rentan (balita, ibu hamil, lansia, penderita asma) disarankan memakai masker dan membatasi aktivitas di luar.',
+        title: 'Potensi Kebakaran Sedang (Kuning)',
+        subtitle: 'Anomali Suhu Sedang (60°C – 69.9°C)',
+        desc: 'Suhu permukaan tanah 60°C – 69.9°C atau radiasi sedang (5.0 – 11.9 MW). Berpotensi merupakan bara di lapisan tanah gambut (smoldering) atau sisa pembersihan lahan.',
+        advice: 'Kondisi perlu dipantau. Warga rentan (lansia, anak-anak, penderita asma) disarankan bersiap masker jika mulai tercium asap.',
     },
     low: {
-        title: 'Rendah (Hijau Tua)',
-        subtitle: 'Kondisi Aman / Terkendali',
-        desc: 'Titik panas bersuhu rendah atau anomali termal ringan permukaan. Tidak terindikasi adanya kobaran api membahayakan.',
+        title: 'Potensi Kebakaran Rendah (Hijau)',
+        subtitle: 'Suhu Hangat / Terkendali (< 60°C)',
+        desc: 'Suhu permukaan tanah di bawah 60°C dengan radiasi minimal (< 5.0 MW). Merupakan anomali termal ringan atau panas permukaan normal dengan risiko kebakaran rendah.',
         advice: 'Udara dan lingkungan relatif aman. Aktivitas luar ruangan warga dapat dilakukan secara normal.',
     },
 };
@@ -128,36 +133,50 @@ function formatTime(acqTime: string): string {
 function buildPopupHtml(hotspot: WildfireHotspot): string {
     const info = CONFIDENCE_DESCRIPTIONS[hotspot.confidenceLevel];
     const color = CONFIDENCE_COLORS[hotspot.confidenceLevel];
+    const tempCelsius = (hotspot.brightness - 273.15).toFixed(1);
+    const tempKelvin = hotspot.brightness.toFixed(1);
 
     return `
-        <div style="font-family: 'Figtree', sans-serif; font-size: 12px; min-width: 240px; line-height: 1.4; color: #262626;">
-            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #EEEEEE; padding-bottom: 6px; margin-bottom: 8px;">
-                <div style="display: flex; align-items: center; gap: 5px; font-weight: 800; color: ${color}; font-size: 13px;">
-                    <span>🔥 Titik Api Terpantau</span>
+        <div style="font-family: 'Figtree', sans-serif; font-size: 11.5px; min-width: 250px; max-width: 285px; max-height: 380px; overflow-y: auto; line-height: 1.35; color: #262626; padding-right: 2px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #EEEEEE; padding-bottom: 5px; margin-bottom: 7px;">
+                <div style="display: flex; align-items: center; gap: 5px; font-weight: 800; color: ${color}; font-size: 12.5px;">
+                    <span>📍 Titik Anomali Termal</span>
                 </div>
-                <span style="font-size: 10px; font-weight: 800; background: ${color}20; color: ${color}; padding: 2px 6px; border-radius: 4px; border: 1px solid ${color}40;">
+                <span style="font-size: 9.5px; font-weight: 800; background: ${color}20; color: ${color}; padding: 2px 6px; border-radius: 4px; border: 1px solid ${color}40;">
                     ${info.title}
                 </span>
             </div>
 
-            <div style="background: #FAFAFA; border-radius: 6px; padding: 6px 8px; margin-bottom: 8px; border-left: 3px solid ${color}; font-size: 11px;">
-                <div style="font-weight: 700; color: #1F6F5F; margin-bottom: 2px;">${info.subtitle}</div>
-                <div style="color: #555; line-height: 1.3;">${info.desc}</div>
-                <div style="margin-top: 4px; font-weight: 600; color: ${color}; font-size: 10px;">💡 ${info.advice}</div>
+            <!-- Kartu Info Suhu Permukaan Pasti -->
+            <div style="background: ${color}12; border-radius: 8px; padding: 6px 9px; margin-bottom: 7px; border: 1px solid ${color}30; display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <div style="font-size: 9.5px; font-weight: 700; color: #555; text-transform: uppercase;">Suhu Permukaan:</div>
+                    <div style="font-size: 15px; font-weight: 800; color: ${color}; font-family: monospace;">
+                        ${tempCelsius}&deg;C <span style="font-size: 10.5px; font-weight: 600; color: #666;">(${tempKelvin} K)</span>
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 9.5px; font-weight: 700; color: #555; text-transform: uppercase;">Radiasi (FRP):</div>
+                    <div style="font-size: 13px; font-weight: 800; color: #d97706; font-family: monospace;">
+                        ${hotspot.frp > 0 ? hotspot.frp.toFixed(1) + ' MW' : '0.0 MW'}
+                    </div>
+                </div>
             </div>
 
-            <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+            <div style="background: #FAFAFA; border-radius: 6px; padding: 6px 8px; margin-bottom: 7px; border-left: 3px solid ${color}; font-size: 10.5px;">
+                <div style="font-weight: 700; color: #1F6F5F; margin-bottom: 2px;">${info.subtitle}</div>
+                <div style="color: #555; line-height: 1.3;">${info.desc}</div>
+                <div style="margin-top: 4px; font-weight: 600; color: ${color}; font-size: 9.5px;">💡 ${info.advice}</div>
+            </div>
+
+            <table style="width: 100%; border-collapse: collapse; font-size: 10.5px;">
                 <tr>
                     <td style="color: #666; padding: 2px 0;">Koordinat:</td>
-                    <td style="font-weight: 600; text-align: right; font-family: monospace;">${hotspot.latitude.toFixed(4)}°, ${hotspot.longitude.toFixed(4)}°</td>
+                    <td style="font-weight: 600; text-align: right; font-family: monospace;">${hotspot.latitude.toFixed(4)}&deg;, ${hotspot.longitude.toFixed(4)}&deg;</td>
                 </tr>
                 <tr>
                     <td style="color: #666; padding: 2px 0;">Provinsi:</td>
                     <td style="font-weight: 600; text-align: right; color: #1F6F5F;">${hotspot.province ?? 'Kalimantan'}</td>
-                </tr>
-                <tr>
-                    <td style="color: #666; padding: 2px 0;">Energi Radiasi (FRP):</td>
-                    <td style="font-weight: 700; text-align: right; color: #d97706;">${hotspot.frp > 0 ? hotspot.frp.toFixed(1) + ' MW' : '-'}</td>
                 </tr>
                 <tr>
                     <td style="color: #666; padding: 2px 0;">Waktu Satelit:</td>
@@ -165,9 +184,12 @@ function buildPopupHtml(hotspot: WildfireHotspot): string {
                 </tr>
                 <tr>
                     <td style="color: #666; padding: 2px 0;">Sensor Satelit:</td>
-                    <td style="font-weight: 600; text-align: right;">${hotspot.satellite} · ${hotspot.source.replace('_NRT', '')}</td>
+                    <td style="font-weight: 600; text-align: right;">${hotspot.satellite} &middot; ${hotspot.source.replace('_NRT', '')}</td>
                 </tr>
             </table>
+            <div style="margin-top: 5px; padding-top: 4px; border-top: 1px dashed #EEEEEE; font-size: 9px; color: #888; text-align: center;">
+                *Data bersumber dari radiasi termal satelit NASA (Brightness Temp °C), bukan kamera visual langsung.
+            </div>
         </div>
     `;
 }
@@ -262,7 +284,7 @@ export function Maps({
             minZoom: 5,
             maxZoom: 18,
             maxBounds: KALIMANTAN_BOUNDS,
-            maxBoundsViscosity: 1.0,
+            maxBoundsViscosity: 0.5, // Dilonggarkan agar auto-pan popup tidak terkunci batas kaku
             worldCopyJump: false,
             zoomControl: false,
             preferCanvas: true,
@@ -500,8 +522,27 @@ export function Maps({
             );
 
             marker.bindPopup(buildPopupHtml(hotspot), {
-                maxWidth: 290,
+                maxWidth: 295,
+                minWidth: 260,
                 className: 'wildfire-popup-custom',
+                autoPan: true,
+                autoPanPaddingTopLeft: L.point(40, 85),
+                autoPanPaddingBottomRight: L.point(40, 45),
+                keepInView: true,
+            });
+
+            // Solusi Bug Pop-up Terpotong di Bagian Atas:
+            // Jika marker diklik dan berada di zona atas kontainer peta (< 300px),
+            // geser peta ke bawah agar ruang render popup di atas marker mencukupi 100%
+            marker.on('click', (e) => {
+                const map = mapInstanceRef.current;
+                if (map) {
+                    const pt = map.latLngToContainerPoint(e.latlng);
+                    if (pt.y < 300) {
+                        const dy = pt.y - 320;
+                        map.panBy([0, dy], { animate: true, duration: 0.25 });
+                    }
+                }
             });
 
             layer.addLayer(marker);
@@ -710,15 +751,15 @@ export function Maps({
                 )}
             </div>
 
-            {/* Badge Counter Titik Api (Pojok Kanan Atas, z-[1000]) */}
-            <div className="absolute top-3 right-3 z-[1000] hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/95 shadow-md backdrop-blur-sm border border-[#EEEEEE] text-xs font-bold text-[#1F6F5F]">
-                <span className="w-2 h-2 rounded-full bg-[#B91C1C] animate-pulse"></span>
-                <span>
-                    {wildfireHotspots.length.toLocaleString('id-ID')} Titik Api Tampil
-                </span>
+            {/* Badge Counter Titik Pantauan (Pojok Kanan Atas, z-[1000]) */}
+            <div className="absolute top-3 right-3 z-[1000] flex items-center gap-1.5 sm:gap-2">
+                <div className="px-3 py-1.5 rounded-xl bg-white/95 text-[#1F6F5F] font-bold text-xs shadow-md border border-[#EEEEEE] flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-[#1F6F5F]"></span>
+                    {wildfireHotspots.length.toLocaleString('id-ID')} Titik Terpantau
+                </div>
             </div>
 
-            {/* Kontainer Peta Leaflet */}
+            {/* Canvas Peta Leaflet */}
             <div
                 ref={mapContainerRef}
                 className={cn(
@@ -752,10 +793,10 @@ export function Maps({
                     )}
                 </div>
 
-                {/* 1. Filter Situasi Api & Asap (Multi-Pilih) */}
+                {/* 1. Filter Situasi Anomali Suhu & Potensi Kebakaran (Multi-Pilih) */}
                 <div className="space-y-1.5">
                     <div className="flex items-center justify-between text-[10px] uppercase font-bold text-[#262626]/60">
-                        <span>Situasi Api (Multi-Pilih)</span>
+                        <span>Potensi Kebakaran (Multi-Pilih)</span>
                         <button
                             type="button"
                             onClick={() => setShowInfoGuide(!showInfoGuide)}
@@ -767,23 +808,26 @@ export function Maps({
 
                     {/* Expandable Panduan Orang Awam */}
                     {showInfoGuide && (
-                        <div className="p-2.5 rounded-xl bg-emerald-50/80 border border-emerald-200 text-[11px] text-[#1F6F5F] space-y-2 mb-2 animate-fadeIn">
+                        <div className="p-2.5 rounded-xl bg-emerald-50/90 border border-emerald-200 text-[11px] text-[#1F6F5F] space-y-2 mb-2 animate-fadeIn">
                             <div className="font-bold text-[11px] border-b border-emerald-200 pb-1">
-                                📖 Arti Warna Indikator untuk Warga:
+                                📖 Standar Minimum Suhu &amp; Potensi Kebakaran:
                             </div>
                             <div>
-                                <strong className="text-[#B91C1C]">🔴 Merah Pekat (Tinggi):</strong> Kobaran api terbuka suhu tinggi & radiasi kuat. Segera evakuasi atau kenakan masker N95, tutup pintu & ventilasi rumah.
+                                <strong className="text-[#B91C1C]">🔴 Potensi Tinggi (&ge; 70&deg;C / FRP &ge; 12 MW):</strong> Anomali panas ekstrem. Mengindikasikan potensi kebakaran tajuk atau kobaran api nyata terbuka. Waspadai bahaya api dan kenakan masker N95.
                             </div>
                             <div>
-                                <strong className="text-[#CA8A04]">🟡 Kuning Pekat (Sedang):</strong> Anomali panas sedang atau bara asap gambut. Kelompok rentan (anak, lansia, asma) disarankan memakai masker medis.
+                                <strong className="text-[#CA8A04]">🟡 Potensi Sedang (60&deg;C &ndash; 69.9&deg;C):</strong> Anomali panas sedang di atas tanah. Berpotensi merupakan bara di lapisan tanah gambut (*smoldering*) atau sisa pembakaran yang belum padam.
                             </div>
                             <div>
-                                <strong className="text-[#15803D]">🟢 Hijau Tua (Rendah):</strong> Titik panas bersuhu rendah atau pantulan panas normal. Udara relatif aman untuk beraktivitas luar.
+                                <strong className="text-[#15803D]">🟢 Potensi Rendah (&lt; 60&deg;C):</strong> Suhu anomali ringan atau permukaan hangat terkendali dengan radiasi minimal. Risiko kebakaran rendah.
+                            </div>
+                            <div className="text-[9.5px] text-[#262626]/70 italic pt-1 border-t border-emerald-200">
+                                *Sensor satelit mendeteksi radiasi termal &amp; suhu tanah (&deg;C), bukan pengamatan kamera visual langsung.
                             </div>
                         </div>
                     )}
 
-                    {/* Item 1: Tinggi (Merah Pekat) */}
+                    {/* Item 1: Potensi Tinggi (≥ 70°C / Merah Pekat) */}
                     {(() => {
                         const isActive = selectedConfidenceLevels.includes('high');
                         return (
@@ -796,13 +840,13 @@ export function Maps({
                                         ? 'bg-rose-50/70 border-rose-200 text-rose-950 font-bold shadow-2xs'
                                         : 'bg-[#FAFAFA] border-transparent text-[#262626]/40 opacity-50 line-through',
                                 )}
-                                title="Klik untuk menampilkan/menyembunyikan titik api Tinggi"
+                                title="Klik untuk menampilkan/menyembunyikan titik Potensi Kebakaran Tinggi (≥ 70°C)"
                             >
                                 <div className="flex items-center gap-2">
                                     <span className="w-3 h-3 rounded-full bg-[#B91C1C] shrink-0 shadow-xs flex items-center justify-center text-[8px] text-white">
                                         {isActive && '✓'}
                                     </span>
-                                    <span className="text-[11px]">Tinggi (Merah Pekat)</span>
+                                    <span className="text-[11px]">Tinggi (&ge; 70&deg;C)</span>
                                 </div>
                                 <span className="text-[10px] px-1.5 py-0.2 rounded font-mono bg-white border border-rose-200 text-[#B91C1C]">
                                     {countsByLevel.high}
@@ -811,7 +855,7 @@ export function Maps({
                         );
                     })()}
 
-                    {/* Item 2: Sedang (Kuning Pekat) */}
+                    {/* Item 2: Potensi Sedang (60 - 69°C / Kuning Pekat) */}
                     {(() => {
                         const isActive = selectedConfidenceLevels.includes('nominal');
                         return (
@@ -824,13 +868,13 @@ export function Maps({
                                         ? 'bg-yellow-50/70 border-yellow-200 text-yellow-950 font-bold shadow-2xs'
                                         : 'bg-[#FAFAFA] border-transparent text-[#262626]/40 opacity-50 line-through',
                                 )}
-                                title="Klik untuk menampilkan/menyembunyikan titik api Sedang"
+                                title="Klik untuk menampilkan/menyembunyikan titik Potensi Kebakaran Sedang (60 - 69.9°C)"
                             >
                                 <div className="flex items-center gap-2">
                                     <span className="w-3 h-3 rounded-full bg-[#E5A910] shrink-0 shadow-xs flex items-center justify-center text-[8px] text-white">
                                         {isActive && '✓'}
                                     </span>
-                                    <span className="text-[11px]">Sedang (Kuning Pekat)</span>
+                                    <span className="text-[11px]">Sedang (60&ndash;69&deg;C)</span>
                                 </div>
                                 <span className="text-[10px] px-1.5 py-0.2 rounded font-mono bg-white border border-yellow-200 text-[#854D0E]">
                                     {countsByLevel.nominal}
@@ -839,7 +883,7 @@ export function Maps({
                         );
                     })()}
 
-                    {/* Item 3: Rendah (Hijau Tua) */}
+                    {/* Item 3: Potensi Rendah (< 60°C / Hijau Tua) */}
                     {(() => {
                         const isActive = selectedConfidenceLevels.includes('low');
                         return (
@@ -852,13 +896,13 @@ export function Maps({
                                         ? 'bg-emerald-50/70 border-emerald-200 text-emerald-950 font-bold shadow-2xs'
                                         : 'bg-[#FAFAFA] border-transparent text-[#262626]/40 opacity-50 line-through',
                                 )}
-                                title="Klik untuk menampilkan/menyembunyikan titik api Rendah"
+                                title="Klik untuk menampilkan/menyembunyikan titik Potensi Kebakaran Rendah (< 60°C)"
                             >
                                 <div className="flex items-center gap-2">
                                     <span className="w-3 h-3 rounded-full bg-[#15803D] shrink-0 shadow-xs flex items-center justify-center text-[8px] text-white">
                                         {isActive && '✓'}
                                     </span>
-                                    <span className="text-[11px]">Rendah (Hijau Tua)</span>
+                                    <span className="text-[11px]">Rendah (&lt; 60&deg;C)</span>
                                 </div>
                                 <span className="text-[10px] px-1.5 py-0.2 rounded font-mono bg-white border border-emerald-200 text-[#15803D]">
                                     {countsByLevel.low}

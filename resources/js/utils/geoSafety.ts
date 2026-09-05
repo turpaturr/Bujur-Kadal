@@ -77,8 +77,8 @@ export function getCompassDirection(
 }
 
 /**
- * Menganalisis tingkat keamanan lingkungan kediaman warga berdasarkan
- * sebaran titik api aktif NASA FIRMS.
+ * Menghitung jarak (Haversine) dan status keselamatan pengguna terhadap
+ * sebaran titik anomali termal / potensi kebakaran satelit NASA FIRMS.
  */
 export function analyzeUserSafety(
     location: UserLocation | null,
@@ -147,7 +147,7 @@ export function analyzeUserSafety(
             hotspotsWithin25Km: within25,
             hotspotsWithin50Km: within50,
             nearestHotspot: nearest,
-            summaryText: `PERINGATAN DARURAT: Terdeteksi ${within10} titik api dalam radius sangat dekat (< 10 km) dari kediaman Anda!`,
+            summaryText: `PERINGATAN DARURAT: Terdeteksi ${within10} titik potensi kebakaran tinggi dalam radius sangat dekat (< 10 km) dari kediaman Anda!`,
             recommendation: 'Tutup seluruh ventilasi, nyalakan pembersih udara, gunakan masker N95/PM2.5 jika ke luar, dan bersiap evakuasi ke shelter aman bila asap pekat.',
         };
     }
@@ -165,7 +165,7 @@ export function analyzeUserSafety(
             hotspotsWithin25Km: within25,
             hotspotsWithin50Km: within50,
             nearestHotspot: nearest,
-            summaryText: `Terdeteksi ${within25} titik panas dalam radius 25 km dari rumah Anda. Titik api terdekat berjarak ${nearest?.distanceKm ?? '-'} km arah ${nearest?.direction ?? '-'}.`,
+            summaryText: `Terdeteksi ${within25} titik anomali suhu dalam radius 25 km dari rumah Anda. Titik terdekat berjarak ${nearest?.distanceKm ?? '-'} km arah ${nearest?.direction ?? '-'}.`,
             recommendation: 'Kualitas udara berpotensi menurun terbawa hembusan angin. Hindari aktivitas fisik berat di luar dan pantau arah pergerakan asap.',
         };
     }
@@ -182,7 +182,7 @@ export function analyzeUserSafety(
         hotspotsWithin25Km: 0,
         hotspotsWithin50Km: within50,
         nearestHotspot: nearest,
-        summaryText: `Kondisi sekitar kediaman Anda aman. Tidak terdeteksi titik api aktif dalam radius 25 km.${nearest ? ` Titik terdekat berjarak ${nearest.distanceKm} km arah ${nearest.direction}.` : ''}`,
+        summaryText: `Kondisi sekitar kediaman Anda aman. Tidak terdeteksi titik potensi kebakaran dalam radius 25 km.${nearest ? ` Titik terdekat berjarak ${nearest.distanceKm} km arah ${nearest.direction}.` : ''}`,
         recommendation: 'Ventilasi udara dapat dibuka normal. Pantau terus peta pantauan satelit secara berkala.',
     };
 }

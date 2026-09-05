@@ -21,18 +21,18 @@ export default function StatCards({
 
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Card 1: 🔥 Kebakaran Aktif */}
+            {/* Card 1: 🔴 Potensi Kebakaran Tinggi */}
             <div
                 onClick={() => onCategoryClick?.('active_fire')}
                 className="bg-white rounded-2xl border border-[#EEEEEE] p-5 shadow-xs hover:border-rose-300 hover:shadow-sm transition-all cursor-pointer group"
             >
                 <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-rose-700 uppercase tracking-wider flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
-                        Kebakaran Aktif
+                        <span className="w-2 h-2 rounded-full bg-[#B91C1C] animate-pulse"></span>
+                        Tinggi (&ge; 70&deg;C)
                     </span>
-                    <div className="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center text-sm group-hover:scale-110 transition-transform">
-                        🔥
+                    <div className="w-8 h-8 rounded-lg bg-rose-50 text-[#B91C1C] flex items-center justify-center text-sm group-hover:scale-110 transition-transform">
+                        🔴
                     </div>
                 </div>
 
@@ -41,92 +41,10 @@ export default function StatCards({
                         <div className="h-9 w-20 bg-[#EEEEEE] animate-pulse rounded-lg" />
                     ) : (
                         <div className="flex items-baseline gap-2">
-                            <span className="font-display text-3xl sm:text-4xl font-bold text-rose-600 tracking-tight">
+                            <span className="font-display text-3xl sm:text-4xl font-bold text-[#B91C1C] tracking-tight">
                                 {activeFires.toLocaleString('id-ID')}
                             </span>
                             <span className="text-xs font-semibold text-rose-700">
-                                Titik Nyata
-                            </span>
-                        </div>
-                    )}
-                </div>
-
-                <p className="text-[11px] text-[#262626]/70 mt-1.5 leading-snug">
-                    Kobaran api terbuka terkonfirmasi (Confidence ≥80% atau FRP tinggi).
-                </p>
-
-                <div className="mt-3 pt-3 border-t border-[#EEEEEE] flex items-center justify-between text-[11px] text-[#262626]/70">
-                    <span>Intensitas Puncak:</span>
-                    <strong className="text-rose-600 font-bold">{maxFrp} MW</strong>
-                </div>
-            </div>
-
-            {/* Card 2: 💨 Potensi Asap & Bara Gambut */}
-            <div
-                onClick={() => onCategoryClick?.('smoke_peat')}
-                className="bg-white rounded-2xl border border-[#EEEEEE] p-5 shadow-xs hover:border-orange-300 hover:shadow-sm transition-all cursor-pointer group"
-            >
-                <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-orange-700 uppercase tracking-wider flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-orange-500"></span>
-                        Asap & Lahan Gambut
-                    </span>
-                    <div className="w-8 h-8 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center text-sm group-hover:scale-110 transition-transform">
-                        💨
-                    </div>
-                </div>
-
-                <div className="mt-3">
-                    {isLoading ? (
-                        <div className="h-9 w-20 bg-[#EEEEEE] animate-pulse rounded-lg" />
-                    ) : (
-                        <div className="flex items-baseline gap-2">
-                            <span className="font-display text-3xl sm:text-4xl font-bold text-orange-600 tracking-tight">
-                                {smokePeat.toLocaleString('id-ID')}
-                            </span>
-                            <span className="text-xs font-semibold text-orange-700">
-                                Titik Bara
-                            </span>
-                        </div>
-                    )}
-                </div>
-
-                <p className="text-[11px] text-[#262626]/70 mt-1.5 leading-snug">
-                    Bara bawah tanah gambut & semak memicu kepulan kabut asap tebal.
-                </p>
-
-                <div className="mt-3 pt-3 border-t border-[#EEEEEE] flex items-center justify-between text-[11px] text-[#262626]/70">
-                    <span>Deteksi Malam (Smoldering):</span>
-                    <strong className="text-orange-700 font-bold">
-                        {stats?.byDayNight?.night ?? 0} titik
-                    </strong>
-                </div>
-            </div>
-
-            {/* Card 3: ☀️ Panas Berlebih (Anomali Termal) */}
-            <div
-                onClick={() => onCategoryClick?.('heat_anomaly')}
-                className="bg-white rounded-2xl border border-[#EEEEEE] p-5 shadow-xs hover:border-amber-300 hover:shadow-sm transition-all cursor-pointer group"
-            >
-                <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-amber-800 uppercase tracking-wider flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-amber-400"></span>
-                        Panas Berlebih
-                    </span>
-                    <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-sm group-hover:scale-110 transition-transform">
-                        ☀️
-                    </div>
-                </div>
-
-                <div className="mt-3">
-                    {isLoading ? (
-                        <div className="h-9 w-20 bg-[#EEEEEE] animate-pulse rounded-lg" />
-                    ) : (
-                        <div className="flex items-baseline gap-2">
-                            <span className="font-display text-3xl sm:text-4xl font-bold text-amber-600 tracking-tight">
-                                {heatAnomalies.toLocaleString('id-ID')}
-                            </span>
-                            <span className="text-xs font-semibold text-amber-800">
                                 Titik Anomali
                             </span>
                         </div>
@@ -134,12 +52,94 @@ export default function StatCards({
                 </div>
 
                 <p className="text-[11px] text-[#262626]/70 mt-1.5 leading-snug">
-                    Suhu tanah tinggi / vegetasi kering. Belum tentu ada kobaran api terbuka.
+                    Suhu permukaan &ge; 70&deg;C atau FRP &ge; 12 MW. Api berkobar &amp; potensi kebakaran tajuk.
                 </p>
 
                 <div className="mt-3 pt-3 border-t border-[#EEEEEE] flex items-center justify-between text-[11px] text-[#262626]/70">
-                    <span>Status Risiko:</span>
-                    <strong className="text-amber-800 font-semibold">Rawan Tersulut</strong>
+                    <span>Radiasi Puncak:</span>
+                    <strong className="text-[#B91C1C] font-bold">{maxFrp} MW</strong>
+                </div>
+            </div>
+
+            {/* Card 2: 🟡 Potensi Kebakaran Sedang */}
+            <div
+                onClick={() => onCategoryClick?.('smoke_peat')}
+                className="bg-white rounded-2xl border border-[#EEEEEE] p-5 shadow-xs hover:border-yellow-300 hover:shadow-sm transition-all cursor-pointer group"
+            >
+                <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-yellow-800 uppercase tracking-wider flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-[#E5A910]"></span>
+                        Sedang (60&ndash;69&deg;C)
+                    </span>
+                    <div className="w-8 h-8 rounded-lg bg-yellow-50 text-[#CA8A04] flex items-center justify-center text-sm group-hover:scale-110 transition-transform">
+                        🟡
+                    </div>
+                </div>
+
+                <div className="mt-3">
+                    {isLoading ? (
+                        <div className="h-9 w-20 bg-[#EEEEEE] animate-pulse rounded-lg" />
+                    ) : (
+                        <div className="flex items-baseline gap-2">
+                            <span className="font-display text-3xl sm:text-4xl font-bold text-[#CA8A04] tracking-tight">
+                                {smokePeat.toLocaleString('id-ID')}
+                            </span>
+                            <span className="text-xs font-semibold text-yellow-800">
+                                Titik Anomali
+                            </span>
+                        </div>
+                    )}
+                </div>
+
+                <p className="text-[11px] text-[#262626]/70 mt-1.5 leading-snug">
+                    Suhu 60&deg;C &ndash; 69.9&deg;C atau bara tanah gambut yang berpotensi memicu kabut asap.
+                </p>
+
+                <div className="mt-3 pt-3 border-t border-[#EEEEEE] flex items-center justify-between text-[11px] text-[#262626]/70">
+                    <span>Deteksi Malam:</span>
+                    <strong className="text-[#CA8A04] font-bold">
+                        {stats?.byDayNight?.night ?? 0} titik
+                    </strong>
+                </div>
+            </div>
+
+            {/* Card 3: 🟢 Potensi Kebakaran Rendah */}
+            <div
+                onClick={() => onCategoryClick?.('heat_anomaly')}
+                className="bg-white rounded-2xl border border-[#EEEEEE] p-5 shadow-xs hover:border-emerald-300 hover:shadow-sm transition-all cursor-pointer group"
+            >
+                <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-[#15803D]"></span>
+                        Rendah (&lt; 60&deg;C)
+                    </span>
+                    <div className="w-8 h-8 rounded-lg bg-emerald-50 text-[#15803D] flex items-center justify-center text-sm group-hover:scale-110 transition-transform">
+                        🟢
+                    </div>
+                </div>
+
+                <div className="mt-3">
+                    {isLoading ? (
+                        <div className="h-9 w-20 bg-[#EEEEEE] animate-pulse rounded-lg" />
+                    ) : (
+                        <div className="flex items-baseline gap-2">
+                            <span className="font-display text-3xl sm:text-4xl font-bold text-[#15803D] tracking-tight">
+                                {heatAnomalies.toLocaleString('id-ID')}
+                            </span>
+                            <span className="text-xs font-semibold text-emerald-800">
+                                Titik Normal
+                            </span>
+                        </div>
+                    )}
+                </div>
+
+                <p className="text-[11px] text-[#262626]/70 mt-1.5 leading-snug">
+                    Suhu &lt; 60&deg;C dan radiasi termal rendah. Anomali termal ringan &amp; situasi aman.
+                </p>
+
+                <div className="mt-3 pt-3 border-t border-[#EEEEEE] flex items-center justify-between text-[11px] text-[#262626]/70">
+                    <span>Kondisi Udara:</span>
+                    <strong className="text-[#15803D] font-bold">Aman / Terkendali</strong>
                 </div>
             </div>
 

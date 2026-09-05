@@ -29,65 +29,104 @@ export interface CategoryMetadata {
 export const HOTSPOT_CATEGORIES: Record<HotspotCategory, CategoryMetadata> = {
     active_fire: {
         key: 'active_fire',
-        title: 'Kebakaran Aktif',
-        subtitle: 'Api Terbuka (Flaming)',
+        title: 'Potensi Tinggi',
+        subtitle: 'Suhu Sangat Panas',
         description:
-            'Titik dengan suhu sangat tinggi dan keyakinan kuat bahwa api sedang berkobar aktif di permukaan.',
+            'Titik anomali termal bersuhu sangat tinggi dengan radiasi kuat, menandakan potensi tinggi terjadinya kebakaran lahan atau vegetasi kering.',
         icon: '🔥',
-        color: '#ef4444',
+        color: '#B91C1C',
         badgeBg: 'bg-rose-50',
         badgeText: 'text-rose-700',
         badgeBorder: 'border-rose-200',
     },
     smoke_peat: {
         key: 'smoke_peat',
-        title: 'Potensi Asap & Gambut',
-        subtitle: 'Bara Bawah Tanah (Smoldering)',
+        title: 'Potensi Sedang',
+        subtitle: 'Suhu Panas Sedang',
         description:
-            'Bara api di lapisan lahan gambut atau pembakaran semak yang terus berasap pekat dan berpotensi memicu kabut asap.',
-        icon: '💨',
-        color: '#f97316',
-        badgeBg: 'bg-orange-50',
-        badgeText: 'text-orange-700',
-        badgeBorder: 'border-orange-200',
+            'Titik anomali termal sedang atau bara bawah tanah gambut yang berpotensi menghasilkan asap jika terpapar angin.',
+        icon: '🟡',
+        color: '#E5A910',
+        badgeBg: 'bg-yellow-50',
+        badgeText: 'text-yellow-800',
+        badgeBorder: 'border-yellow-200',
     },
     heat_anomaly: {
         key: 'heat_anomaly',
-        title: 'Panas Berlebih',
-        subtitle: 'Anomali Termal Permukaan',
+        title: 'Potensi Rendah',
+        subtitle: 'Suhu Hangat / Terkendali',
         description:
-            'Suhu permukaan lahan di atas normal. Belum tentu ada kobaran api terbuka, namun sangat kering dan rawan tersulut.',
-        icon: '☀️',
-        color: '#eab308',
-        badgeBg: 'bg-amber-50',
-        badgeText: 'text-amber-800',
-        badgeBorder: 'border-amber-200',
+            'Anomali suhu termal ringan permukaan tanah. Potensi kebakaran tergolong rendah dan situasi lingkungan terkendali.',
+        icon: '🟢',
+        color: '#15803D',
+        badgeBg: 'bg-emerald-50',
+        badgeText: 'text-emerald-800',
+        badgeBorder: 'border-emerald-200',
     },
 };
 
 /**
- * Logika klasifikasi cerdas titik anomali termal ke 3 kategori
+ * Standar Ambang Batas Logis Suhu Permukaan & Radiasi Termal untuk Karhutla Tropis:
+ *
+ * 1. POTENSI TINGGI (Merah Pekat):
+ *    - VIIRS (375m): Suhu Permukaan >= 70.0°C ATAU FRP >= 12.0 MW
+ *    - MODIS (1000m): Suhu Permukaan >= 45.0°C ATAU FRP >= 15.0 MW
+ *    -> Panas ekstrem & kobaran api aktif.
+ *
+ * 2. POTENSI SEDANG (Kuning Pekat):
+ *    - VIIRS (375m): Suhu Permukaan 60.0°C - 69.9°C ATAU FRP 5.0 - 11.9 MW
+ *    - MODIS (1000m): Suhu Permukaan 36.0°C - 44.9°C ATAU FRP 6.0 - 14.9 MW
+ *    -> Anomali panas sedang / bara tanah gambut (smoldering).
+ *
+ * 3. POTENSI RENDAH (Hijau Tua):
+ *    - VIIRS (375m): Suhu Permukaan < 60.0°C DAN FRP < 5.0 MW
+ *    - MODIS (1000m): Suhu Permukaan < 36.0°C DAN FRP < 6.0 MW
+ *    -> Anomali termal ringan / suhu hangat normal terkendali.
  */
-export function classifyHotspot(
-    confidenceLevel: ConfidenceLevel,
+export function determineConfidenceLevel(
+    brightnessKelvin: number,
     frp: number,
-    daynight: 'D' | 'N',
-): HotspotCategory {
-    // 1. Kebakaran Aktif:
-    // Akurasi tinggi (>=80%) ATAU FRP masif (>= 12 MW)
-    if (confidenceLevel === 'high' || frp >= 12) {
-        return 'active_fire';
+    source: SensorSource = 'VIIRS_SNPP',
+): ConfidenceLevel {
+    const tempCelsius = brightnessKelvin > 0 ? brightnessKelvin - 273.15 : 0;
+    const isModis = source === 'MODIS_NRT';
+
+    if (isModis) {
+        if (tempCelsius >= 45 || frp >= 15) {
+            return 'high';
+        }
+        if (tempCelsius >= 36 || frp >= 6) {
+            return 'nominal';
+        }
+        return 'low';
     }
 
-    // 2. Potensi Asap & Lahan Gambut:
-    // Deteksi malam hari (khas bara gambut memancarkan radiasi saat malam) ATAU akurasi nominal dengan FRP sedang (>= 4 MW)
-    if (daynight === 'N' || (confidenceLevel === 'nominal' && frp >= 4)) {
-        return 'smoke_peat';
+    // VIIRS SNPP / NOAA-20
+    if (tempCelsius >= 70 || frp >= 12) {
+        return 'high';
     }
+    if (tempCelsius >= 60 || frp >= 5) {
+        return 'nominal';
+    }
+    return 'low';
+}
 
-    // 3. Panas Berlebih:
-    // Akurasi rendah atau FRP kecil pada siang hari (anomali termal / pantulan panas matahari)
-    return 'heat_anomaly';
+/**
+ * Pemetaan 1-ke-1 yang selaras penuh antara confidence level, kategori, dan warna:
+ * - 'high'    <==> 'active_fire'  <==> 🔴 Potensi Tinggi (Merah Pekat)
+ * - 'nominal' <==> 'smoke_peat'   <==> 🟡 Potensi Sedang (Kuning Pekat)
+ * - 'low'     <==> 'heat_anomaly' <==> 🟢 Potensi Rendah (Hijau Tua)
+ */
+export function classifyHotspot(confidenceLevel: ConfidenceLevel): HotspotCategory {
+    switch (confidenceLevel) {
+        case 'high':
+            return 'active_fire';
+        case 'nominal':
+            return 'smoke_peat';
+        case 'low':
+        default:
+            return 'heat_anomaly';
+    }
 }
 
 export interface WildfireHotspot {
@@ -312,21 +351,30 @@ function parseFirmsCsv(csv: string, source: SensorSource): WildfireHotspot[] {
         }
 
         const confidence = confIdx !== -1 ? cols[confIdx].trim() : 'n';
-        const brightness = brightIdx !== -1 ? parseFloat(cols[brightIdx]) : 0;
-        const frp = frpIdx !== -1 ? parseFloat(cols[frpIdx]) : 0;
+        const rawBrightness = brightIdx !== -1 ? parseFloat(cols[brightIdx]) : 0;
+        const rawTi5 = idx('bright_ti5') !== -1 ? parseFloat(cols[idx('bright_ti5')]) : 0;
+        let brightness = isNaN(rawBrightness) ? 0 : rawBrightness;
+        // Penjagaan nilai anomali awan dingin (< 273.15 K) di iklim khatulistiwa
+        if (brightness < 273.15) {
+            brightness = !isNaN(rawTi5) && rawTi5 >= 273.15 ? rawTi5 : 298.15;
+        }
+
+        const rawFrp = frpIdx !== -1 ? parseFloat(cols[frpIdx]) : 0;
+        const frp = isNaN(rawFrp) ? 0 : Math.max(0, rawFrp);
         const daynightRaw =
             daynightIdx !== -1 ? cols[daynightIdx]?.trim().toUpperCase() : 'D';
         const daynight: 'D' | 'N' = daynightRaw === 'N' ? 'N' : 'D';
 
-        const confidenceLevel = parseConfidenceLevel(confidence);
-        const category = classifyHotspot(confidenceLevel, frp, daynight);
+        // Tentukan tingkat potensi kebakaran berdasarkan standar minimum suhu & radiasi termal
+        const confidenceLevel = determineConfidenceLevel(brightness, frp, source);
+        const category = classifyHotspot(confidenceLevel);
 
         hotspots.push({
             id: `${source}-${i}-${lat.toFixed(4)}-${lon.toFixed(4)}`,
             latitude: lat,
             longitude: lon,
-            brightness: isNaN(brightness) ? 0 : brightness,
-            frp: isNaN(frp) ? 0 : Math.max(0, frp),
+            brightness,
+            frp,
             confidence,
             confidenceLevel,
             category,

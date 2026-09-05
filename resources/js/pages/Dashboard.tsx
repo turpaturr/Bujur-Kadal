@@ -285,7 +285,7 @@ export default function Dashboard() {
                                     Wildfire & Hotspot Tracker Kalimantan
                                 </h1>
                                 <p className="mt-1 text-xs sm:text-sm text-[#262626]/70 max-w-2xl">
-                                    Membedakan secara jelas antara <strong>Kebakaran Aktif</strong> (api terbuka), <strong>Potensi Asap & Bara Gambut</strong>, dan <strong>Panas Berlebih</strong> di 5 provinsi Pulau Borneo.
+                                    Memantau titik anomali suhu tertinggi tanah dan estimasi <strong>Potensi Kebakaran</strong> (Tinggi, Sedang, Rendah) di 5 provinsi Pulau Borneo secara objektif dan valid berbasis sensor satelit NASA.
                                 </p>
                             </div>
 
@@ -304,7 +304,7 @@ export default function Dashboard() {
                                         className={`w-3 h-3 rounded-full ${
                                             stats.hazeRiskLevel === 'Kritis' || stats.hazeRiskLevel === 'Tinggi'
                                                 ? 'bg-[#B91C1C] animate-ping'
-                                                : stats.hazeRiskLevel === 'Sedang'
+                                                : stats.hazeRiskLevel === 'Waspada'
                                                   ? 'bg-[#E5A910]'
                                                   : 'bg-[#15803D]'
                                         }`}
@@ -379,7 +379,7 @@ export default function Dashboard() {
                                         ? `Fokus: Kediaman Anda (${userLocation?.name ?? 'Warga'}) & Radius Pantauan 25 km`
                                         : selectedProvinces.length > 0
                                           ? `Filter Wilayah: ${selectedProvinces.join(', ')}`
-                                          : 'Cakupan: Seluruh Pulau Kalimantan'} · Klik tanda titik untuk melihat detail suhu dan jenis kebakaran.
+                                          : 'Cakupan: Seluruh Pulau Kalimantan'} · Klik tanda titik untuk melihat suhu pasti (°C) dan tingkat potensi kebakaran.
                                 </p>
                             </div>
 
@@ -423,10 +423,10 @@ export default function Dashboard() {
                                         <span>Filter Aktif:</span>
                                         <span>
                                             {activeCategoryFilter === 'active_fire'
-                                                ? '🔥 Kebakaran Aktif'
+                                                ? '🔴 Potensi Tinggi'
                                                 : activeCategoryFilter === 'smoke_peat'
-                                                  ? '💨 Asap & Gambut'
-                                                  : '☀️ Panas Berlebih'}
+                                                  ? '🟡 Potensi Sedang'
+                                                  : '🟢 Potensi Rendah'}
                                         </span>
                                         <button
                                             type="button"
@@ -440,7 +440,7 @@ export default function Dashboard() {
 
                                 {selectedHotspot && (
                                     <div className="flex items-center gap-2 px-3 py-1 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800">
-                                        <span>Titik Terpilih: <strong>{selectedHotspot.frp.toFixed(1)} MW</strong></span>
+                                        <span>Titik Terpilih: <strong>{((selectedHotspot.brightness || 0) - 273.15).toFixed(1)}°C</strong> · {selectedHotspot.frp.toFixed(1)} MW</span>
                                         <button
                                             type="button"
                                             onClick={() => setSelectedHotspot(null)}
