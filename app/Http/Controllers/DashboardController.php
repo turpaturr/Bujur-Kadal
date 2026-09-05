@@ -21,7 +21,7 @@ class DashboardController extends Controller
         if ($user && $user->family_id) {
             $familyMembers = User::with('healthProfile')
                 ->where('family_id', $user->family_id)
-                ->orderByRaw("FIELD(role, 'kepala_keluarga', 'anggota')")
+                ->orderByRaw("CASE WHEN role = 'kepala_keluarga' THEN 1 WHEN role = 'anggota' THEN 2 ELSE 3 END")
                 ->orderBy('created_at', 'asc')
                 ->get()
                 ->map(function ($member) {

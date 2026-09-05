@@ -18,7 +18,18 @@ import {
     type WildfireHotspot,
 } from '@/hooks/useWildfireData';
 
-export default function DashboardAdmin() {
+interface AdminStats {
+    totalUsers: number;
+    totalFamilies: number;
+    activeSosCount: number;
+    safeZonesCount: number;
+}
+
+interface DashboardAdminProps {
+    adminStats?: AdminStats;
+}
+
+export default function DashboardAdmin({ adminStats }: DashboardAdminProps) {
     const [selectedProvince, setSelectedProvince] = useState<string | null>(
         null,
     );

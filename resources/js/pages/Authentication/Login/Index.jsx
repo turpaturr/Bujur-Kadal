@@ -35,13 +35,32 @@ export default function LoginIndex() {
                     <div className="lg:col-span-7 p-6 sm:p-10 lg:p-12 flex flex-col justify-between bg-white order-2 lg:order-1">
                         <div>
                             {/* Heading */}
-                            <div className="text-center mb-8">
+                            <div className="text-center mb-6">
                                 <h1 className="font-display text-2xl sm:text-3xl font-bold text-primary-dark tracking-tight">
                                     Sign in to BorneoCare
                                 </h1>
                                 <p className="mt-1.5 text-xs text-neutral-500 font-sans">
                                     Akses Cepat Tanggap Darurat & Mitigasi Kabut Asap
                                 </p>
+                            </div>
+
+                            {/* Role Switcher Toggle */}
+                            <div className="mb-6 p-1 bg-surface rounded-2xl flex items-center gap-1 border border-surface">
+                                <div className="flex-1 py-2 text-center text-xs font-bold rounded-xl bg-white text-primary-dark shadow-xs flex items-center justify-center gap-1.5 cursor-default">
+                                    <svg className="w-3.5 h-3.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                    <span>Warga (NIK & PIN)</span>
+                                </div>
+                                <Link
+                                    href="/admin/login"
+                                    className="flex-1 py-2 text-center text-xs font-medium rounded-xl text-neutral-500 hover:text-primary-dark hover:bg-white/60 transition-all flex items-center justify-center gap-1.5"
+                                >
+                                    <svg className="w-3.5 h-3.5 text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                    </svg>
+                                    <span>Admin / Satgas</span>
+                                </Link>
                             </div>
 
                             {/* Emergency Notice Pill */}
@@ -220,12 +239,20 @@ export default function LoginIndex() {
                                 </div>
                             </form>
 
-                            {/* Hotline Darurat Footer */}
-                            <div className="mt-8 pt-4 border-t border-surface flex items-center justify-center space-x-3 text-[11px] text-neutral-400">
-                                <span>Panggilan Darurat:</span>
-                                <a href="tel:112" className="font-bold text-primary-dark hover:underline">112 (Siaga)</a>
-                                <span>&bull;</span>
-                                <a href="tel:113" className="font-bold text-primary hover:underline">113 (Damkar)</a>
+                            {/* Hotline Darurat & Admin Link Footer */}
+                            <div className="mt-8 pt-4 border-t border-surface flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-neutral-400">
+                                <Link
+                                    href="/admin/login"
+                                    className="font-semibold text-primary-dark hover:text-primary transition-colors flex items-center gap-1"
+                                >
+                                    <span>Masuk sebagai Administrator →</span>
+                                </Link>
+                                <div className="flex items-center space-x-2">
+                                    <span>Darurat:</span>
+                                    <a href="tel:112" className="font-bold text-primary-dark hover:underline">112 (Siaga)</a>
+                                    <span>&bull;</span>
+                                    <a href="tel:113" className="font-bold text-primary hover:underline">113 (Damkar)</a>
+                                </div>
                             </div>
                         </div>
                     </div>

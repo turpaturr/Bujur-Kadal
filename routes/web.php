@@ -4,15 +4,14 @@ use App\Http\Controllers\Auth\AdminLoginController;
 use App\Http\Controllers\Auth\AdminRegisterController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\DashboardAdminController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FamilyMemberController;
 use App\Http\Controllers\WildfireController;
 use Illuminate\Support\Facades\Route;
 
-// 1. Landing Page (Welcome)
 Route::inertia('/', 'Welcome')->name('home');
 
-// 2. Guest Authentication Flow - Warga (Login & Register via NIK & PIN)
 Route::middleware('guest')->group(function () {
     Route::get('/register', [RegisterController::class, 'create'])->name('register');
     Route::post('/register/step-1', [RegisterController::class, 'validateStep1'])->name('register.step1');
@@ -22,7 +21,6 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [LoginController::class, 'store'])->name('login.store');
 });
 
-// 3. Administrator Authentication Flow (Login & Register via Email & Password)
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware('guest')->group(function () {
         Route::get('/login', [AdminLoginController::class, 'create'])->name('login');
@@ -32,7 +30,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
     });
 
     Route::middleware(['auth', 'admin'])->group(function () {
-        Route::inertia('/dashboard', 'Admin/Dashboard')->name('dashboard');
+        Route::get('/dashboard', [DashboardAdminController::class, 'index'])->name('dashboard');
         Route::post('/logout', [AdminLoginController::class, 'destroy'])->name('logout');
     });
 });
@@ -41,7 +39,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 
-    // Family Member Management (Kepala Keluarga)
     Route::post('/family/members', [FamilyMemberController::class, 'store'])->name('family.members.store');
     Route::delete('/family/members/{member}', [FamilyMemberController::class, 'destroy'])->name('family.members.destroy');
 

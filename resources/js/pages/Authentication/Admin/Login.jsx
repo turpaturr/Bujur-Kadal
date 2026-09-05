@@ -55,6 +55,25 @@ export default function AdminLogin() {
                                 </p>
                             </div>
 
+                            {/* Role Switcher Toggle */}
+                            <div className="mb-5 p-1 bg-surface rounded-2xl flex items-center gap-1 border border-surface">
+                                <Link
+                                    href="/login"
+                                    className="flex-1 py-2 text-center text-xs font-medium rounded-xl text-neutral-500 hover:text-primary-dark hover:bg-white/60 transition-all flex items-center justify-center gap-1.5"
+                                >
+                                    <svg className="w-3.5 h-3.5 text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                    <span>Warga (NIK & PIN)</span>
+                                </Link>
+                                <div className="flex-1 py-2 text-center text-xs font-bold rounded-xl bg-white text-primary-dark shadow-xs flex items-center justify-center gap-1.5 cursor-default">
+                                    <svg className="w-3.5 h-3.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                    </svg>
+                                    <span>Admin / Satgas</span>
+                                </div>
+                            </div>
+
                             {/* Demo Seeder Box */}
                             <div className="mb-5 p-3.5 rounded-2xl bg-[#F0FAF7] border border-accent/40 text-xs">
                                 <div className="flex items-center justify-between mb-2">

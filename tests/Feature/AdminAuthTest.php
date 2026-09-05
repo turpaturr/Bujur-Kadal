@@ -131,7 +131,7 @@ test('admin dashboard can be rendered for authenticated admin', function () {
     $response = $this->actingAs($admin)->get(route('admin.dashboard'));
 
     $response->assertOk()
-        ->assertInertia(fn ($page) => $page->component('Admin/Dashboard'));
+        ->assertInertia(fn ($page) => $page->component('DashboardAdmin'));
 });
 
 test('non-admin user is blocked by admin middleware from admin routes', function () {
