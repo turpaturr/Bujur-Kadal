@@ -243,8 +243,8 @@ export function createClinicMarker(
     const hospitalIcon = L.divIcon({
         className: 'custom-clinic-hospital-marker',
         html: `
-            <div style="position: relative; width: 18px; height: 18px; background: #ffffff; border: 1.5px solid #059669; border-radius: 4px; box-shadow: 0 1.5px 4px rgba(0,0,0,0.25); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.15s ease;" title="${clinic.name.replace(/"/g, '&quot;')}">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="#059669" xmlns="http://www.w3.org/2000/svg">
+            <div style="position: relative; width: 18px; height: 18px; background: #ffffff; border: 1.5px solid #0284C7; border-radius: 4px; box-shadow: 0 1.5px 4px rgba(2, 132, 199, 0.3); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.15s ease;" title="${clinic.name.replace(/"/g, '&quot;')}">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="#0284C7" xmlns="http://www.w3.org/2000/svg">
                     <path d="M8.5 2h7v6.5H22v7h-6.5V22h-7v-6.5H2v-7h6.5V2z"/>
                 </svg>
             </div>
@@ -276,18 +276,18 @@ export function createClinicMarker(
     if (hasOrigin) {
         const distKm = calculateDistanceKm(origin!.lat, origin!.lng, clinic.lat, clinic.lng);
         const distFormatted = distKm < 1 ? `${Math.round(distKm * 1000)} m` : `${distKm.toFixed(1)} km`;
-        distanceBadge = `<span style="font-size: 10px; font-weight: 700; color: #047857; background: #ecfdf5; padding: 1.5px 6px; border-radius: 6px; border: 1px solid #a7f3d0; white-space: nowrap;">± ${distFormatted} dari Rumah</span>`;
+        distanceBadge = `<span style="font-size: 10px; font-weight: 700; color: #0369A1; background: #f0f9ff; padding: 1.5px 6px; border-radius: 6px; border: 1px solid #bae6fd; white-space: nowrap;">± ${distFormatted} dari Rumah</span>`;
         distanceTooltip = ` (${distFormatted} dari Rumah)`;
     }
 
     const popupHtml = `
         <div style="font-family: 'Figtree', sans-serif; min-width: 235px; padding: 2px;">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; gap: 4px;">
-                <span style="background: #ecfdf5; color: #047857; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 9999px; text-transform: uppercase; border: 1px solid #a7f3d0; display: inline-flex; align-items: center; gap: 3px; white-space: nowrap;">
-                    <svg width="9" height="9" viewBox="0 0 24 24" fill="#047857"><path d="M8.5 2h7v6.5H22v7h-6.5V22h-7v-6.5H2v-7h6.5V2z"/></svg>
+                <span style="background: #f0f9ff; color: #0369A1; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 9999px; text-transform: uppercase; border: 1px solid #bae6fd; display: inline-flex; align-items: center; gap: 3px; white-space: nowrap;">
+                    <svg width="9" height="9" viewBox="0 0 24 24" fill="#0284C7"><path d="M8.5 2h7v6.5H22v7h-6.5V22h-7v-6.5H2v-7h6.5V2z"/></svg>
                     Faskes / RS
                 </span>
-                ${distanceBadge ? distanceBadge : '<span style="font-size: 10px; font-weight: 600; color: #059669;">Buka / Siaga</span>'}
+                ${distanceBadge ? distanceBadge : '<span style="font-size: 10px; font-weight: 600; color: #0284C7;">Buka / Siaga</span>'}
             </div>
             <h4 style="font-weight: 700; font-size: 13px; color: #1F6F5F; margin: 0 0 4px 0; line-height: 1.3;">
                 ${clinic.name}
@@ -295,40 +295,48 @@ export function createClinicMarker(
             ${clinic.addr ? `<p style="font-size: 11px; color: #4b5563; margin: 0 0 6px 0; line-height: 1.3;">${clinic.addr}</p>` : ''}
             ${clinic.phone ? `<p style="font-size: 10.5px; color: #1F6F5F; font-weight: 600; margin: 0 0 6px 0;">Telp: ${clinic.phone}</p>` : ''}
             <div style="margin-top: 6px; padding-top: 6px; border-top: 1px solid #e5e7eb; font-size: 10px; color: #374151;">
-                <div style="color: #047857; font-weight: 600; margin-bottom: 2px;">
+                <div style="color: #0369A1; font-weight: 600; margin-bottom: 2px;">
                     • Siaga Oksigen &amp; Nebulizer ISPA
                 </div>
                 <div style="color: #6b7280;">
-                    Pelayanan pertolongan gangguan pernapasan asap
+                    Pelayanan pertolongan pertama gangguan pernafasan akibat kabut asap karhutla.
                 </div>
             </div>
-            <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 5px;">
-                ${onBookCheckup ? `
-                    <button id="btn-book-${clinic.id}" type="button" style="display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; background: #047857; color: #ffffff; border: none; font-size: 11px; font-weight: 700; padding: 7px 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(4,120,87,0.25); cursor: pointer; transition: background 0.15s ease;">
-                        <span>📅 Buat Jadwal Medical Checkup</span>
+            <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 6px;">
+                <button
+                    id="btn-route-${clinic.id}"
+                    type="button"
+                    style="display: flex; align-items: center; justify-content: center; gap: 6px; background: #2563EB; color: #ffffff; padding: 7px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; text-decoration: none; border: none; cursor: pointer; transition: background 0.15s ease;"
+                >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="3 11 22 2 13 21 11 13 3 11"/>
+                    </svg>
+                    Navigasi Rute Langsung di Peta
+                </button>
+                <div style="display: flex; gap: 6px;">
+                    <a
+                        href="${mapsUrl}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 4px; background: #f3f4f6; color: #374151; padding: 6px 8px; border-radius: 8px; font-size: 10.5px; font-weight: 600; text-decoration: none; border: 1px solid #d1d5db;"
+                    >
+                        Google Maps ↗
+                    </a>
+                    <button
+                        id="btn-book-${clinic.id}"
+                        type="button"
+                        style="flex: 1.3; display: flex; align-items: center; justify-content: center; gap: 4px; background: #0284C7; color: #ffffff; padding: 6px 8px; border-radius: 8px; font-size: 10.5px; font-weight: 700; border: none; cursor: pointer;"
+                    >
+                        Buat Reservasi
                     </button>
-                ` : ''}
-                ${onSelectRoute ? `
-                    <button id="btn-route-${clinic.id}" type="button" style="display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; background: #1F6F5F; color: #ffffff; border: none; font-size: 11px; font-weight: 700; padding: 7px 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(31,111,95,0.25); cursor: pointer;">
-                        <span>🚗 Pandu Rute di Peta Ini</span>
-                        <span>&rarr;</span>
-                    </button>
-                ` : ''}
-                <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" style="display: block; text-align: center; color: #047857; text-decoration: none; font-size: 10px; font-weight: 600; padding: 4px 6px; border-radius: 6px; background: #ecfdf5; border: 1px solid #a7f3d0;">
-                    Buka di Google Maps App &nearr;
-                </a>
+                </div>
             </div>
         </div>
     `;
 
     marker.bindPopup(popupHtml, {
-        maxWidth: 280,
-        minWidth: 235,
+        maxWidth: 290,
         className: 'clinic-popup-custom',
-        autoPan: true,
-        autoPanPaddingTopLeft: L.point(40, 85),
-        autoPanPaddingBottomRight: L.point(40, 45),
-        keepInView: true,
     });
 
     marker.on('popupopen', () => {
@@ -355,9 +363,9 @@ export function createClinicMarker(
     });
 
     marker.bindTooltip(
-        `<div style="font-family: 'Figtree', sans-serif; font-size: 11px; font-weight: 700; color: #065F46;">
+        `<div style="font-family: 'Figtree', sans-serif; font-size: 11px; font-weight: 700; color: #0369A1;">
             🏥 ${clinic.name}${distanceTooltip}
-            <div style="font-size: 9.5px; font-weight: 500; color: #059669; margin-top: 1px;">Siaga Oksigen & Faskes ISPA</div>
+            <div style="font-size: 9.5px; font-weight: 500; color: #0284C7; margin-top: 1px;">Siaga Oksigen &amp; Faskes ISPA</div>
         </div>`,
         {
             direction: 'top',

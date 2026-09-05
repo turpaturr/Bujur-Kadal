@@ -358,8 +358,8 @@ export function MapLegend({
             <div className="mt-2.5 pt-2 border-t border-[#EEEEEE]">
                 <div className="flex items-center justify-between text-[10px] uppercase font-bold text-[#1F6F5F] tracking-wider mb-1">
                     <span className="flex items-center gap-1.5">
-                        <div className="w-3.5 h-3.5 rounded bg-white border border-emerald-600 shadow-2xs flex items-center justify-center shrink-0">
-                            <svg width="8" height="8" viewBox="0 0 24 24" fill="#059669">
+                        <div className="w-3.5 h-3.5 rounded bg-white border border-sky-500 shadow-2xs flex items-center justify-center shrink-0">
+                            <svg width="8" height="8" viewBox="0 0 24 24" fill="#0284C7">
                                 <path d="M8.5 2h7v6.5H22v7h-6.5V22h-7v-6.5H2v-7h6.5V2z" />
                             </svg>
                         </div>
@@ -369,7 +369,7 @@ export function MapLegend({
                         <button
                             type="button"
                             onClick={onToggleClinics}
-                            className="text-[10px] text-emerald-700 font-bold hover:underline cursor-pointer"
+                            className="text-[10px] text-sky-700 font-bold hover:underline cursor-pointer"
                         >
                             {showClinics ? 'Sembunyikan' : 'Tampilkan'}
                         </button>
