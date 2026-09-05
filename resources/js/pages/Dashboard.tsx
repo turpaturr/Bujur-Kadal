@@ -32,6 +32,9 @@ export default function Dashboard() {
 
     const wildfire = useWildfireData({ enabledSensors, dayRange: 1 });
     const { stats, hotspots, isLoading, lastUpdated, refresh } = wildfire;
+    const visibleHotspots = activeCategoryFilter === 'all'
+        ? hotspots
+        : hotspots.filter((hotspot) => hotspot.category === activeCategoryFilter);
 
     const handleSelectProvince = (province: ProvinceItem | null) => {
         setSelectedHotspot(null);
@@ -225,10 +228,8 @@ export default function Dashboard() {
                             center={mapCenter}
                             zoom={mapZoom}
                             className="h-[500px] sm:h-[560px] w-full"
-                            wildfireHotspots={hotspots}
+                            wildfireHotspots={visibleHotspots}
                             selectedHotspot={selectedHotspot}
-                            activeCategoryFilter={activeCategoryFilter}
-                            onCategoryFilterChange={setActiveCategoryFilter}
                         />
                     </section>
 
