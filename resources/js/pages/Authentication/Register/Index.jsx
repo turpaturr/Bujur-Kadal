@@ -100,16 +100,16 @@ export default function RegisterIndex() {
 
             {/* Canvas Latar Belakang Putih Bersih */}
             <div className="min-h-screen bg-white flex items-center justify-center p-4 sm:p-6 lg:p-10 relative overflow-hidden font-sans">
-                {/* Ambient Decorative Shapes bernuansa palet 6FCF97 dan EEEEEE */}
-                <div className="absolute -bottom-20 -left-20 w-64 h-64 rounded-full bg-[#6FCF97]/15 blur-2xl pointer-events-none"></div>
-                <div className="absolute -top-20 -right-20 w-72 h-72 rounded-3xl bg-[#EEEEEE] rotate-45 pointer-events-none"></div>
-                <div className="absolute top-1/4 -left-12 w-32 h-32 rounded-full bg-[#2FA084]/10 blur-xl pointer-events-none"></div>
+                {/* Ambient Decorative Shapes bernuansa palet Accent dan Surface */}
+                <div className="absolute -bottom-20 -left-20 w-64 h-64 rounded-full bg-accent/15 blur-2xl pointer-events-none"></div>
+                <div className="absolute -top-20 -right-20 w-72 h-72 rounded-3xl bg-surface rotate-45 pointer-events-none"></div>
+                <div className="absolute top-1/4 -left-12 w-32 h-32 rounded-full bg-primary/10 blur-xl pointer-events-none"></div>
 
                 {/* Main Split Card Container */}
-                <div className="relative z-10 w-full max-w-5xl bg-white rounded-[32px] shadow-[0_20px_50px_rgba(31,111,95,0.12)] overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[620px] border border-[#EEEEEE]">
+                <div className="relative z-10 w-full max-w-5xl bg-white rounded-[32px] shadow-[0_20px_50px_rgba(31,111,95,0.12)] overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[620px] border border-surface">
                     
-                    {/* LEFT PANEL: Gradient Banner (Palette: 2FA084 -> 1F6F5F) */}
-                    <div className="lg:col-span-5 bg-gradient-to-br from-[#2FA084] via-[#1F6F5F] to-[#175246] text-white p-8 sm:p-10 flex flex-col justify-between relative overflow-hidden">
+                    {/* LEFT PANEL: Gradient Banner (Primary -> Primary Dark) */}
+                    <div className="lg:col-span-5 bg-gradient-to-br from-primary via-primary-dark to-[#175246] text-white p-8 sm:p-10 flex flex-col justify-between relative overflow-hidden">
                         {/* Decorative subtle patterns */}
                         <div className="absolute -top-12 -right-12 w-44 h-44 bg-white/10 rounded-3xl rotate-12 pointer-events-none"></div>
                         <div className="absolute bottom-8 -left-8 w-36 h-36 bg-white/10 rounded-2xl -rotate-12 pointer-events-none"></div>
@@ -122,22 +122,22 @@ export default function RegisterIndex() {
                                 </svg>
                             </div>
                             <div>
-                                <span className="text-xl font-bold tracking-tight text-white">Borneo<span className="text-[#6FCF97]">Care</span></span>
-                                <span className="block text-[10px] uppercase tracking-widest text-[#6FCF97] font-medium">Health Mitigation</span>
+                                <span className="font-display text-xl font-bold tracking-tight text-white">Borneo<span className="text-accent">Care</span></span>
+                                <span className="block text-[10px] uppercase tracking-widest text-accent font-medium font-sans">Health Mitigation</span>
                             </div>
                         </div>
 
                         {/* Centered Welcome Back Section */}
                         <div className="relative z-10 py-10 lg:py-0 text-center my-auto">
-                            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-3 leading-tight">
+                            <h2 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-white mb-3 leading-tight">
                                 Welcome Back!
                             </h2>
-                            <p className="text-[#EEEEEE] text-xs sm:text-sm leading-relaxed max-w-xs mx-auto mb-8 font-normal">
+                            <p className="text-surface text-xs sm:text-sm leading-relaxed max-w-xs mx-auto mb-8 font-normal font-sans">
                                 Sudah terdaftar dalam sistem evakuasi BorneoCare? Masuk langsung menggunakan NIK dan PIN 6-digit Anda.
                             </p>
                             <Link
                                 href="/login"
-                                className="inline-block px-10 py-3 rounded-full border-2 border-white text-white font-bold text-xs sm:text-sm tracking-wider uppercase hover:bg-white hover:text-[#1F6F5F] transition-all shadow-md hover:shadow-xl active:scale-95"
+                                className="inline-block px-10 py-3 rounded-full border-2 border-white text-white font-bold text-xs sm:text-sm tracking-wider uppercase hover:bg-white hover:text-primary-dark transition-all shadow-md hover:shadow-xl active:scale-95"
                             >
                                 SIGN IN
                             </Link>
@@ -145,17 +145,17 @@ export default function RegisterIndex() {
 
                         {/* Step Progress Tracker on Side Banner */}
                         <div className="relative z-10 pt-6 border-t border-white/20">
-                            <div className="flex items-center justify-between text-xs text-white mb-2">
-                                <span className="font-semibold text-[#EEEEEE]">Langkah Registrasi</span>
-                                <span className="font-bold text-[#6FCF97]">{currentStep} / {STEPS.length}</span>
+                            <div className="flex items-center justify-between text-xs text-white mb-2 font-sans">
+                                <span className="font-semibold text-surface">Langkah Registrasi</span>
+                                <span className="font-bold text-accent">{currentStep} / {STEPS.length}</span>
                             </div>
                             <div className="w-full bg-black/20 rounded-full h-2 overflow-hidden">
                                 <div
-                                    className="bg-[#6FCF97] h-2 rounded-full transition-all duration-500 ease-out shadow-sm"
+                                    className="bg-accent h-2 rounded-full transition-all duration-500 ease-out shadow-sm"
                                     style={{ width: `${(currentStep / STEPS.length) * 100}%` }}
                                 ></div>
                             </div>
-                            <div className="mt-2 text-[11px] text-[#EEEEEE] font-medium">
+                            <div className="mt-2 text-[11px] text-surface font-medium font-sans">
                                 Tahap: {STEPS[currentStep - 1].title} ({STEPS[currentStep - 1].short})
                             </div>
                         </div>
@@ -166,10 +166,10 @@ export default function RegisterIndex() {
                         <div>
                             {/* Heading */}
                             <div className="text-center mb-6">
-                                <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1F6F5F] tracking-tight">
+                                <h1 className="font-display text-2xl sm:text-3xl font-bold text-primary-dark tracking-tight">
                                     Create Account
                                 </h1>
-                                <p className="mt-1 text-xs text-slate-400">
+                                <p className="mt-1 text-xs text-neutral-500 font-sans">
                                     Sistem Proteksi Warga & Jalur Evakuasi ISPA Karhutla
                                 </p>
 
@@ -183,10 +183,10 @@ export default function RegisterIndex() {
                                                 key={step.number}
                                                 className={`transition-all duration-300 rounded-full ${
                                                     isCurrent
-                                                        ? 'w-8 h-2.5 bg-[#2FA084]'
+                                                        ? 'w-8 h-2.5 bg-primary'
                                                         : isPast
-                                                        ? 'w-2.5 h-2.5 bg-[#6FCF97]'
-                                                        : 'w-2.5 h-2.5 bg-[#EEEEEE]'
+                                                        ? 'w-2.5 h-2.5 bg-accent'
+                                                        : 'w-2.5 h-2.5 bg-surface'
                                                 }`}
                                             ></div>
                                         );
@@ -196,7 +196,7 @@ export default function RegisterIndex() {
 
                             {/* Multi-step Child Form */}
                             <form onSubmit={handleSubmit}>
-                                <div className="transition-all duration-300">
+                                <div className="transition-all duration-300 font-sans">
                                     {currentStep === 1 && (
                                         <Step1Kependudukan
                                             data={data}
@@ -231,16 +231,16 @@ export default function RegisterIndex() {
                                     )}
                                 </div>
 
-                                {/* Navigation Actions (Pill Buttons sesuai tema 2FA084 / 1F6F5F) */}
-                                <div className="mt-8 pt-6 border-t border-[#EEEEEE] flex items-center justify-between">
+                                {/* Navigation Actions (Pill Buttons sesuai tema Primary / Primary Dark) */}
+                                <div className="mt-8 pt-6 border-t border-surface flex items-center justify-between font-sans">
                                     <button
                                         type="button"
                                         onClick={handlePrev}
                                         disabled={currentStep === 1}
                                         className={`inline-flex items-center px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${
                                             currentStep === 1
-                                                ? 'text-slate-300 cursor-not-allowed'
-                                                : 'text-[#1F6F5F] hover:bg-[#EEEEEE] active:scale-95'
+                                                ? 'text-neutral-300 cursor-not-allowed'
+                                                : 'text-primary-dark hover:bg-surface active:scale-95'
                                         }`}
                                     >
                                         <svg className="w-3.5 h-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -253,7 +253,7 @@ export default function RegisterIndex() {
                                         <button
                                             type="button"
                                             onClick={handleNext}
-                                            className="inline-flex items-center px-8 py-3 rounded-full text-xs font-bold uppercase tracking-wider text-white bg-[#2FA084] hover:bg-[#1F6F5F] active:scale-95 shadow-lg shadow-[#2FA084]/25 transition-all focus:outline-none"
+                                            className="inline-flex items-center px-8 py-3 rounded-full text-xs font-bold uppercase tracking-wider text-white bg-primary hover:bg-primary-dark active:scale-95 shadow-lg shadow-primary/25 transition-all focus:outline-none"
                                         >
                                             Next Step
                                             <svg className="w-3.5 h-3.5 ml-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -264,7 +264,7 @@ export default function RegisterIndex() {
                                         <button
                                             type="submit"
                                             disabled={processing}
-                                            className="inline-flex items-center px-8 py-3 rounded-full text-xs font-bold uppercase tracking-wider text-white bg-[#2FA084] hover:bg-[#1F6F5F] active:scale-95 shadow-lg shadow-[#2FA084]/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none"
+                                            className="inline-flex items-center px-8 py-3 rounded-full text-xs font-bold uppercase tracking-wider text-white bg-primary hover:bg-primary-dark active:scale-95 shadow-lg shadow-primary/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none"
                                         >
                                             {processing ? (
                                                 <>

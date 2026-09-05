@@ -23,35 +23,35 @@ export default function LoginIndex() {
 
             {/* Canvas Container Latar Belakang Putih Bersih */}
             <div className="min-h-screen bg-white flex items-center justify-center p-4 sm:p-6 lg:p-10 relative overflow-hidden font-sans">
-                {/* Ambient Decorative Shapes sesuai palet 6FCF97 dan EEEEEE */}
-                <div className="absolute -bottom-16 -left-16 w-56 h-56 rounded-full bg-[#6FCF97]/15 blur-2xl pointer-events-none"></div>
-                <div className="absolute -top-16 -right-16 w-64 h-64 rounded-3xl bg-[#EEEEEE] rotate-45 pointer-events-none"></div>
-                <div className="absolute top-1/2 -right-10 w-24 h-24 rounded-full bg-[#2FA084]/10 blur-xl pointer-events-none"></div>
+                {/* Ambient Decorative Shapes sesuai palet Accent dan Surface */}
+                <div className="absolute -bottom-16 -left-16 w-56 h-56 rounded-full bg-accent/15 blur-2xl pointer-events-none"></div>
+                <div className="absolute -top-16 -right-16 w-64 h-64 rounded-3xl bg-surface rotate-45 pointer-events-none"></div>
+                <div className="absolute top-1/2 -right-10 w-24 h-24 rounded-full bg-primary/10 blur-xl pointer-events-none"></div>
 
                 {/* Main Split Card */}
-                <div className="relative z-10 w-full max-w-4xl bg-white rounded-[32px] shadow-[0_20px_50px_rgba(31,111,95,0.12)] overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[560px] border border-[#EEEEEE]">
+                <div className="relative z-10 w-full max-w-4xl bg-white rounded-[32px] shadow-[0_20px_50px_rgba(31,111,95,0.12)] overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[560px] border border-surface">
                     
                     {/* LEFT PANEL: Form Area (Sign In Section) */}
                     <div className="lg:col-span-7 p-6 sm:p-10 lg:p-12 flex flex-col justify-between bg-white order-2 lg:order-1">
                         <div>
                             {/* Heading */}
                             <div className="text-center mb-8">
-                                <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1F6F5F] tracking-tight">
+                                <h1 className="font-display text-2xl sm:text-3xl font-bold text-primary-dark tracking-tight">
                                     Sign in to BorneoCare
                                 </h1>
-                                <p className="mt-1.5 text-xs text-slate-400">
+                                <p className="mt-1.5 text-xs text-neutral-500 font-sans">
                                     Akses Cepat Tanggap Darurat & Mitigasi Kabut Asap
                                 </p>
                             </div>
 
                             {/* Emergency Notice Pill */}
-                            <div className="mb-6 p-3 rounded-2xl bg-[#EEEEEE]/80 border border-[#EEEEEE] text-xs text-[#1F6F5F] flex items-center space-x-2.5">
-                                <div className="w-6 h-6 rounded-full bg-[#2FA084] text-white flex items-center justify-center shrink-0 shadow-xs">
+                            <div className="mb-6 p-3 rounded-2xl bg-surface/80 border border-surface text-xs text-primary-dark flex items-center space-x-2.5">
+                                <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center shrink-0 shadow-xs">
                                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
                                     </svg>
                                 </div>
-                                <span className="text-[11px] leading-tight font-medium">
+                                <span className="text-[11px] leading-tight font-medium font-sans">
                                     <strong>Akses Cepat:</strong> Masuk langsung dengan NIK KTP & PIN 6-digit tanpa password rumit.
                                 </span>
                             </div>
@@ -60,7 +60,7 @@ export default function LoginIndex() {
                                 {/* Input NIK */}
                                 <div>
                                     <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+                                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-neutral-400">
                                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
                                             </svg>
@@ -74,9 +74,9 @@ export default function LoginIndex() {
                                             value={data.nik}
                                             onChange={(e) => setData('nik', e.target.value.replace(/[^0-9]/g, ''))}
                                             placeholder="16 Digit NIK Anda"
-                                            className="w-full pl-11 pr-16 py-3.5 rounded-xl bg-[#EEEEEE] text-slate-800 placeholder-slate-400 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#2FA084] transition-all border border-transparent focus:border-[#2FA084] font-mono tracking-wide"
+                                            className="w-full pl-11 pr-16 py-3.5 rounded-xl bg-surface text-neutral-800 placeholder-neutral-400 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-all border border-transparent focus:border-primary font-mono tracking-wide"
                                         />
-                                        <span className="absolute inset-y-0 right-0 pr-4 flex items-center text-[10px] text-slate-400 font-mono">
+                                        <span className="absolute inset-y-0 right-0 pr-4 flex items-center text-[10px] text-neutral-400 font-mono">
                                             {data.nik?.length || 0}/16
                                         </span>
                                     </div>
@@ -88,7 +88,7 @@ export default function LoginIndex() {
                                 {/* Input PIN 6-Digit */}
                                 <div>
                                     <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+                                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-neutral-400">
                                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                             </svg>
@@ -101,12 +101,12 @@ export default function LoginIndex() {
                                             value={data.pin}
                                             onChange={(e) => setData('pin', e.target.value.replace(/[^0-9]/g, ''))}
                                             placeholder="PIN 6-Digit Darurat"
-                                            className="w-full pl-11 pr-20 py-3.5 rounded-xl bg-[#EEEEEE] text-slate-800 placeholder-slate-400 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#2FA084] transition-all border border-transparent focus:border-[#2FA084] font-mono tracking-widest text-center"
+                                            className="w-full pl-11 pr-20 py-3.5 rounded-xl bg-surface text-neutral-800 placeholder-neutral-400 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-all border border-transparent focus:border-primary font-mono tracking-widest text-center"
                                         />
                                         <button
                                             type="button"
                                             onClick={() => setShowPin(!showPin)}
-                                            className="absolute inset-y-0 right-0 pr-4 flex items-center text-[10px] font-bold text-[#2FA084] hover:text-[#1F6F5F] uppercase tracking-wider"
+                                            className="absolute inset-y-0 right-0 pr-4 flex items-center text-[10px] font-bold text-primary hover:text-primary-dark uppercase tracking-wider"
                                         >
                                             {showPin ? 'Hide' : 'Show'}
                                         </button>
@@ -118,14 +118,14 @@ export default function LoginIndex() {
 
                                 {/* Remember Device */}
                                 <div className="flex items-center justify-between pt-1">
-                                    <label className="flex items-center text-xs text-slate-500 cursor-pointer">
+                                    <label className="flex items-center text-xs text-neutral-500 cursor-pointer">
                                         <input
                                             type="checkbox"
                                             checked={data.remember}
                                             onChange={(e) => setData('remember', e.target.checked)}
-                                            className="w-4 h-4 rounded border-[#EEEEEE] text-[#2FA084] focus:ring-[#2FA084]"
+                                            className="w-4 h-4 rounded border-surface text-primary focus:ring-primary"
                                         />
-                                        <span className="ml-2 text-[11px] text-slate-600">Ingat perangkat ini</span>
+                                        <span className="ml-2 text-[11px] text-neutral-600">Ingat perangkat ini</span>
                                     </label>
                                 </div>
 
@@ -134,7 +134,7 @@ export default function LoginIndex() {
                                     <button
                                         type="submit"
                                         disabled={processing || data.nik.length !== 16 || data.pin.length !== 6}
-                                        className="w-full inline-flex items-center justify-center px-8 py-3.5 rounded-full text-xs font-bold uppercase tracking-wider text-white bg-[#2FA084] hover:bg-[#1F6F5F] active:scale-95 shadow-lg shadow-[#2FA084]/25 transition-all disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none"
+                                        className="w-full inline-flex items-center justify-center px-8 py-3.5 rounded-full text-xs font-bold uppercase tracking-wider text-white bg-primary hover:bg-primary-dark active:scale-95 shadow-lg shadow-primary/25 transition-all disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none"
                                     >
                                         {processing ? (
                                             <>
@@ -152,17 +152,17 @@ export default function LoginIndex() {
                             </form>
 
                             {/* Hotline Darurat Footer */}
-                            <div className="mt-8 pt-4 border-t border-[#EEEEEE] flex items-center justify-center space-x-3 text-[11px] text-slate-400">
+                            <div className="mt-8 pt-4 border-t border-surface flex items-center justify-center space-x-3 text-[11px] text-neutral-400">
                                 <span>Panggilan Darurat:</span>
-                                <a href="tel:112" className="font-bold text-[#1F6F5F] hover:underline">112 (Siaga)</a>
+                                <a href="tel:112" className="font-bold text-primary-dark hover:underline">112 (Siaga)</a>
                                 <span>&bull;</span>
-                                <a href="tel:113" className="font-bold text-[#2FA084] hover:underline">113 (Damkar)</a>
+                                <a href="tel:113" className="font-bold text-primary hover:underline">113 (Damkar)</a>
                             </div>
                         </div>
                     </div>
 
-                    {/* RIGHT PANEL: Palette Gradient Banner (2FA084 -> 1F6F5F) */}
-                    <div className="lg:col-span-5 bg-gradient-to-br from-[#2FA084] via-[#1F6F5F] to-[#175246] text-white p-8 sm:p-10 flex flex-col justify-between relative overflow-hidden order-1 lg:order-2">
+                    {/* RIGHT PANEL: Palette Gradient Banner (Primary -> Primary Dark) */}
+                    <div className="lg:col-span-5 bg-gradient-to-br from-primary via-primary-dark to-[#175246] text-white p-8 sm:p-10 flex flex-col justify-between relative overflow-hidden order-1 lg:order-2">
                         {/* Decorative shapes */}
                         <div className="absolute -top-10 -left-10 w-40 h-40 bg-white/10 rounded-3xl -rotate-12 pointer-events-none"></div>
                         <div className="absolute bottom-10 -right-8 w-32 h-32 bg-white/10 rounded-2xl rotate-12 pointer-events-none"></div>
@@ -175,22 +175,22 @@ export default function LoginIndex() {
                                 </svg>
                             </div>
                             <div>
-                                <span className="text-xl font-bold tracking-tight text-white">Borneo<span className="text-[#6FCF97]">Care</span></span>
-                                <span className="block text-[10px] uppercase tracking-widest text-[#6FCF97] font-medium">Health Mitigation</span>
+                                <span className="font-display text-xl font-bold tracking-tight text-white">Borneo<span className="text-accent">Care</span></span>
+                                <span className="block text-[10px] uppercase tracking-widest text-accent font-medium font-sans">Health Mitigation</span>
                             </div>
                         </div>
 
                         {/* Centered Sign Up Callout */}
                         <div className="relative z-10 py-10 lg:py-0 text-center my-auto">
-                            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-3 leading-tight">
+                            <h2 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-white mb-3 leading-tight">
                                 Halo, Warga!
                             </h2>
-                            <p className="text-[#EEEEEE] text-xs sm:text-sm leading-relaxed max-w-xs mx-auto mb-8 font-normal">
+                            <p className="text-surface text-xs sm:text-sm leading-relaxed max-w-xs mx-auto mb-8 font-normal font-sans">
                                 Belum mendaftarkan rumah atau anggota keluarga? Daftarkan diri Anda sekarang untuk perlindungan mitigasi kabut asap dan rute evakuasi safe zone.
                             </p>
                             <Link
                                 href="/register"
-                                className="inline-block px-10 py-3 rounded-full border-2 border-white text-white font-bold text-xs sm:text-sm tracking-wider uppercase hover:bg-white hover:text-[#1F6F5F] transition-all shadow-md hover:shadow-xl active:scale-95"
+                                className="inline-block px-10 py-3 rounded-full border-2 border-white text-white font-bold text-xs sm:text-sm tracking-wider uppercase hover:bg-white hover:text-primary-dark transition-all shadow-md hover:shadow-xl active:scale-95"
                             >
                                 SIGN UP
                             </Link>
