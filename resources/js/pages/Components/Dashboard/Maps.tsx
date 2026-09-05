@@ -139,29 +139,7 @@ export function Maps({
             {/* Map Container */}
             <div ref={mapContainerRef} className="w-full h-full" />
 
-            {/* Status Badge API NASA - Tanpa menampilkan string API Key */}
-            {showStatusBadge && (
-                <div className="absolute bottom-3 left-3 z-[1000] bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-lg border border-[#CCECEE] shadow-xs text-xs flex items-center gap-2">
-                    <span
-                        className={cn(
-                            'w-2 h-2 rounded-full',
-                            isKeyConnected ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500',
-                        )}
-                    />
-                    <span className="font-medium text-[#262626]">
-                        Satelit NASA:{' '}
-                        {isKeyConnected ? (
-                            <span className="text-[#14967F] font-semibold">
-                                Terhubung
-                            </span>
-                        ) : (
-                            <span className="text-amber-600 font-semibold">
-                                Standby
-                            </span>
-                        )}
-                    </span>
-                </div>
-            )}
+           
         </div>
     );
 }
