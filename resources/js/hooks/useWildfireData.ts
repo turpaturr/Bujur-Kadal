@@ -6,6 +6,90 @@ const CACHE_TTL_MS = 10 * 60 * 1000;
 export type ConfidenceLevel = 'high' | 'nominal' | 'low';
 export type SensorSource = 'VIIRS_SNPP' | 'VIIRS_NOAA20' | 'MODIS_NRT';
 
+/**
+ * 3 Kategori Pengelompokan Anomali Termal Spasial:
+ * 1. active_fire: 🔥 Kebakaran Aktif (Kobaran api menyala terbuka terkonfirmasi)
+ * 2. smoke_peat: 💨 Potensi Asap & Gambut (Bara gambut membara bawah tanah / penghasil kabut asap pekat)
+ * 3. heat_anomaly: ☀️ Panas Berlebih (Anomali suhu panas permukaan / vegetasi kering rawan api)
+ */
+export type HotspotCategory = 'active_fire' | 'smoke_peat' | 'heat_anomaly';
+
+export interface CategoryMetadata {
+    key: HotspotCategory;
+    title: string;
+    subtitle: string;
+    description: string;
+    icon: string;
+    color: string;
+    badgeBg: string;
+    badgeText: string;
+    badgeBorder: string;
+}
+
+export const HOTSPOT_CATEGORIES: Record<HotspotCategory, CategoryMetadata> = {
+    active_fire: {
+        key: 'active_fire',
+        title: 'Kebakaran Aktif',
+        subtitle: 'Api Terbuka (Flaming)',
+        description:
+            'Titik dengan suhu sangat tinggi dan keyakinan kuat bahwa api sedang berkobar aktif di permukaan.',
+        icon: '🔥',
+        color: '#ef4444',
+        badgeBg: 'bg-rose-50',
+        badgeText: 'text-rose-700',
+        badgeBorder: 'border-rose-200',
+    },
+    smoke_peat: {
+        key: 'smoke_peat',
+        title: 'Potensi Asap & Gambut',
+        subtitle: 'Bara Bawah Tanah (Smoldering)',
+        description:
+            'Bara api di lapisan lahan gambut atau pembakaran semak yang terus berasap pekat dan berpotensi memicu kabut asap.',
+        icon: '💨',
+        color: '#f97316',
+        badgeBg: 'bg-orange-50',
+        badgeText: 'text-orange-700',
+        badgeBorder: 'border-orange-200',
+    },
+    heat_anomaly: {
+        key: 'heat_anomaly',
+        title: 'Panas Berlebih',
+        subtitle: 'Anomali Termal Permukaan',
+        description:
+            'Suhu permukaan lahan di atas normal. Belum tentu ada kobaran api terbuka, namun sangat kering dan rawan tersulut.',
+        icon: '☀️',
+        color: '#eab308',
+        badgeBg: 'bg-amber-50',
+        badgeText: 'text-amber-800',
+        badgeBorder: 'border-amber-200',
+    },
+};
+
+/**
+ * Logika klasifikasi cerdas titik anomali termal ke 3 kategori
+ */
+export function classifyHotspot(
+    confidenceLevel: ConfidenceLevel,
+    frp: number,
+    daynight: 'D' | 'N',
+): HotspotCategory {
+    // 1. Kebakaran Aktif:
+    // Akurasi tinggi (>=80%) ATAU FRP masif (>= 12 MW)
+    if (confidenceLevel === 'high' || frp >= 12) {
+        return 'active_fire';
+    }
+
+    // 2. Potensi Asap & Lahan Gambut:
+    // Deteksi malam hari (khas bara gambut memancarkan radiasi saat malam) ATAU akurasi nominal dengan FRP sedang (>= 4 MW)
+    if (daynight === 'N' || (confidenceLevel === 'nominal' && frp >= 4)) {
+        return 'smoke_peat';
+    }
+
+    // 3. Panas Berlebih:
+    // Akurasi rendah atau FRP kecil pada siang hari (anomali termal / pantulan panas matahari)
+    return 'heat_anomaly';
+}
+
 export interface WildfireHotspot {
     id: string;
     latitude: number;
@@ -17,19 +101,60 @@ export interface WildfireHotspot {
     /** String confidence mentah dari API */
     confidence: string;
     confidenceLevel: ConfidenceLevel;
+    /** Kategori ramah pengguna */
+    category: HotspotCategory;
     acquisitionDate: string;
     acquisitionTime: string;
     satellite: string;
     source: SensorSource;
     /** Nama provinsi Kalimantan (jika terdeteksi) */
     province: string | null;
+    /** Deteksi Siang ('D') atau Malam ('N') */
+    daynight: 'D' | 'N';
+}
+
+export interface ProvinceDetail {
+    name: string;
+    shortName: string;
+    count: number;
+    totalFrp: number;
+    avgFrp: number;
+    maxFrp: number;
+    percentage: number;
+    activeFireCount: number;
+    smokePeatCount: number;
+    heatAnomalyCount: number;
+    center: [number, number];
+    zoom: number;
 }
 
 export interface WildfireStats {
     total: number;
     byProvince: Record<string, number>;
+    provinceDetails: ProvinceDetail[];
     byConfidence: Record<ConfidenceLevel, number>;
+    byCategory: {
+        active_fire: number;
+        smoke_peat: number;
+        heat_anomaly: number;
+    };
     bySensor: Record<SensorSource, number>;
+    byDayNight: {
+        day: number;
+        night: number;
+    };
+    totalFrp: number;
+    avgFrp: number;
+    maxFrp: number;
+    maxFrpLocation: {
+        latitude: number;
+        longitude: number;
+        province: string | null;
+        frp: number;
+    } | null;
+    hazeRiskLevel: 'Aman' | 'Waspada' | 'Tinggi' | 'Kritis';
+    mostAffectedProvince: string | null;
+    highConfidencePercentage: number;
 }
 
 export interface WildfireData {
@@ -41,53 +166,71 @@ export interface WildfireData {
     refresh: () => void;
 }
 
-/** Batas bounding box sederhana per provinsi Kalimantan */
-const PROVINCE_BOUNDS: Array<{
+/** Batas bounding box per provinsi Kalimantan untuk klasifikasi titik api */
+export const PROVINCE_CONFIG: Array<{
     name: string;
+    shortName: string;
     latMin: number;
     latMax: number;
     lonMin: number;
     lonMax: number;
+    center: [number, number];
+    zoom: number;
 }> = [
     {
         name: 'Kalimantan Barat',
+        shortName: 'Kalbar',
         latMin: -3.1,
         latMax: 2.1,
         lonMin: 108.0,
-        lonMax: 114.5,
+        lonMax: 114.3,
+        center: [-0.0263, 109.3425],
+        zoom: 7,
     },
     {
         name: 'Kalimantan Tengah',
+        shortName: 'Kalteng',
         latMin: -4.5,
         latMax: -0.2,
         lonMin: 111.0,
-        lonMax: 116.7,
+        lonMax: 116.0,
+        center: [-1.6815, 113.3824],
+        zoom: 7,
     },
     {
         name: 'Kalimantan Selatan',
+        shortName: 'Kalsel',
         latMin: -4.5,
         latMax: -1.2,
-        lonMin: 114.5,
+        lonMin: 114.3,
         lonMax: 117.0,
+        center: [-3.0926, 115.2838],
+        zoom: 8,
     },
     {
         name: 'Kalimantan Timur',
-        latMin: -2.5,
-        latMax: 4.2,
-        lonMin: 113.5,
-        lonMax: 119.0,
+        shortName: 'Kaltim',
+        latMin: -2.0,
+        latMax: 3.5,
+        lonMin: 114.5,
+        lonMax: 119.2,
+        center: [0.5387, 116.4194],
+        zoom: 7,
     },
     {
         name: 'Kalimantan Utara',
+        shortName: 'Kaltara',
         latMin: 2.5,
         latMax: 7.5,
         lonMin: 114.5,
         lonMax: 119.5,
+        center: [3.0731, 116.0414],
+        zoom: 7,
     },
 ];
 
 function detectProvince(lat: number, lon: number): string | null {
-    for (const prov of PROVINCE_BOUNDS) {
+    for (const prov of PROVINCE_CONFIG) {
         if (
             lat >= prov.latMin &&
             lat <= prov.latMax &&
@@ -121,7 +264,6 @@ function parseConfidenceLevel(confidence: string): ConfidenceLevel {
     return 'nominal';
 }
 
-/** Map SensorSource ke query param yang diterima backend */
 const SENSOR_PARAM: Record<SensorSource, string> = {
     VIIRS_SNPP: 'VIIRS_SNPP_NRT',
     VIIRS_NOAA20: 'VIIRS_NOAA20_NRT',
@@ -130,12 +272,8 @@ const SENSOR_PARAM: Record<SensorSource, string> = {
 
 /**
  * Parse CSV response dari NASA FIRMS.
- * Header kolom bervariasi antar sensor; kita deteksi secara dinamis.
  */
-function parseFirmsCsv(
-    csv: string,
-    source: SensorSource,
-): WildfireHotspot[] {
+function parseFirmsCsv(csv: string, source: SensorSource): WildfireHotspot[] {
     const lines = csv.trim().split('\n');
     if (lines.length < 2) {
         return [];
@@ -146,7 +284,6 @@ function parseFirmsCsv(
 
     const latIdx = idx('latitude');
     const lonIdx = idx('longitude');
-    // VIIRS pakai bright_ti4, MODIS pakai brightness
     const brightIdx =
         idx('bright_ti4') !== -1 ? idx('bright_ti4') : idx('brightness');
     const frpIdx = idx('frp');
@@ -154,6 +291,7 @@ function parseFirmsCsv(
     const dateIdx = idx('acq_date');
     const timeIdx = idx('acq_time');
     const satIdx = idx('satellite');
+    const daynightIdx = idx('daynight');
 
     if (latIdx === -1 || lonIdx === -1) {
         return [];
@@ -174,23 +312,30 @@ function parseFirmsCsv(
         }
 
         const confidence = confIdx !== -1 ? cols[confIdx].trim() : 'n';
-        const brightness =
-            brightIdx !== -1 ? parseFloat(cols[brightIdx]) : 0;
+        const brightness = brightIdx !== -1 ? parseFloat(cols[brightIdx]) : 0;
         const frp = frpIdx !== -1 ? parseFloat(cols[frpIdx]) : 0;
+        const daynightRaw =
+            daynightIdx !== -1 ? cols[daynightIdx]?.trim().toUpperCase() : 'D';
+        const daynight: 'D' | 'N' = daynightRaw === 'N' ? 'N' : 'D';
+
+        const confidenceLevel = parseConfidenceLevel(confidence);
+        const category = classifyHotspot(confidenceLevel, frp, daynight);
 
         hotspots.push({
             id: `${source}-${i}-${lat.toFixed(4)}-${lon.toFixed(4)}`,
             latitude: lat,
             longitude: lon,
             brightness: isNaN(brightness) ? 0 : brightness,
-            frp: isNaN(frp) ? 0 : frp,
+            frp: isNaN(frp) ? 0 : Math.max(0, frp),
             confidence,
-            confidenceLevel: parseConfidenceLevel(confidence),
+            confidenceLevel,
+            category,
             acquisitionDate: dateIdx !== -1 ? cols[dateIdx].trim() : '',
             acquisitionTime: timeIdx !== -1 ? cols[timeIdx].trim() : '',
             satellite: satIdx !== -1 ? cols[satIdx].trim() : '',
             source,
             province: detectProvince(lat, lon),
+            daynight,
         });
     }
 
@@ -204,10 +349,6 @@ interface CacheEntry {
 
 const cache: Record<string, CacheEntry> = {};
 
-/**
- * Fetch data dari proxy Laravel (menghindari CORS NASA FIRMS).
- * Route: GET /api/wildfire/hotspots?sensor=VIIRS_SNPP_NRT&days=1
- */
 async function fetchSensorData(
     source: SensorSource,
     dayRange: number,
@@ -251,44 +392,159 @@ async function fetchSensorData(
 }
 
 function computeStats(hotspots: WildfireHotspot[]): WildfireStats {
+    const total = hotspots.length;
     const byProvince: Record<string, number> = {};
+    const frpByProvince: Record<
+        string,
+        {
+            totalFrp: number;
+            maxFrp: number;
+            activeFireCount: number;
+            smokePeatCount: number;
+            heatAnomalyCount: number;
+        }
+    > = {};
+
     const byConfidence: Record<ConfidenceLevel, number> = {
         high: 0,
         nominal: 0,
         low: 0,
     };
+
+    const byCategory = {
+        active_fire: 0,
+        smoke_peat: 0,
+        heat_anomaly: 0,
+    };
+
     const bySensor: Record<SensorSource, number> = {
         VIIRS_SNPP: 0,
         VIIRS_NOAA20: 0,
         MODIS_NRT: 0,
     };
 
+    const byDayNight = {
+        day: 0,
+        night: 0,
+    };
+
+    let totalFrp = 0;
+    let maxFrp = 0;
+    let maxFrpLocation: WildfireStats['maxFrpLocation'] = null;
+
     for (const h of hotspots) {
-        const prov = h.province ?? 'Tidak Diketahui';
+        const prov = h.province ?? 'Luar Batas';
         byProvince[prov] = (byProvince[prov] ?? 0) + 1;
+
+        if (!frpByProvince[prov]) {
+            frpByProvince[prov] = {
+                totalFrp: 0,
+                maxFrp: 0,
+                activeFireCount: 0,
+                smokePeatCount: 0,
+                heatAnomalyCount: 0,
+            };
+        }
+        frpByProvince[prov].totalFrp += h.frp;
+        if (h.frp > frpByProvince[prov].maxFrp) {
+            frpByProvince[prov].maxFrp = h.frp;
+        }
+
+        if (h.category === 'active_fire') {
+            frpByProvince[prov].activeFireCount++;
+        } else if (h.category === 'smoke_peat') {
+            frpByProvince[prov].smokePeatCount++;
+        } else {
+            frpByProvince[prov].heatAnomalyCount++;
+        }
+
         byConfidence[h.confidenceLevel]++;
+        byCategory[h.category]++;
         bySensor[h.source]++;
+
+        if (h.daynight === 'N') {
+            byDayNight.night++;
+        } else {
+            byDayNight.day++;
+        }
+
+        totalFrp += h.frp;
+        if (h.frp > maxFrp) {
+            maxFrp = h.frp;
+            maxFrpLocation = {
+                latitude: h.latitude,
+                longitude: h.longitude,
+                province: h.province,
+                frp: h.frp,
+            };
+        }
     }
 
-    return { total: hotspots.length, byProvince, byConfidence, bySensor };
+    const avgFrp = total > 0 ? Number((totalFrp / total).toFixed(1)) : 0;
+    totalFrp = Number(totalFrp.toFixed(1));
+    maxFrp = Number(maxFrp.toFixed(1));
+
+    // Siapkan detail per provinsi
+    const provinceDetails: ProvinceDetail[] = PROVINCE_CONFIG.map((cfg) => {
+        const count = byProvince[cfg.name] ?? 0;
+        const provData = frpByProvince[cfg.name];
+        const provFrp = provData?.totalFrp ?? 0;
+        const pMaxFrp = provData?.maxFrp ?? 0;
+        return {
+            name: cfg.name,
+            shortName: cfg.shortName,
+            count,
+            totalFrp: Number(provFrp.toFixed(1)),
+            avgFrp: count > 0 ? Number((provFrp / count).toFixed(1)) : 0,
+            maxFrp: Number(pMaxFrp.toFixed(1)),
+            percentage: total > 0 ? Math.round((count / total) * 100) : 0,
+            activeFireCount: provData?.activeFireCount ?? 0,
+            smokePeatCount: provData?.smokePeatCount ?? 0,
+            heatAnomalyCount: provData?.heatAnomalyCount ?? 0,
+            center: cfg.center,
+            zoom: cfg.zoom,
+        };
+    }).sort((a, b) => b.count - a.count);
+
+    const mostAffectedProvince =
+        provinceDetails[0]?.count > 0 ? provinceDetails[0].name : null;
+
+    // Tingkat Risiko Asap (Haze Risk Level)
+    let hazeRiskLevel: WildfireStats['hazeRiskLevel'] = 'Aman';
+    if (byCategory.active_fire >= 50 || byCategory.smoke_peat >= 100 || totalFrp >= 3000) {
+        hazeRiskLevel = 'Kritis';
+    } else if (byCategory.active_fire >= 15 || byCategory.smoke_peat >= 40 || totalFrp >= 1000) {
+        hazeRiskLevel = 'Tinggi';
+    } else if (byCategory.active_fire >= 5 || byCategory.smoke_peat >= 15 || totalFrp >= 200) {
+        hazeRiskLevel = 'Waspada';
+    }
+
+    const highConfidencePercentage =
+        total > 0 ? Math.round((byConfidence.high / total) * 100) : 0;
+
+    return {
+        total,
+        byProvince,
+        provinceDetails,
+        byConfidence,
+        byCategory,
+        bySensor,
+        byDayNight,
+        totalFrp,
+        avgFrp,
+        maxFrp,
+        maxFrpLocation,
+        hazeRiskLevel,
+        mostAffectedProvince,
+        highConfidencePercentage,
+    };
 }
 
 export interface UseWildfireDataOptions {
-    /** Sensor yang diaktifkan, default: VIIRS SNPP + NOAA-20 */
     enabledSensors?: SensorSource[];
-    /** Jumlah hari ke belakang, default: 1 */
     dayRange?: number;
 }
 
-/**
- * Hook untuk fetch dan mengelola data titik api NASA FIRMS.
- * Data diambil melalui proxy Laravel untuk menghindari CORS.
- *
- * @example
- * ```tsx
- * const { hotspots, stats, isLoading } = useWildfireData();
- * ```
- */
 export function useWildfireData({
     enabledSensors = ['VIIRS_SNPP', 'VIIRS_NOAA20'],
     dayRange = 1,
@@ -330,12 +586,15 @@ export function useWildfireData({
                 }
             }
 
-            // Deduplicate titik yang sangat berdekatan (± 0.01°)
-            const unique = allHotspots.filter((h, i) => {
-                return !allHotspots.slice(0, i).some(
+            // Urutkan titik api berdasarkan FRP (paling intens di atas)
+            const sorted = allHotspots.sort((a, b) => b.frp - a.frp);
+
+            // Deduplikasi yang berdekatan
+            const unique = sorted.filter((h, i) => {
+                return !sorted.slice(0, i).some(
                     (prev) =>
-                        Math.abs(prev.latitude - h.latitude) < 0.01 &&
-                        Math.abs(prev.longitude - h.longitude) < 0.01,
+                        Math.abs(prev.latitude - h.latitude) < 0.008 &&
+                        Math.abs(prev.longitude - h.longitude) < 0.008,
                 );
             });
 

@@ -15,9 +15,15 @@
     --font-serif:
         'Fraunces', Georgia, Cambria, 'Times New Roman', Times, serif;
 
-    --color-borneo-teal: #14967F;
-    --color-trust-blue: #095D7E;
-    --color-oxygen-blue: #CCECEE;
-    --color-charcoal: #262626;
-    --color-clean-whisper: #F1F9FF;
+    --color-primary: #2fa084;
+    --color-primary-dark: #1f6f5f;
+    --color-accent: #6fcf97;
+    --color-surface: #eeeeee;
+}
+
+:root {
+    --color-primary: #2fa084;
+    --color-primary-dark: #1f6f5f;
+    --color-accent: #6fcf97;
+    --color-surface: #eeeeee;
 }
