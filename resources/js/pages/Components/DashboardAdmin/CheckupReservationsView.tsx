@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { router } from '@inertiajs/react';
+import { showAdminResponseSentAlert, AppSwal } from '@/utils/alerts';
 
 export interface AdminReservationItem {
     id: number;
@@ -78,6 +79,9 @@ export default function CheckupReservationsView({
             { admin_notes: note },
             {
                 preserveScroll: true,
+                onSuccess: () => {
+                    showAdminResponseSentAlert();
+                },
                 onFinish: () => {
                     setIsProcessing(null);
                     setActiveActionId(null);
@@ -86,13 +90,19 @@ export default function CheckupReservationsView({
         );
     };
 
-    const handleReject = (id: number) => {
+    const handleReject = async (id: number) => {
         const note = actionNotes[id] ?? '';
         if (!note.trim()) {
-            const confirmWithout = confirm(
-                'Anda belum mengisi alasan penolakan. Berikan alasan penolakan agar warga mengetahui alasan jadwal tidak tersedia. Tetap tolak tanpa catatan?'
-            );
-            if (!confirmWithout) return;
+            const confirmResult = await AppSwal.fire({
+                icon: 'warning',
+                title: 'Alasan Penolakan Belum Diisi',
+                text: 'Berikan alasan penolakan agar warga mengetahui alasan jadwal tidak tersedia. Tetap tolak tanpa catatan?',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Tetap Tolak',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#E11D48',
+            });
+            if (!confirmResult.isConfirmed) return;
         }
 
         setIsProcessing(id);
@@ -101,6 +111,9 @@ export default function CheckupReservationsView({
             { admin_notes: note },
             {
                 preserveScroll: true,
+                onSuccess: () => {
+                    showAdminResponseSentAlert();
+                },
                 onFinish: () => {
                     setIsProcessing(null);
                     setActiveActionId(null);
