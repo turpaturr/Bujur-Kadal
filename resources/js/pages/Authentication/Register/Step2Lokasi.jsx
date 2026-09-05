@@ -114,11 +114,11 @@ export default function Step2Lokasi({ data, setData, errors }) {
     const hasCoordinates = data.home_latitude && data.home_longitude;
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-4 font-sans">
             {/* Input Alamat dengan Icon & MapTiler Geocoding */}
             <div className="relative">
                 <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-neutral-400">
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -136,14 +136,14 @@ export default function Step2Lokasi({ data, setData, errors }) {
                             if (suggestions.length > 0) setShowSuggestions(true);
                         }}
                         placeholder="Search Address (Ketik Alamat Rumah...)"
-                        className="w-full pl-11 pr-24 py-3 rounded-xl bg-[#EEEEEE] text-slate-800 placeholder-slate-400 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#2FA084] transition-all border border-transparent focus:border-[#2FA084]"
+                        className="w-full pl-11 pr-24 py-3 rounded-xl bg-surface text-neutral-800 placeholder-neutral-400 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-all border border-transparent focus:border-primary"
                     />
                     <div className="absolute inset-y-0 right-0 pr-2 flex items-center">
                         <button
                             type="button"
                             onClick={handleDetectCurrentLocation}
                             disabled={detectingGps}
-                            className="px-2.5 py-1.5 rounded-lg bg-[#2FA084] text-white text-[10px] font-bold hover:bg-[#1F6F5F] transition-all flex items-center shadow-xs"
+                            className="px-2.5 py-1.5 rounded-lg bg-primary text-white text-[10px] font-bold hover:bg-primary-dark transition-all flex items-center shadow-xs"
                             title="Deteksi Titik GPS Otomatis"
                         >
                             {detectingGps ? (
@@ -153,7 +153,7 @@ export default function Step2Lokasi({ data, setData, errors }) {
                                 </svg>
                             ) : (
                                 <>
-                                    <span className="w-1.5 h-1.5 rounded-full bg-[#6FCF97] mr-1 animate-ping"></span>
+                                    <span className="w-1.5 h-1.5 rounded-full bg-accent mr-1 animate-ping"></span>
                                     GPS Saya
                                 </>
                             )}
@@ -163,8 +163,8 @@ export default function Step2Lokasi({ data, setData, errors }) {
 
                 {/* Suggestions Dropdown */}
                 {showSuggestions && suggestions.length > 0 && (
-                    <div className="absolute z-20 mt-1.5 w-full bg-white border border-[#EEEEEE] rounded-2xl shadow-xl overflow-hidden max-h-52 overflow-y-auto">
-                        <div className="p-2 text-[10px] uppercase font-bold text-slate-400 bg-[#EEEEEE]/50 border-b border-[#EEEEEE]">
+                    <div className="absolute z-20 mt-1.5 w-full bg-white border border-surface rounded-2xl shadow-xl overflow-hidden max-h-52 overflow-y-auto">
+                        <div className="p-2 text-[10px] uppercase font-bold text-neutral-400 bg-surface/50 border-b border-surface">
                             Pilih Alamat dari MapTiler:
                         </div>
                         {suggestions.map((item, idx) => (
@@ -172,14 +172,14 @@ export default function Step2Lokasi({ data, setData, errors }) {
                                 key={idx}
                                 type="button"
                                 onClick={() => handleSelectSuggestion(item)}
-                                className="w-full text-left px-4 py-2.5 hover:bg-[#6FCF97]/15 text-xs text-slate-700 border-b border-[#EEEEEE] flex items-start space-x-2 transition-colors"
+                                className="w-full text-left px-4 py-2.5 hover:bg-accent/15 text-xs text-neutral-700 border-b border-surface flex items-start space-x-2 transition-colors"
                             >
-                                <svg className="w-3.5 h-3.5 text-[#2FA084] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                 </svg>
                                 <div>
-                                    <div className="font-semibold text-slate-900">{item.text}</div>
-                                    <div className="text-[10px] text-slate-400 line-clamp-1">{item.place_name}</div>
+                                    <div className="font-semibold text-neutral-900">{item.text}</div>
+                                    <div className="text-[10px] text-neutral-400 line-clamp-1">{item.place_name}</div>
                                 </div>
                             </button>
                         ))}
@@ -199,26 +199,26 @@ export default function Step2Lokasi({ data, setData, errors }) {
 
             {/* Live Map Preview via MapTiler Static Map API */}
             {hasCoordinates ? (
-                <div className="rounded-2xl overflow-hidden border border-[#2FA084]/40 shadow-sm bg-white animate-fadeIn">
-                    <div className="relative aspect-[21/9] w-full bg-[#EEEEEE]">
+                <div className="rounded-2xl overflow-hidden border border-primary/40 shadow-sm bg-white animate-fadeIn">
+                    <div className="relative aspect-[21/9] w-full bg-surface">
                         <img
                             src={`https://api.maptiler.com/maps/streets-v2/static/${data.home_longitude},${data.home_latitude},15/600x240.png?key=${MAPTILER_KEY}&markers=${data.home_longitude},${data.home_latitude},red`}
                             alt="MapTiler Preview"
                             className="w-full h-full object-cover"
                             loading="lazy"
                         />
-                        <div className="absolute top-2 left-2 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-md text-[10px] font-bold text-[#1F6F5F] shadow-xs border border-[#2FA084]/30 flex items-center">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#2FA084] animate-pulse mr-1"></span>
+                        <div className="absolute top-2 left-2 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-md text-[10px] font-bold text-primary-dark shadow-xs border border-primary/30 flex items-center">
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse mr-1"></span>
                             Koordinat Terkunci
                         </div>
                     </div>
-                    <div className="p-2.5 bg-[#EEEEEE] text-[11px] text-[#1F6F5F] flex items-center justify-between">
+                    <div className="p-2.5 bg-surface text-[11px] text-primary-dark flex items-center justify-between">
                         <span className="font-mono font-medium">Lat: {data.home_latitude}, Lng: {data.home_longitude}</span>
-                        <span className="font-bold text-[10px] uppercase tracking-wider bg-[#2FA084] text-white px-2 py-0.5 rounded">Fire Tracker 5KM Ready</span>
+                        <span className="font-bold text-[10px] uppercase tracking-wider bg-primary text-white px-2 py-0.5 rounded">Fire Tracker 5KM Ready</span>
                     </div>
                 </div>
             ) : (
-                <div className="p-4 rounded-2xl border-2 border-dashed border-[#EEEEEE] bg-[#EEEEEE]/50 text-center text-xs text-slate-400">
+                <div className="p-4 rounded-2xl border-2 border-dashed border-surface bg-surface/50 text-center text-xs text-neutral-400">
                     Ketik nama jalan di atas atau klik tombol <strong>GPS Saya</strong> untuk memetakan koordinat evakuasi.
                 </div>
             )}

@@ -51,11 +51,11 @@ export default function Step1Kependudukan({ data, setData, errors, clearErrors }
     };
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-4 font-sans">
             {/* Input Nama Lengkap */}
             <div>
                 <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-neutral-400">
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
@@ -66,7 +66,7 @@ export default function Step1Kependudukan({ data, setData, errors, clearErrors }
                         value={data.name}
                         onChange={(e) => setData('name', e.target.value)}
                         placeholder="Full Name (Nama Lengkap)"
-                        className="w-full pl-11 pr-4 py-3 rounded-xl bg-[#EEEEEE] text-slate-800 placeholder-slate-400 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#2FA084] transition-all border border-transparent focus:border-[#2FA084]"
+                        className="w-full pl-11 pr-4 py-3 rounded-xl bg-surface text-neutral-800 placeholder-neutral-400 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-all border border-transparent focus:border-primary"
                     />
                 </div>
                 {errors.name && (
@@ -77,7 +77,7 @@ export default function Step1Kependudukan({ data, setData, errors, clearErrors }
             {/* Input No. KK */}
             <div>
                 <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-neutral-400">
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                         </svg>
@@ -93,9 +93,9 @@ export default function Step1Kependudukan({ data, setData, errors, clearErrors }
                             setDukcapilResult(null);
                         }}
                         placeholder="16 Digit No. KK (Kartu Keluarga)"
-                        className="w-full pl-11 pr-16 py-3 rounded-xl bg-[#EEEEEE] text-slate-800 placeholder-slate-400 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#2FA084] transition-all border border-transparent focus:border-[#2FA084] tracking-wide"
+                        className="w-full pl-11 pr-16 py-3 rounded-xl bg-surface text-neutral-800 placeholder-neutral-400 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-all border border-transparent focus:border-primary tracking-wide"
                     />
-                    <span className="absolute inset-y-0 right-0 pr-4 flex items-center text-[10px] text-slate-400 font-mono">
+                    <span className="absolute inset-y-0 right-0 pr-4 flex items-center text-[10px] text-neutral-400 font-mono">
                         {data.no_kk?.length || 0}/16
                     </span>
                 </div>
@@ -107,7 +107,7 @@ export default function Step1Kependudukan({ data, setData, errors, clearErrors }
             {/* Input NIK */}
             <div>
                 <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-neutral-400">
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
                         </svg>
@@ -123,9 +123,9 @@ export default function Step1Kependudukan({ data, setData, errors, clearErrors }
                             setDukcapilResult(null);
                         }}
                         placeholder="16 Digit NIK (KTP)"
-                        className="w-full pl-11 pr-16 py-3 rounded-xl bg-[#EEEEEE] text-slate-800 placeholder-slate-400 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#2FA084] transition-all border border-transparent focus:border-[#2FA084] tracking-wide"
+                        className="w-full pl-11 pr-16 py-3 rounded-xl bg-surface text-neutral-800 placeholder-neutral-400 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-all border border-transparent focus:border-primary tracking-wide"
                     />
-                    <span className="absolute inset-y-0 right-0 pr-4 flex items-center text-[10px] text-slate-400 font-mono">
+                    <span className="absolute inset-y-0 right-0 pr-4 flex items-center text-[10px] text-neutral-400 font-mono">
                         {data.nik?.length || 0}/16
                     </span>
                 </div>
@@ -140,7 +140,7 @@ export default function Step1Kependudukan({ data, setData, errors, clearErrors }
                     type="button"
                     onClick={handleVerifyDukcapil}
                     disabled={verifying || data.nik?.length !== 16 || data.no_kk?.length !== 16}
-                    className="inline-flex items-center px-4 py-2 rounded-full text-xs font-semibold text-[#1F6F5F] bg-[#EEEEEE] border border-[#2FA084]/40 hover:bg-[#6FCF97]/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-xs"
+                    className="inline-flex items-center px-4 py-2 rounded-full text-xs font-semibold text-primary-dark bg-surface border border-primary/40 hover:bg-accent/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-xs"
                 >
                     {verifying ? (
                         <>
@@ -152,27 +152,27 @@ export default function Step1Kependudukan({ data, setData, errors, clearErrors }
                         </>
                     ) : (
                         <>
-                            <svg className="w-3.5 h-3.5 mr-1.5 text-[#2FA084]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg className="w-3.5 h-3.5 mr-1.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                             Verifikasi Dukcapil Sekarang
                         </>
                     )}
                 </button>
-                <span className="text-[10px] text-slate-400">Kemendagri standard</span>
+                <span className="text-[10px] text-neutral-400">Kemendagri standard</span>
             </div>
 
             {/* Hasil Verifikasi Sukses */}
             {dukcapilResult && (
-                <div className="p-3.5 rounded-2xl bg-[#6FCF97]/15 border border-[#2FA084]/30 text-xs text-[#1F6F5F] flex items-center space-x-2.5 animate-fadeIn">
-                    <div className="w-6 h-6 rounded-full bg-[#2FA084] text-white flex items-center justify-center shrink-0 shadow-xs">
+                <div className="p-3.5 rounded-2xl bg-accent/15 border border-primary/30 text-xs text-primary-dark flex items-center space-x-2.5 animate-fadeIn">
+                    <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center shrink-0 shadow-xs">
                         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                         </svg>
                     </div>
                     <div className="leading-tight">
-                        <div className="font-bold text-[#1F6F5F]">Terverifikasi Dukcapil</div>
-                        <div className="text-[11px] text-[#2FA084]">{dukcapilResult.province} &bull; {dukcapilResult.regency}</div>
+                        <div className="font-bold text-primary-dark">Terverifikasi Dukcapil</div>
+                        <div className="text-[11px] text-primary">{dukcapilResult.province} &bull; {dukcapilResult.regency}</div>
                     </div>
                 </div>
             )}
