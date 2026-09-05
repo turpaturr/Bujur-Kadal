@@ -229,19 +229,188 @@ class UserSeeder extends Seeder
         );
 
         // =========================================================================
-        // AKUN ADMINISTRATOR / PETUGAS SIAGA (Email & Password)
+        // KELUARGA 5: BALIKPAPAN, KALIMANTAN TIMUR (No. KK: 6471010505050005)
         // =========================================================================
-        User::updateOrCreate(
-            ['email' => 'admin@borneocare.id'],
+        $familyBalikpapan = Family::firstOrCreate([
+            'no_kk' => '6471010505050005',
+        ]);
+
+        // 6. Akun Kepala Keluarga (Rentan - Penyakit Jantung)
+        // NIK: 6471011507800006 | PIN: 123456
+        $userRizal = User::updateOrCreate(
+            ['nik' => '6471011507800006'],
             [
-                'name' => 'Komandan Satgas Karhutla',
-                'password' => Hash::make('admin12345'),
-                'role' => UserRole::Admin,
-                'family_id' => null,
-                'nik' => null,
-                'whatsapp_number' => '81199887766',
-                'pin' => null,
-                'home_address' => 'Pos Komando Penanggulangan Bencana Provinsi Kalimantan',
+                'family_id' => $familyBalikpapan->id,
+                'name' => 'Rizal Maulana (Kepala Keluarga)',
+                'whatsapp_number' => '81122334455',
+                'pin' => Hash::make('123456'),
+                'role' => UserRole::KepalaKeluarga,
+                'home_address' => 'Jl. MT Haryono No. 45, Damai, Kota Balikpapan, Kalimantan Timur',
+                'home_latitude' => -1.26750000,
+                'home_longitude' => 116.82890000,
+            ]
+        );
+
+        HealthProfile::updateOrCreate(
+            ['user_id' => $userRizal->id],
+            [
+                'is_vulnerable' => true,
+                'comorbidity_notes' => 'Riwayat Penyakit Jantung dan Hipertensi, Membutuhkan Obat Rutin',
+            ]
+        );
+
+        // =========================================================================
+        // KELUARGA 6: BANJARMASIN, KALIMANTAN SELATAN (No. KK: 6371010606060006)
+        // =========================================================================
+        $familyBanjarmasin = Family::firstOrCreate([
+            'no_kk' => '6371010606060006',
+        ]);
+
+        // 7. Akun Kepala Keluarga (Non-Rentan)
+        // NIK: 6371012202840007 | PIN: 123456
+        $userFajar = User::updateOrCreate(
+            ['nik' => '6371012202840007'],
+            [
+                'family_id' => $familyBanjarmasin->id,
+                'name' => 'Fajar Hidayat (Kepala Keluarga)',
+                'whatsapp_number' => '81266778899',
+                'pin' => Hash::make('123456'),
+                'role' => UserRole::KepalaKeluarga,
+                'home_address' => 'Jl. Ahmad Yani Km 5, Pemurus Baru, Kota Banjarmasin, Kalimantan Selatan',
+                'home_latitude' => -3.31940000,
+                'home_longitude' => 114.59080000,
+            ]
+        );
+
+        HealthProfile::updateOrCreate(
+            ['user_id' => $userFajar->id],
+            [
+                'is_vulnerable' => false,
+                'comorbidity_notes' => null,
+            ]
+        );
+
+        // =========================================================================
+        // KELUARGA 7: BANJARBARU, KALIMANTAN SELATAN (No. KK: 6372010707070007)
+        // =========================================================================
+        $familyBanjarbaru = Family::firstOrCreate([
+            'no_kk' => '6372010707070007',
+        ]);
+
+        // 8. Akun Kepala Keluarga (Rentan - Disabilitas Mobilitas)
+        // NIK: 6372010901770008 | PIN: 123456
+        $userNadia = User::updateOrCreate(
+            ['nik' => '6372010901770008'],
+            [
+                'family_id' => $familyBanjarbaru->id,
+                'name' => 'Nadia Permata (Kepala Keluarga)',
+                'whatsapp_number' => '81377889900',
+                'pin' => Hash::make('123456'),
+                'role' => UserRole::KepalaKeluarga,
+                'home_address' => 'Jl. Trikora No. 21, Guntung Manggis, Kota Banjarbaru, Kalimantan Selatan',
+                'home_latitude' => -3.44220000,
+                'home_longitude' => 114.83650000,
+            ]
+        );
+
+        HealthProfile::updateOrCreate(
+            ['user_id' => $userNadia->id],
+            [
+                'is_vulnerable' => true,
+                'comorbidity_notes' => 'Penyandang Disabilitas Mobilitas, Membutuhkan Bantuan Saat Evakuasi',
+            ]
+        );
+
+        // =========================================================================
+        // KELUARGA 8: TARAKAN, KALIMANTAN UTARA (No. KK: 6571010808080008)
+        // =========================================================================
+        $familyTarakan = Family::firstOrCreate([
+            'no_kk' => '6571010808080008',
+        ]);
+
+        // 9. Akun Kepala Keluarga (Non-Rentan)
+        // NIK: 6571011805880009 | PIN: 123456
+        $userYusuf = User::updateOrCreate(
+            ['nik' => '6571011805880009'],
+            [
+                'family_id' => $familyTarakan->id,
+                'name' => 'Yusuf Kurniawan (Kepala Keluarga)',
+                'whatsapp_number' => '82188990011',
+                'pin' => Hash::make('123456'),
+                'role' => UserRole::KepalaKeluarga,
+                'home_address' => 'Jl. Mulawarman No. 17, Karang Anyar, Kota Tarakan, Kalimantan Utara',
+                'home_latitude' => 3.30070000,
+                'home_longitude' => 117.63340000,
+            ]
+        );
+
+        HealthProfile::updateOrCreate(
+            ['user_id' => $userYusuf->id],
+            [
+                'is_vulnerable' => false,
+                'comorbidity_notes' => null,
+            ]
+        );
+
+        // =========================================================================
+        // KELUARGA 9: BONTANG, KALIMANTAN TIMUR (No. KK: 6474010909090009)
+        // =========================================================================
+        $familyBontang = Family::firstOrCreate([
+            'no_kk' => '6474010909090009',
+        ]);
+
+        // 10. Akun Kepala Keluarga (Rentan - Anak Kecil)
+        // NIK: 6474012503900010 | PIN: 123456
+        $userLina = User::updateOrCreate(
+            ['nik' => '6474012503900010'],
+            [
+                'family_id' => $familyBontang->id,
+                'name' => 'Lina Marlina (Kepala Keluarga)',
+                'whatsapp_number' => '85299001122',
+                'pin' => Hash::make('123456'),
+                'role' => UserRole::KepalaKeluarga,
+                'home_address' => 'Jl. Awang Long No. 9, Bontang Baru, Kota Bontang, Kalimantan Timur',
+                'home_latitude' => 0.13330000,
+                'home_longitude' => 117.50000000,
+            ]
+        );
+
+        HealthProfile::updateOrCreate(
+            ['user_id' => $userLina->id],
+            [
+                'is_vulnerable' => true,
+                'comorbidity_notes' => 'Memiliki Anak Usia 2 Tahun, Prioritas Evakuasi Keluarga dengan Balita',
+            ]
+        );
+
+        // =========================================================================
+        // KELUARGA 10: SINGKAWANG, KALIMANTAN BARAT (No. KK: 6172011010100010)
+        // =========================================================================
+        $familySingkawang = Family::firstOrCreate([
+            'no_kk' => '6172011010100010',
+        ]);
+
+        // 11. Akun Kepala Keluarga (Non-Rentan)
+        // NIK: 6172011206820011 | PIN: 123456
+        $userHendra = User::updateOrCreate(
+            ['nik' => '6172011206820011'],
+            [
+                'family_id' => $familySingkawang->id,
+                'name' => 'Hendra Wijaya (Kepala Keluarga)',
+                'whatsapp_number' => '81100112233',
+                'pin' => Hash::make('123456'),
+                'role' => UserRole::KepalaKeluarga,
+                'home_address' => 'Jl. Diponegoro No. 31, Pasiran, Kota Singkawang, Kalimantan Barat',
+                'home_latitude' => 0.90700000,
+                'home_longitude' => 108.98720000,
+            ]
+        );
+
+        HealthProfile::updateOrCreate(
+            ['user_id' => $userHendra->id],
+            [
+                'is_vulnerable' => false,
+                'comorbidity_notes' => null,
             ]
         );
     }

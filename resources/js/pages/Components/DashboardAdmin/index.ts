@@ -1,5 +1,7 @@
 export { default as AdminNavbar } from './AdminNavbar';
 export { default as AdminCommandRibbon } from './AdminCommandRibbon';
+export { default as AdminHeaderBanner } from './AdminHeaderBanner';
+export { default as AdminMapSection } from './AdminMapSection';
 export { default as WildfirePanel } from './WildfirePanel';
 export {
     Maps,
@@ -9,5 +11,3 @@ export {
     BORNEO_PROVINCES,
     type ProvinceItem,
 } from '@/pages/Components/Dashboard';
-
-
