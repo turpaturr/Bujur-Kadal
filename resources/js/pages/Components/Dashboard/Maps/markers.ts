@@ -215,3 +215,68 @@ export function createRegisteredUserMarker(
     return marker;
 }
 
+export interface ClinicData {
+    id: string;
+    name: string;
+    lat: number;
+    lng: number;
+    addr?: string;
+    phone?: string;
+}
+
+/** Membuat CircleMarker untuk Fasilitas Kesehatan / Klinik Kalimantan */
+export function createClinicMarker(clinic: ClinicData): L.CircleMarker {
+    const marker = L.circleMarker([clinic.lat, clinic.lng], {
+        radius: 5,
+        color: '#ffffff',
+        fillColor: '#059669',
+        fillOpacity: 0.9,
+        weight: 1.5,
+        opacity: 1,
+    });
+
+    const popupHtml = `
+        <div style="font-family: 'Figtree', sans-serif; min-width: 220px; padding: 2px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                <span style="background: #ecfdf5; color: #047857; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 9999px; text-transform: uppercase; border: 1px solid #a7f3d0;">
+                    Fasilitas Kesehatan
+                </span>
+                <span style="font-size: 10px; font-weight: 600; color: #059669;">Buka / Siaga</span>
+            </div>
+            <h4 style="font-weight: 700; font-size: 13px; color: #1F6F5F; margin: 0 0 4px 0; line-height: 1.3;">
+                ${clinic.name}
+            </h4>
+            ${clinic.addr ? `<p style="font-size: 11px; color: #4b5563; margin: 0 0 6px 0; line-height: 1.3;">${clinic.addr}</p>` : ''}
+            ${clinic.phone ? `<p style="font-size: 10.5px; color: #1F6F5F; font-weight: 600; margin: 0 0 6px 0;">Telp: ${clinic.phone}</p>` : ''}
+            <div style="margin-top: 6px; padding-top: 6px; border-top: 1px solid #e5e7eb; font-size: 10px; color: #374151;">
+                <div style="color: #047857; font-weight: 600; margin-bottom: 2px;">
+                    • Siaga Oksigen &amp; Nebulizer ISPA
+                </div>
+                <div style="color: #6b7280;">
+                    Pelayanan pertolongan gangguan pernapasan asap
+                </div>
+            </div>
+            <div style="margin-top: 8px;">
+                <a href="https://www.google.com/maps/dir/?api=1&destination=${clinic.lat},${clinic.lng}" target="_blank" rel="noopener noreferrer" style="display: block; text-align: center; background: #1F6F5F; color: #ffffff; text-decoration: none; font-size: 11px; font-weight: 700; padding: 5px 8px; border-radius: 8px;">
+                    Rute Navigasi Google Maps &rarr;
+                </a>
+            </div>
+        </div>
+    `;
+
+    marker.bindPopup(popupHtml, {
+        maxWidth: 260,
+        minWidth: 220,
+        className: 'clinic-popup-custom',
+    });
+
+    marker.bindTooltip(clinic.name, {
+        direction: 'top',
+        offset: [0, -4],
+        opacity: 0.9,
+    });
+
+    return marker;
+}
+
+

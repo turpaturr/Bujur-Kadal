@@ -14,3 +14,4 @@ export { default as AdminSidebar } from './AdminSidebar';
 export { default as AdminTopBar } from './AdminTopBar';
 export { default as CitizensListView } from './CitizensListView';
 export { default as TriageView } from './TriageView';
+export { default as FacilitiesView } from './FacilitiesView';

@@ -20,6 +20,9 @@ export interface MapLegendProps {
     shouldShowRegisteredUsers?: boolean;
     onToggleRegisteredUsers?: () => void;
     onResetFilters?: () => void;
+    showClinics?: boolean;
+    onToggleClinics?: () => void;
+    clinicsCount?: number;
 }
 
 export function MapLegend({
@@ -37,6 +40,9 @@ export function MapLegend({
     shouldShowRegisteredUsers = true,
     onToggleRegisteredUsers,
     onResetFilters,
+    showClinics = true,
+    onToggleClinics,
+    clinicsCount = 1848,
 }: MapLegendProps) {
     const [showInfoGuide, setShowInfoGuide] = useState<boolean>(false);
     const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
@@ -347,6 +353,28 @@ export function MapLegend({
                     </div>
                 </div>
             )}
+
+            {/* Layer Fasilitas Kesehatan & Klinik Kalimantan */}
+            <div className="mt-2.5 pt-2 border-t border-[#EEEEEE]">
+                <div className="flex items-center justify-between text-[10px] uppercase font-bold text-[#1F6F5F] tracking-wider mb-1">
+                    <span className="flex items-center gap-1.5">
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 shrink-0" />
+                        <span>Klinik &amp; Faskes ({clinicsCount.toLocaleString('id-ID')})</span>
+                    </span>
+                    {onToggleClinics && (
+                        <button
+                            type="button"
+                            onClick={onToggleClinics}
+                            className="text-[10px] text-emerald-700 font-bold hover:underline cursor-pointer"
+                        >
+                            {showClinics ? 'Sembunyikan' : 'Tampilkan'}
+                        </button>
+                    )}
+                </div>
+                <div className="text-[9.5px] text-[#262626]/70 leading-snug">
+                    Posko Oksigen &amp; Faskes Siaga ISPA se-Kalimantan
+                </div>
+            </div>
 
             {/* Footer Keterangan Singkat */}
             <div className="mt-2 pt-1.5 border-t border-[#EEEEEE] text-[9.5px] text-[#262626]/60 flex items-center justify-between">
