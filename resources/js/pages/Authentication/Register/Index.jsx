@@ -5,81 +5,30 @@ import Step2Lokasi from './Step2Lokasi';
 import Step3RoleKesehatan from './Step3RoleKesehatan';
 import Step4Kredensial from './Step4Kredensial';
 
-/**
- * Step configuration for BorneoCare Registration
- */
 const STEPS = [
-    {
-        number: 1,
-        title: 'Kependudukan',
-        description: 'Verifikasi NIK & No. KK',
-        icon: (
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
-            </svg>
-        ),
-    },
-    {
-        number: 2,
-        title: 'Lokasi Tempat Tinggal',
-        description: 'Alamat & Koordinat Geocoding',
-        icon: (
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-        ),
-    },
-    {
-        number: 3,
-        title: 'Peran & Kesehatan',
-        description: 'Status Keluarga & Kerentanan ISPA',
-        icon: (
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-            </svg>
-        ),
-    },
-    {
-        number: 4,
-        title: 'Kredensial Cepat',
-        description: 'No. WhatsApp & PIN 6-Digit',
-        icon: (
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-        ),
-    },
+    { number: 1, title: 'Kependudukan', short: 'Data NIK & KK' },
+    { number: 2, title: 'Lokasi Rumah', short: 'Alamat & Peta' },
+    { number: 3, title: 'Status Kesehatan', short: 'Kerentanan ISPA' },
+    { number: 4, title: 'Kredensial', short: 'WhatsApp & PIN' },
 ];
 
 export default function RegisterIndex() {
     const [currentStep, setCurrentStep] = useState(1);
 
-    // Centralized Inertia form state for all 4 registration steps
     const { data, setData, post, processing, errors, clearErrors, setError } = useForm({
-        // Step 1: Kependudukan
         no_kk: '',
         nik: '',
         name: '',
-
-        // Step 2: Lokasi & Geocoding
         home_address: '',
         home_latitude: '',
         home_longitude: '',
-
-        // Step 3: Peran & Kerentanan Kesehatan
         role: 'kepala_keluarga',
         is_vulnerable: false,
         comorbidity_notes: '',
-
-        // Step 4: Kontak & Kredensial Darurat
         whatsapp_number: '',
         pin: '',
     });
 
-    /**
-     * Validate current step before advancing
-     */
     const validateCurrentStep = () => {
         if (currentStep === 1) {
             if (!data.no_kk || data.no_kk.length !== 16) {
@@ -112,9 +61,6 @@ export default function RegisterIndex() {
         return true;
     };
 
-    /**
-     * Advance to the next step
-     */
     const handleNext = () => {
         clearErrors();
         if (validateCurrentStep()) {
@@ -124,9 +70,6 @@ export default function RegisterIndex() {
         }
     };
 
-    /**
-     * Go back to the previous step
-     */
     const handlePrev = () => {
         clearErrors();
         if (currentStep > 1) {
@@ -134,14 +77,10 @@ export default function RegisterIndex() {
         }
     };
 
-    /**
-     * Final submission to Laravel backend
-     */
     const handleSubmit = (e) => {
         e.preventDefault();
         post('/register', {
             onError: (err) => {
-                // If there are errors in specific steps, guide the user to that step
                 if (err.no_kk || err.nik || err.name) {
                     setCurrentStep(1);
                 } else if (err.home_address || err.home_latitude || err.home_longitude) {
@@ -159,193 +98,196 @@ export default function RegisterIndex() {
         <>
             <Head title="Registrasi Warga - BorneoCare" />
 
-            <div className="min-h-screen bg-gradient-to-b from-emerald-50/50 via-slate-50 to-slate-100 dark:from-zinc-950 dark:via-zinc-900 dark:to-zinc-950 text-slate-800 dark:text-zinc-100 flex flex-col justify-center py-8 px-4 sm:px-6 lg:px-8">
-                {/* Header Brand */}
-                <div className="sm:mx-auto sm:w-full sm:max-w-2xl text-center mb-6">
-                    <div className="inline-flex items-center justify-center p-2.5 bg-emerald-600 text-white rounded-2xl shadow-lg shadow-emerald-600/30 mb-3">
-                        <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                        </svg>
-                    </div>
-                    <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-                        Borneo<span className="text-emerald-600 dark:text-emerald-400">Care</span>
-                    </h1>
-                    <p className="mt-1 text-sm sm:text-base text-slate-600 dark:text-zinc-400">
-                        Sistem Mitigasi Bencana Karhutla & Tanggap Darurat ISPA
-                    </p>
-                </div>
+            {/* Canvas Latar Belakang Putih Bersih */}
+            <div className="min-h-screen bg-white flex items-center justify-center p-4 sm:p-6 lg:p-10 relative overflow-hidden font-sans">
+                {/* Ambient Decorative Shapes bernuansa palet 6FCF97 dan EEEEEE */}
+                <div className="absolute -bottom-20 -left-20 w-64 h-64 rounded-full bg-[#6FCF97]/15 blur-2xl pointer-events-none"></div>
+                <div className="absolute -top-20 -right-20 w-72 h-72 rounded-3xl bg-[#EEEEEE] rotate-45 pointer-events-none"></div>
+                <div className="absolute top-1/4 -left-12 w-32 h-32 rounded-full bg-[#2FA084]/10 blur-xl pointer-events-none"></div>
 
-                {/* Main Card Container */}
-                <div className="sm:mx-auto sm:w-full sm:max-w-2xl">
-                    <div className="bg-white dark:bg-zinc-900 py-8 px-6 sm:px-10 shadow-xl shadow-slate-200/50 dark:shadow-black/50 border border-slate-200/80 dark:border-zinc-800 rounded-3xl">
-                        
-                        {/* Stepper Progress Bar */}
-                        <div className="mb-8">
-                            {/* Step Indicator Desktop / Tablet */}
-                            <div className="hidden sm:grid grid-cols-4 gap-2">
-                                {STEPS.map((step) => {
-                                    const isCompleted = currentStep > step.number;
-                                    const isCurrent = currentStep === step.number;
+                {/* Main Split Card Container */}
+                <div className="relative z-10 w-full max-w-5xl bg-white rounded-[32px] shadow-[0_20px_50px_rgba(31,111,95,0.12)] overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[620px] border border-[#EEEEEE]">
+                    
+                    {/* LEFT PANEL: Gradient Banner (Palette: 2FA084 -> 1F6F5F) */}
+                    <div className="lg:col-span-5 bg-gradient-to-br from-[#2FA084] via-[#1F6F5F] to-[#175246] text-white p-8 sm:p-10 flex flex-col justify-between relative overflow-hidden">
+                        {/* Decorative subtle patterns */}
+                        <div className="absolute -top-12 -right-12 w-44 h-44 bg-white/10 rounded-3xl rotate-12 pointer-events-none"></div>
+                        <div className="absolute bottom-8 -left-8 w-36 h-36 bg-white/10 rounded-2xl -rotate-12 pointer-events-none"></div>
 
-                                    return (
-                                        <div
-                                            key={step.number}
-                                            className={`relative flex flex-col items-center p-3 rounded-2xl border transition-all ${
-                                                isCurrent
-                                                    ? 'border-emerald-600 bg-emerald-50/70 dark:bg-emerald-950/30 dark:border-emerald-500'
-                                                    : isCompleted
-                                                    ? 'border-slate-200 bg-slate-50/50 dark:border-zinc-800 dark:bg-zinc-800/40 text-slate-500'
-                                                    : 'border-transparent text-slate-400 dark:text-zinc-600'
-                                            }`}
-                                        >
-                                            <div
-                                                className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-semibold mb-1.5 transition-colors ${
-                                                    isCurrent
-                                                        ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
-                                                        : isCompleted
-                                                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300'
-                                                        : 'bg-slate-100 dark:bg-zinc-800 text-slate-400 dark:text-zinc-500'
-                                                }`}
-                                            >
-                                                {isCompleted ? (
-                                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                                    </svg>
-                                                ) : (
-                                                    step.number
-                                                )}
-                                            </div>
-                                            <span className={`text-xs font-medium text-center line-clamp-1 ${isCurrent ? 'text-emerald-700 dark:text-emerald-300 font-semibold' : ''}`}>
-                                                {step.title}
-                                            </span>
-                                        </div>
-                                    );
-                                })}
+                        {/* Brand Logo Top Left */}
+                        <div className="relative z-10 flex items-center space-x-3">
+                            <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-inner">
+                                <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                </svg>
                             </div>
-
-                            {/* Mobile Step Header */}
-                            <div className="sm:hidden flex items-center justify-between pb-4 border-b border-slate-100 dark:border-zinc-800">
-                                <div className="flex items-center space-x-3">
-                                    <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-sm font-semibold shadow-md shadow-emerald-600/20">
-                                        {currentStep}
-                                    </div>
-                                    <div>
-                                        <div className="text-xs font-medium text-slate-500 dark:text-zinc-400">
-                                            Langkah {currentStep} dari {STEPS.length}
-                                        </div>
-                                        <div className="text-sm font-bold text-slate-900 dark:text-white">
-                                            {STEPS[currentStep - 1].title}
-                                        </div>
-                                    </div>
-                                </div>
-                                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800">
-                                    {Math.round((currentStep / STEPS.length) * 100)}%
-                                </span>
+                            <div>
+                                <span className="text-xl font-bold tracking-tight text-white">Borneo<span className="text-[#6FCF97]">Care</span></span>
+                                <span className="block text-[10px] uppercase tracking-widest text-[#6FCF97] font-medium">Health Mitigation</span>
                             </div>
                         </div>
 
-                        {/* Form Body */}
-                        <form onSubmit={handleSubmit}>
-                            {currentStep === 1 && (
-                                <Step1Kependudukan
-                                    data={data}
-                                    setData={setData}
-                                    errors={errors}
-                                    clearErrors={clearErrors}
-                                />
-                            )}
+                        {/* Centered Welcome Back Section */}
+                        <div className="relative z-10 py-10 lg:py-0 text-center my-auto">
+                            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-3 leading-tight">
+                                Welcome Back!
+                            </h2>
+                            <p className="text-[#EEEEEE] text-xs sm:text-sm leading-relaxed max-w-xs mx-auto mb-8 font-normal">
+                                Sudah terdaftar dalam sistem evakuasi BorneoCare? Masuk langsung menggunakan NIK dan PIN 6-digit Anda.
+                            </p>
+                            <Link
+                                href="/login"
+                                className="inline-block px-10 py-3 rounded-full border-2 border-white text-white font-bold text-xs sm:text-sm tracking-wider uppercase hover:bg-white hover:text-[#1F6F5F] transition-all shadow-md hover:shadow-xl active:scale-95"
+                            >
+                                SIGN IN
+                            </Link>
+                        </div>
 
-                            {currentStep === 2 && (
-                                <Step2Lokasi
-                                    data={data}
-                                    setData={setData}
-                                    errors={errors}
-                                />
-                            )}
-
-                            {currentStep === 3 && (
-                                <Step3RoleKesehatan
-                                    data={data}
-                                    setData={setData}
-                                    errors={errors}
-                                />
-                            )}
-
-                            {currentStep === 4 && (
-                                <Step4Kredensial
-                                    data={data}
-                                    setData={setData}
-                                    errors={errors}
-                                />
-                            )}
-
-                            {/* Navigation Action Buttons */}
-                            <div className="mt-8 pt-6 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-between">
-                                <button
-                                    type="button"
-                                    onClick={handlePrev}
-                                    disabled={currentStep === 1}
-                                    className={`inline-flex items-center px-4 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                                        currentStep === 1
-                                            ? 'text-slate-300 dark:text-zinc-700 cursor-not-allowed'
-                                            : 'text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 hover:text-slate-900'
-                                    }`}
-                                >
-                                    <svg className="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                                    </svg>
-                                    Kembali
-                                </button>
-
-                                {currentStep < STEPS.length ? (
-                                    <button
-                                        type="button"
-                                        onClick={handleNext}
-                                        className="inline-flex items-center px-6 py-2.5 rounded-xl text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 shadow-md shadow-emerald-600/20 transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-900"
-                                    >
-                                        Lanjutkan
-                                        <svg className="w-4 h-4 ml-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                        </svg>
-                                    </button>
-                                ) : (
-                                    <button
-                                        type="submit"
-                                        disabled={processing}
-                                        className="inline-flex items-center px-6 py-2.5 rounded-xl text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 shadow-lg shadow-emerald-600/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-900"
-                                    >
-                                        {processing ? (
-                                            <>
-                                                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                                                </svg>
-                                                Mendaftarkan Warga...
-                                            </>
-                                        ) : (
-                                            <>
-                                                Selesaikan & Masuk
-                                                <svg className="w-4 h-4 ml-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                                </svg>
-                                            </>
-                                        )}
-                                    </button>
-                                )}
+                        {/* Step Progress Tracker on Side Banner */}
+                        <div className="relative z-10 pt-6 border-t border-white/20">
+                            <div className="flex items-center justify-between text-xs text-white mb-2">
+                                <span className="font-semibold text-[#EEEEEE]">Langkah Registrasi</span>
+                                <span className="font-bold text-[#6FCF97]">{currentStep} / {STEPS.length}</span>
                             </div>
-                        </form>
+                            <div className="w-full bg-black/20 rounded-full h-2 overflow-hidden">
+                                <div
+                                    className="bg-[#6FCF97] h-2 rounded-full transition-all duration-500 ease-out shadow-sm"
+                                    style={{ width: `${(currentStep / STEPS.length) * 100}%` }}
+                                ></div>
+                            </div>
+                            <div className="mt-2 text-[11px] text-[#EEEEEE] font-medium">
+                                Tahap: {STEPS[currentStep - 1].title} ({STEPS[currentStep - 1].short})
+                            </div>
+                        </div>
                     </div>
 
-                    {/* Footer Auth Switcher */}
-                    <p className="mt-6 text-center text-sm text-slate-500 dark:text-zinc-400">
-                        Sudah memiliki akun terdaftar?{' '}
-                        <Link
-                            href="/login"
-                            className="font-semibold text-emerald-600 hover:text-emerald-500 dark:text-emerald-400 hover:underline"
-                        >
-                            Masuk Cepat dengan NIK & PIN
-                        </Link>
-                    </p>
+                    {/* RIGHT PANEL: Form Area (White Background) */}
+                    <div className="lg:col-span-7 p-6 sm:p-10 lg:p-12 flex flex-col justify-between bg-white">
+                        <div>
+                            {/* Heading */}
+                            <div className="text-center mb-6">
+                                <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1F6F5F] tracking-tight">
+                                    Create Account
+                                </h1>
+                                <p className="mt-1 text-xs text-slate-400">
+                                    Sistem Proteksi Warga & Jalur Evakuasi ISPA Karhutla
+                                </p>
+
+                                {/* Stepper Dots */}
+                                <div className="flex items-center justify-center space-x-2 mt-4">
+                                    {STEPS.map((step) => {
+                                        const isCurrent = currentStep === step.number;
+                                        const isPast = currentStep > step.number;
+                                        return (
+                                            <div
+                                                key={step.number}
+                                                className={`transition-all duration-300 rounded-full ${
+                                                    isCurrent
+                                                        ? 'w-8 h-2.5 bg-[#2FA084]'
+                                                        : isPast
+                                                        ? 'w-2.5 h-2.5 bg-[#6FCF97]'
+                                                        : 'w-2.5 h-2.5 bg-[#EEEEEE]'
+                                                }`}
+                                            ></div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            {/* Multi-step Child Form */}
+                            <form onSubmit={handleSubmit}>
+                                <div className="transition-all duration-300">
+                                    {currentStep === 1 && (
+                                        <Step1Kependudukan
+                                            data={data}
+                                            setData={setData}
+                                            errors={errors}
+                                            clearErrors={clearErrors}
+                                        />
+                                    )}
+
+                                    {currentStep === 2 && (
+                                        <Step2Lokasi
+                                            data={data}
+                                            setData={setData}
+                                            errors={errors}
+                                        />
+                                    )}
+
+                                    {currentStep === 3 && (
+                                        <Step3RoleKesehatan
+                                            data={data}
+                                            setData={setData}
+                                            errors={errors}
+                                        />
+                                    )}
+
+                                    {currentStep === 4 && (
+                                        <Step4Kredensial
+                                            data={data}
+                                            setData={setData}
+                                            errors={errors}
+                                        />
+                                    )}
+                                </div>
+
+                                {/* Navigation Actions (Pill Buttons sesuai tema 2FA084 / 1F6F5F) */}
+                                <div className="mt-8 pt-6 border-t border-[#EEEEEE] flex items-center justify-between">
+                                    <button
+                                        type="button"
+                                        onClick={handlePrev}
+                                        disabled={currentStep === 1}
+                                        className={`inline-flex items-center px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all ${
+                                            currentStep === 1
+                                                ? 'text-slate-300 cursor-not-allowed'
+                                                : 'text-[#1F6F5F] hover:bg-[#EEEEEE] active:scale-95'
+                                        }`}
+                                    >
+                                        <svg className="w-3.5 h-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                                        </svg>
+                                        Back
+                                    </button>
+
+                                    {currentStep < STEPS.length ? (
+                                        <button
+                                            type="button"
+                                            onClick={handleNext}
+                                            className="inline-flex items-center px-8 py-3 rounded-full text-xs font-bold uppercase tracking-wider text-white bg-[#2FA084] hover:bg-[#1F6F5F] active:scale-95 shadow-lg shadow-[#2FA084]/25 transition-all focus:outline-none"
+                                        >
+                                            Next Step
+                                            <svg className="w-3.5 h-3.5 ml-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </button>
+                                    ) : (
+                                        <button
+                                            type="submit"
+                                            disabled={processing}
+                                            className="inline-flex items-center px-8 py-3 rounded-full text-xs font-bold uppercase tracking-wider text-white bg-[#2FA084] hover:bg-[#1F6F5F] active:scale-95 shadow-lg shadow-[#2FA084]/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none"
+                                        >
+                                            {processing ? (
+                                                <>
+                                                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                                    </svg>
+                                                    Submitting...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    Sign Up Now
+                                                    <svg className="w-3.5 h-3.5 ml-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                                                    </svg>
+                                                </>
+                                            )}
+                                        </button>
+                                    )}
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
         </>

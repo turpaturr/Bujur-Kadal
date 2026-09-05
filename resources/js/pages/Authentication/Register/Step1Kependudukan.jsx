@@ -51,28 +51,37 @@ export default function Step1Kependudukan({ data, setData, errors, clearErrors }
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-4">
+            {/* Input Nama Lengkap */}
             <div>
-                <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center">
-                    <span className="w-2 h-6 bg-emerald-600 rounded-full mr-2.5"></span>
-                    Identitas Kependudukan (Dukcapil)
-                </h2>
-                <p className="mt-1 text-xs sm:text-sm text-slate-500 dark:text-zinc-400">
-                    Sistem memvalidasi NIK dan Nomor KK secara otomatis untuk memastikan data warga Borneo terdaftar secara resmi dalam sistem evakuasi.
-                </p>
+                <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                    </div>
+                    <input
+                        id="name"
+                        type="text"
+                        value={data.name}
+                        onChange={(e) => setData('name', e.target.value)}
+                        placeholder="Full Name (Nama Lengkap)"
+                        className="w-full pl-11 pr-4 py-3 rounded-xl bg-[#EEEEEE] text-slate-800 placeholder-slate-400 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#2FA084] transition-all border border-transparent focus:border-[#2FA084]"
+                    />
+                </div>
+                {errors.name && (
+                    <p className="mt-1 text-[11px] text-rose-500 font-medium">{errors.name}</p>
+                )}
             </div>
 
             {/* Input No. KK */}
             <div>
-                <div className="flex justify-between items-center mb-1.5">
-                    <label htmlFor="no_kk" className="block text-xs font-semibold text-slate-700 dark:text-zinc-300">
-                        Nomor Kartu Keluarga (KK) <span className="text-rose-500">*</span>
-                    </label>
-                    <span className="text-[11px] font-medium text-slate-400 dark:text-zinc-500">
-                        {data.no_kk?.length || 0}/16 digit
-                    </span>
-                </div>
                 <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                        </svg>
+                    </div>
                     <input
                         id="no_kk"
                         type="text"
@@ -83,26 +92,26 @@ export default function Step1Kependudukan({ data, setData, errors, clearErrors }
                             setData('no_kk', val);
                             setDukcapilResult(null);
                         }}
-                        placeholder="Contoh: 6472010101010001"
-                        className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm tracking-wide"
+                        placeholder="16 Digit No. KK (Kartu Keluarga)"
+                        className="w-full pl-11 pr-16 py-3 rounded-xl bg-[#EEEEEE] text-slate-800 placeholder-slate-400 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#2FA084] transition-all border border-transparent focus:border-[#2FA084] tracking-wide"
                     />
+                    <span className="absolute inset-y-0 right-0 pr-4 flex items-center text-[10px] text-slate-400 font-mono">
+                        {data.no_kk?.length || 0}/16
+                    </span>
                 </div>
                 {errors.no_kk && (
-                    <p className="mt-1.5 text-xs text-rose-500 font-medium">{errors.no_kk}</p>
+                    <p className="mt-1 text-[11px] text-rose-500 font-medium">{errors.no_kk}</p>
                 )}
             </div>
 
             {/* Input NIK */}
             <div>
-                <div className="flex justify-between items-center mb-1.5">
-                    <label htmlFor="nik" className="block text-xs font-semibold text-slate-700 dark:text-zinc-300">
-                        Nomor Induk Kependudukan (NIK) <span className="text-rose-500">*</span>
-                    </label>
-                    <span className="text-[11px] font-medium text-slate-400 dark:text-zinc-500">
-                        {data.nik?.length || 0}/16 digit
-                    </span>
-                </div>
                 <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
+                        </svg>
+                    </div>
                     <input
                         id="nik"
                         type="text"
@@ -113,98 +122,67 @@ export default function Step1Kependudukan({ data, setData, errors, clearErrors }
                             setData('nik', val);
                             setDukcapilResult(null);
                         }}
-                        placeholder="Contoh: 6472011508950001"
-                        className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm tracking-wide"
+                        placeholder="16 Digit NIK (KTP)"
+                        className="w-full pl-11 pr-16 py-3 rounded-xl bg-[#EEEEEE] text-slate-800 placeholder-slate-400 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#2FA084] transition-all border border-transparent focus:border-[#2FA084] tracking-wide"
                     />
+                    <span className="absolute inset-y-0 right-0 pr-4 flex items-center text-[10px] text-slate-400 font-mono">
+                        {data.nik?.length || 0}/16
+                    </span>
                 </div>
                 {errors.nik && (
-                    <p className="mt-1.5 text-xs text-rose-500 font-medium">{errors.nik}</p>
+                    <p className="mt-1 text-[11px] text-rose-500 font-medium">{errors.nik}</p>
                 )}
             </div>
 
-            {/* Tombol Validasi Mock Dukcapil */}
-            <div className="flex items-center justify-between pt-1">
+            {/* Tombol Verifikasi Cek Dukcapil */}
+            <div className="pt-1 flex items-center justify-between">
                 <button
                     type="button"
                     onClick={handleVerifyDukcapil}
-                    disabled={verifying || (data.nik?.length !== 16 || data.no_kk?.length !== 16)}
-                    className="inline-flex items-center px-4 py-2 rounded-xl text-xs font-semibold text-emerald-700 bg-emerald-100/80 hover:bg-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:hover:bg-emerald-900/60 border border-emerald-300/60 dark:border-emerald-800 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
+                    disabled={verifying || data.nik?.length !== 16 || data.no_kk?.length !== 16}
+                    className="inline-flex items-center px-4 py-2 rounded-full text-xs font-semibold text-[#1F6F5F] bg-[#EEEEEE] border border-[#2FA084]/40 hover:bg-[#6FCF97]/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-xs"
                 >
                     {verifying ? (
                         <>
-                            <svg className="animate-spin -ml-0.5 mr-2 h-3.5 w-3.5" fill="none" viewBox="0 0 24 24">
+                            <svg className="animate-spin -ml-0.5 mr-1.5 h-3.5 w-3.5" fill="none" viewBox="0 0 24 24">
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                             </svg>
-                            Memverifikasi Dukcapil...
+                            Verifikasi Dukcapil...
                         </>
                     ) : (
                         <>
-                            <svg className="w-3.5 h-3.5 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg className="w-3.5 h-3.5 mr-1.5 text-[#2FA084]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                             Verifikasi Dukcapil Sekarang
                         </>
                     )}
                 </button>
-                <span className="text-[11px] text-slate-400 dark:text-zinc-500 italic">
-                    Format NIK & KK standar Kemendagri
-                </span>
+                <span className="text-[10px] text-slate-400">Kemendagri standard</span>
             </div>
 
             {/* Hasil Verifikasi Sukses */}
             {dukcapilResult && (
-                <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 text-emerald-900 dark:text-emerald-200 animate-fadeIn">
-                    <div className="flex items-start">
-                        <div className="p-1.5 rounded-lg bg-emerald-600 text-white mr-3 mt-0.5 shadow-sm">
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                            </svg>
-                        </div>
-                        <div className="flex-1">
-                            <h4 className="text-xs font-bold text-emerald-800 dark:text-emerald-300">
-                                Terverifikasi Resmi di Database Kependudukan
-                            </h4>
-                            <p className="mt-1 text-xs text-emerald-700/90 dark:text-emerald-400">
-                                {dukcapilResult.province} &bull; {dukcapilResult.regency}
-                            </p>
-                            <p className="text-[10px] text-emerald-600/75 dark:text-emerald-500 mt-0.5">
-                                Kode verifikasi sinkron dengan server mitigasi bencana BorneoCare.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Pesan Error Dukcapil */}
-            {dukcapilError && (
-                <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-rose-800 dark:text-rose-200 text-xs">
-                    <div className="flex items-center space-x-2">
-                        <svg className="w-4 h-4 text-rose-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <div className="p-3.5 rounded-2xl bg-[#6FCF97]/15 border border-[#2FA084]/30 text-xs text-[#1F6F5F] flex items-center space-x-2.5 animate-fadeIn">
+                    <div className="w-6 h-6 rounded-full bg-[#2FA084] text-white flex items-center justify-center shrink-0 shadow-xs">
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                         </svg>
-                        <span className="font-medium">{dukcapilError}</span>
+                    </div>
+                    <div className="leading-tight">
+                        <div className="font-bold text-[#1F6F5F]">Terverifikasi Dukcapil</div>
+                        <div className="text-[11px] text-[#2FA084]">{dukcapilResult.province} &bull; {dukcapilResult.regency}</div>
                     </div>
                 </div>
             )}
 
-            {/* Input Nama Lengkap */}
-            <div>
-                <label htmlFor="name" className="block text-xs font-semibold text-slate-700 dark:text-zinc-300 mb-1.5">
-                    Nama Lengkap Sesuai KTP <span className="text-rose-500">*</span>
-                </label>
-                <input
-                    id="name"
-                    type="text"
-                    value={data.name}
-                    onChange={(e) => setData('name', e.target.value)}
-                    placeholder="Contoh: Budi Santoso"
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm"
-                />
-                {errors.name && (
-                    <p className="mt-1.5 text-xs text-rose-500 font-medium">{errors.name}</p>
-                )}
-            </div>
+            {/* Error Dukcapil */}
+            {dukcapilError && (
+                <div className="p-3 rounded-2xl bg-rose-50 border border-rose-200 text-xs text-rose-700">
+                    {dukcapilError}
+                </div>
+            )}
         </div>
     );
 }
