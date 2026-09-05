@@ -15,9 +15,40 @@
     --font-serif:
         'Fraunces', Georgia, Cambria, 'Times New Roman', Times, serif;
 
+    --font-heading:
+        'Fraunces', Georgia, Cambria, 'Times New Roman', Times, serif;
+
+    --color-primary: #2FA084;
+    --color-primary-dark: #1F6F5F;
+    --color-accent: #6FCF97;
+    --color-surface: #EEEEEE;
+
     --color-borneo-teal: #14967F;
     --color-trust-blue: #095D7E;
     --color-oxygen-blue: #CCECEE;
     --color-charcoal: #262626;
     --color-clean-whisper: #F1F9FF;
 }
+
+@keyframes spin-slow {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.animate-spin-slow {
+    animation: spin-slow 22s linear infinite;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
