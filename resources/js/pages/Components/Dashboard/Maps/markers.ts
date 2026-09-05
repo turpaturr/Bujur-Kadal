@@ -4,7 +4,11 @@ import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 import iconRetina from 'leaflet/dist/images/marker-icon-2x.png';
 
 import type { WildfireHotspot } from '@/hooks/useWildfireData';
-import type { UserLocation, UserSafetyAnalysis } from '@/utils/geoSafety';
+import {
+    calculateDistanceKm,
+    type UserLocation,
+    type UserSafetyAnalysis,
+} from '@/utils/geoSafety';
 import {
     CONFIDENCE_COLORS,
     CONFIDENCE_FILL_OPACITY,
@@ -230,7 +234,10 @@ export interface ClinicData {
 }
 
 /** Membuat Marker Berikon Rumah Sakit untuk Fasilitas Kesehatan / Klinik Kalimantan */
-export function createClinicMarker(clinic: ClinicData): L.Marker {
+export function createClinicMarker(
+    clinic: ClinicData,
+    origin?: { lat: number; lng: number } | null,
+): L.Marker {
     const hospitalIcon = L.divIcon({
         className: 'custom-clinic-hospital-marker',
         html: `
@@ -250,14 +257,35 @@ export function createClinicMarker(clinic: ClinicData): L.Marker {
         zIndexOffset: 600,
     });
 
+    const hasOrigin = Boolean(
+        origin &&
+        origin.lat !== undefined &&
+        origin.lng !== undefined &&
+        !isNaN(Number(origin.lat)) &&
+        !isNaN(Number(origin.lng)) &&
+        (Number(origin.lat) !== 0 || Number(origin.lng) !== 0),
+    );
+
+    const originParam = hasOrigin ? `&origin=${origin!.lat},${origin!.lng}` : '';
+    const mapsUrl = `https://www.google.com/maps/dir/?api=1${originParam}&destination=${clinic.lat},${clinic.lng}`;
+
+    let distanceBadge = '';
+    let distanceTooltip = '';
+    if (hasOrigin) {
+        const distKm = calculateDistanceKm(origin!.lat, origin!.lng, clinic.lat, clinic.lng);
+        const distFormatted = distKm < 1 ? `${Math.round(distKm * 1000)} m` : `${distKm.toFixed(1)} km`;
+        distanceBadge = `<span style="font-size: 10px; font-weight: 700; color: #047857; background: #ecfdf5; padding: 1.5px 6px; border-radius: 6px; border: 1px solid #a7f3d0; white-space: nowrap;">± ${distFormatted} dari Rumah</span>`;
+        distanceTooltip = ` (${distFormatted} dari Rumah)`;
+    }
+
     const popupHtml = `
-        <div style="font-family: 'Figtree', sans-serif; min-width: 220px; padding: 2px;">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
-                <span style="background: #ecfdf5; color: #047857; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 9999px; text-transform: uppercase; border: 1px solid #a7f3d0; display: inline-flex; align-items: center; gap: 3px;">
+        <div style="font-family: 'Figtree', sans-serif; min-width: 230px; padding: 2px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; gap: 4px;">
+                <span style="background: #ecfdf5; color: #047857; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 9999px; text-transform: uppercase; border: 1px solid #a7f3d0; display: inline-flex; align-items: center; gap: 3px; white-space: nowrap;">
                     <svg width="9" height="9" viewBox="0 0 24 24" fill="#047857"><path d="M8.5 2h7v6.5H22v7h-6.5V22h-7v-6.5H2v-7h6.5V2z"/></svg>
-                    Faskes / Rumah Sakit
+                    Faskes / RS
                 </span>
-                <span style="font-size: 10px; font-weight: 600; color: #059669;">Buka / Siaga</span>
+                ${distanceBadge ? distanceBadge : '<span style="font-size: 10px; font-weight: 600; color: #059669;">Buka / Siaga</span>'}
             </div>
             <h4 style="font-weight: 700; font-size: 13px; color: #1F6F5F; margin: 0 0 4px 0; line-height: 1.3;">
                 ${clinic.name}
@@ -273,16 +301,16 @@ export function createClinicMarker(clinic: ClinicData): L.Marker {
                 </div>
             </div>
             <div style="margin-top: 8px;">
-                <a href="https://www.google.com/maps/dir/?api=1&destination=${clinic.lat},${clinic.lng}" target="_blank" rel="noopener noreferrer" style="display: block; text-align: center; background: #1F6F5F; color: #ffffff; text-decoration: none; font-size: 11px; font-weight: 700; padding: 5px 8px; border-radius: 8px;">
-                    Rute Navigasi Google Maps &rarr;
+                <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" style="display: block; text-align: center; background: #1F6F5F; color: #ffffff; text-decoration: none; font-size: 11px; font-weight: 700; padding: 6px 8px; border-radius: 8px; box-shadow: 0 2px 4px rgba(31,111,95,0.25);">
+                    ${hasOrigin ? 'Rute dari Kediaman ke Faskes &rarr;' : 'Rute Navigasi Google Maps &rarr;'}
                 </a>
             </div>
         </div>
     `;
 
     marker.bindPopup(popupHtml, {
-        maxWidth: 270,
-        minWidth: 220,
+        maxWidth: 280,
+        minWidth: 230,
         className: 'clinic-popup-custom',
         autoPan: true,
         autoPanPaddingTopLeft: L.point(40, 85),
@@ -292,7 +320,7 @@ export function createClinicMarker(clinic: ClinicData): L.Marker {
 
     marker.bindTooltip(
         `<div style="font-family: 'Figtree', sans-serif; font-size: 11px; font-weight: 700; color: #065F46;">
-            🏥 ${clinic.name}
+            🏥 ${clinic.name}${distanceTooltip}
             <div style="font-size: 9.5px; font-weight: 500; color: #059669; margin-top: 1px;">Siaga Oksigen & Faskes ISPA</div>
         </div>`,
         {

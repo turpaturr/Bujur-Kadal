@@ -407,11 +407,24 @@ export function Maps({
             return;
         }
 
+        const originCoord =
+            userLocation &&
+            !isNaN(Number(userLocation.latitude)) &&
+            !isNaN(Number(userLocation.longitude)) &&
+            (Number(userLocation.latitude) !== 0 || Number(userLocation.longitude) !== 0)
+                ? { lat: Number(userLocation.latitude), lng: Number(userLocation.longitude) }
+                : selectedUserLocation &&
+                  !isNaN(Number(selectedUserLocation.latitude)) &&
+                  !isNaN(Number(selectedUserLocation.longitude)) &&
+                  (Number(selectedUserLocation.latitude) !== 0 || Number(selectedUserLocation.longitude) !== 0)
+                  ? { lat: Number(selectedUserLocation.latitude), lng: Number(selectedUserLocation.longitude) }
+                  : null;
+
         for (const clinic of KALIMANTAN_CLINICS) {
-            const marker = createClinicMarker(clinic);
+            const marker = createClinicMarker(clinic, originCoord);
             layer.addLayer(marker);
         }
-    }, [shouldShowClinics]);
+    }, [shouldShowClinics, userLocation, selectedUserLocation]);
 
     const handleToggleRegisteredUsers = () => {
         if (onToggleRegisteredUsers) {
