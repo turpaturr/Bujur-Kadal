@@ -26,7 +26,7 @@ export const BORNEO_STATIONS: StationTripItem[] = [
         tag: 'Kalimantan Barat',
         aqi: 185,
         // Gambar autentik Sungai Kapuas & rimba basah Kalbar
-        image: 'https://images.unsplash.com/photo-1596401057633-54a8fe8ef647?auto=format&fit=crop&w=800&q=80',
+        image: 'https://upload.wikimedia.org/wikipedia/commons/1/1f/Equator_Pontianak_Monument.jpg?utm_source=id.wikipedia.org&utm_campaign=index&utm_content=original',
         heightClass: 'h-[360px] sm:h-[400px] md:h-[440px]',
     },
     {
@@ -38,7 +38,7 @@ export const BORNEO_STATIONS: StationTripItem[] = [
         tag: 'Kalimantan Tengah',
         aqi: 240,
         // Gambar autentik Hutan Rawa Gambut Sebangau Kalteng
-        image: 'https://images.unsplash.com/photo-1518457607834-6e8d80c183c5?auto=format&fit=crop&w=800&q=80',
+        image: 'https://upload.wikimedia.org/wikipedia/commons/7/7b/Tugu_Batang_Garing.JPG?utm_source=id.wikipedia.org&utm_campaign=index&utm_content=original',
         heightClass: 'h-[390px] sm:h-[430px] md:h-[470px]',
     },
     {
@@ -50,7 +50,7 @@ export const BORNEO_STATIONS: StationTripItem[] = [
         tag: 'Kalimantan Selatan',
         aqi: 162,
         // Gambar autentik Lanskap Sungai & Rimba Meratus Kalsel
-        image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=85',
+        image: 'https://upload.wikimedia.org/wikipedia/commons/a/a0/Tugu_Selamat_Datang_di_Kota_Banjarbaru.jpg?utm_source=id.wikipedia.org&utm_campaign=index&utm_content=original',
         heightClass: 'h-[410px] sm:h-[450px] md:h-[490px]',
         accent: true,
     },
@@ -63,7 +63,7 @@ export const BORNEO_STATIONS: StationTripItem[] = [
         tag: 'Kalimantan Timur',
         aqi: 88,
         // Gambar autentik Pesona Bahari Derawan & Hutan Lindung Kaltim
-        image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=80',
+        image: 'https://upload.wikimedia.org/wikipedia/commons/e/e3/Tugu_Khatulistiwa_Pontianak_2024_01.jpg?utm_source=min.wikipedia.org&utm_campaign=index&utm_content=original',
         heightClass: 'h-[390px] sm:h-[430px] md:h-[470px]',
     },
     {
@@ -75,7 +75,7 @@ export const BORNEO_STATIONS: StationTripItem[] = [
         tag: 'Kalimantan Utara',
         aqi: 42,
         // Gambar autentik Rimba Perawan & Air Terjun Kayan Mentarang Kaltara
-        image: 'https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?auto=format&fit=crop&w=800&q=80',
+        image: 'https://upload.wikimedia.org/wikipedia/commons/1/18/Tugu_Cinta_Damai.JPG?utm_source=id.wikipedia.org&utm_campaign=index&utm_content=original',
         heightClass: 'h-[360px] sm:h-[400px] md:h-[440px]',
     },
 ];

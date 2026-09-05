@@ -53,7 +53,7 @@ export default function ParallaxHero({ aqi = 187, onExploreClick }: ParallaxHero
             <div
                 className="absolute inset-0 w-full h-[125%] -top-[12%] bg-cover bg-center pointer-events-none will-change-transform"
                 style={{
-                    backgroundImage: `url('https://images.unsplash.com/photo-1596401057633-54a8fe8ef647?auto=format&fit=crop&w=2000&q=85')`,
+                    backgroundImage: `url('https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d4/Dipterocarp_Forest_at_Danum_Valley_%2813997709808%29.jpg/330px-Dipterocarp_Forest_at_Danum_Valley_%2813997709808%29.jpg?utm_source=id.wikipedia.org&utm_campaign=parser&utm_content=thumbnail')`,
                     transform: `translate3d(0, ${scrollY * 0.35}px, 0) scale(${1 + scrollY * 0.00025})`,
                 }}
             />
@@ -73,11 +73,6 @@ export default function ParallaxHero({ aqi = 187, onExploreClick }: ParallaxHero
                     opacity: Math.max(0, 1 - scrollY / 650),
                 }}
             >
-                {/* Pill Badge matching Dribbble "GET PLEASURE" / BorneoCare */}
-                <div className="inline-flex items-center gap-2 px-5 py-1.5 rounded-full border border-white/30 bg-white/10 backdrop-blur-md text-white/90 text-xs tracking-[0.22em] uppercase font-semibold shadow-lg hover:border-[#6FCF97] hover:text-[#6FCF97] transition-all duration-300">
-                    <span className="h-2 w-2 rounded-full bg-[#6FCF97] animate-pulse" />
-                    PULAU KALIMANTAN · ECO-SANCTUARY &amp; AIR MONITOR
-                </div>
 
                 {/* Grand Heading with Fraunces Serif Font */}
                 <h1 className="mt-7 font-heading font-serif text-3xl sm:text-5xl md:text-6xl lg:text-7xl text-white font-normal leading-[1.12] tracking-tight drop-shadow-md">
@@ -109,41 +104,6 @@ export default function ParallaxHero({ aqi = 187, onExploreClick }: ParallaxHero
                     >
                         Jelajah Stasiun Rimba
                     </a>
-                </div>
-
-                {/* Floating Live ISPU Telemetry Badge */}
-                <div className="mt-10 inline-flex flex-wrap items-center gap-4 sm:gap-6 rounded-2xl border border-white/20 bg-black/35 backdrop-blur-lg px-5 py-3 text-white shadow-2xl">
-                    <div className="flex items-center gap-2">
-                        <MapPinned className="h-4 w-4 text-[#6FCF97]" />
-                        <div className="text-left">
-                            <span className="text-[10px] uppercase tracking-wider text-white/60 block">Stasiun Pantau</span>
-                            <span className="text-xs font-semibold text-white">Palangka Raya</span>
-                        </div>
-                    </div>
-
-                    <div className="h-8 w-px bg-white/20 hidden sm:block" />
-
-                    <div className="flex items-center gap-2.5">
-                        <div className="text-left">
-                            <span className="text-[10px] uppercase tracking-wider text-white/60 block">Status ISPU</span>
-                            <div className="flex items-center gap-1.5">
-                                <span className="font-heading font-serif text-xl font-bold tabular-nums text-white">{aqi}</span>
-                                <span className={cn("text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full text-white", activeCategory.chip)}>
-                                    {activeCategory.label}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="h-8 w-px bg-white/20 hidden sm:block" />
-
-                    <div className="flex items-center gap-2 text-left">
-                        <Activity className="h-4 w-4 text-[#2FA084]" />
-                        <div>
-                            <span className="text-[10px] uppercase tracking-wider text-white/60 block">Telemetri Satelit</span>
-                            <span className="text-xs font-semibold text-[#6FCF97]">NASA FIRMS Aktif</span>
-                        </div>
-                    </div>
                 </div>
             </div>
 
