@@ -9,7 +9,8 @@ import { defineConfig, lazyPlugins } from 'vite-plus';
 import type { PluginOption } from 'vite'; // Tambahkan import tipe ini
 
 export default defineConfig({
-    plugins: lazyPlugins((async () => [
+    envPrefix: ['VITE_', 'NASA_'],
+    plugins: lazyPlugins(() => [
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.tsx'],
             refresh: true,
