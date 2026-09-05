@@ -1,8 +1,9 @@
-import { Link } from '@inertiajs/react';
-import { 
-    MapPin, 
-    HeartPulse, 
-    LogOut, 
+import { Link, usePage } from '@inertiajs/react';
+import {
+    MapPin,
+    Mailbox,
+    Users,
+    LogOut,
     X,
     RefreshCw
 } from '@/pages/Components/Dashboard/Icons';
@@ -12,7 +13,7 @@ interface CitizenSidebarProps {
     onCloseMobile: () => void;
     userName: string;
     inboxCount: number;
-    onOpenInbox: () => void;
+    onOpenInbox?: () => void;
     onResetMap: () => void;
 }
 
@@ -24,14 +25,15 @@ export default function CitizenSidebar({
     onOpenInbox,
     onResetMap
 }: CitizenSidebarProps) {
+    const currentUrl = usePage().url;
     const baseClasses = "fixed inset-y-0 left-0 z-50 w-64 transform bg-white border-r border-[#EEEEEE] transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0";
     const mobileClasses = isMobileOpen ? "translate-x-0" : "-translate-x-full";
 
     return (
         <>
             {isMobileOpen && (
-                <div 
-                    className="fixed inset-0 z-40 bg-black/50 lg:hidden" 
+                <div
+                    className="fixed inset-0 z-40 bg-black/50 lg:hidden"
                     onClick={onCloseMobile}
                 />
             )}
@@ -41,7 +43,7 @@ export default function CitizenSidebar({
                     <span className="font-display text-xl font-bold text-[#1F6F5F]">
                         BorneoCare <span className="text-sm font-normal text-emerald-500">Warga</span>
                     </span>
-                    <button 
+                    <button
                         onClick={onCloseMobile}
                         className="lg:hidden text-gray-500 hover:text-gray-700 cursor-pointer"
                     >
@@ -57,28 +59,17 @@ export default function CitizenSidebar({
                 <nav className="flex-1 overflow-y-auto py-4">
                     <ul className="space-y-1 px-3">
                         <li>
-                            <button
-                                onClick={() => {
-                                    onCloseMobile();
-                                }}
-                                className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors bg-[#1F6F5F] text-white cursor-pointer"
-                            >
+                            <Link href="/dashboard" onClick={onCloseMobile} className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${currentUrl === '/dashboard' ? 'bg-[#1F6F5F] text-white' : 'text-gray-600 hover:bg-gray-100'} cursor-pointer`}>
                                 <div className="flex items-center gap-3">
                                     <MapPin className="w-5 h-5 text-white" />
                                     <span>Beranda Pantauan</span>
                                 </div>
-                            </button>
+                            </Link>
                         </li>
                         <li>
-                            <button
-                                onClick={() => {
-                                    onOpenInbox();
-                                    onCloseMobile();
-                                }}
-                                className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900 cursor-pointer"
-                            >
+                            <Link href="/reservations" onClick={onCloseMobile} className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${currentUrl === '/reservations' ? 'bg-[#1F6F5F] text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'} cursor-pointer`}>
                                 <div className="flex items-center gap-3">
-                                    <HeartPulse className="w-5 h-5 text-gray-400" />
+                                    <Mailbox className="w-5 h-5 text-gray-400" />
                                     <span>Kotak Masuk Faskes</span>
                                 </div>
                                 {inboxCount > 0 && (
@@ -86,7 +77,15 @@ export default function CitizenSidebar({
                                         {inboxCount}
                                     </span>
                                 )}
-                            </button>
+                            </Link>
+                        </li>
+                        <li>
+                            <Link href="/family" onClick={onCloseMobile} className={`w-full flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${currentUrl === '/family' ? 'bg-[#1F6F5F] text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'} cursor-pointer`}>
+                                <div className="flex items-center gap-3">
+                                    <Users className="w-5 h-5 text-gray-400" />
+                                    <span>Anggota Keluarga</span>
+                                </div>
+                            </Link>
                         </li>
                         <li>
                             <button
