@@ -238,6 +238,7 @@ export function createClinicMarker(
     clinic: ClinicData,
     origin?: { lat: number; lng: number } | null,
     onSelectRoute?: (clinic: ClinicData) => void,
+    onBookCheckup?: (clinic: ClinicData) => void,
 ): L.Marker {
     const hospitalIcon = L.divIcon({
         className: 'custom-clinic-hospital-marker',
@@ -302,6 +303,11 @@ export function createClinicMarker(
                 </div>
             </div>
             <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 5px;">
+                ${onBookCheckup ? `
+                    <button id="btn-book-${clinic.id}" type="button" style="display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; background: #047857; color: #ffffff; border: none; font-size: 11px; font-weight: 700; padding: 7px 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(4,120,87,0.25); cursor: pointer; transition: background 0.15s ease;">
+                        <span>📅 Buat Jadwal Medical Checkup</span>
+                    </button>
+                ` : ''}
                 ${onSelectRoute ? `
                     <button id="btn-route-${clinic.id}" type="button" style="display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; background: #1F6F5F; color: #ffffff; border: none; font-size: 11px; font-weight: 700; padding: 7px 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(31,111,95,0.25); cursor: pointer;">
                         <span>🚗 Pandu Rute di Peta Ini</span>
@@ -325,18 +331,28 @@ export function createClinicMarker(
         keepInView: true,
     });
 
-    if (onSelectRoute) {
-        marker.on('popupopen', () => {
-            const btn = document.getElementById(`btn-route-${clinic.id}`);
-            if (btn) {
-                btn.onclick = (e) => {
+    marker.on('popupopen', () => {
+        if (onSelectRoute) {
+            const btnRoute = document.getElementById(`btn-route-${clinic.id}`);
+            if (btnRoute) {
+                btnRoute.onclick = (e) => {
                     e.preventDefault();
                     marker.closePopup();
                     onSelectRoute(clinic);
                 };
             }
-        });
-    }
+        }
+        if (onBookCheckup) {
+            const btnBook = document.getElementById(`btn-book-${clinic.id}`);
+            if (btnBook) {
+                btnBook.onclick = (e) => {
+                    e.preventDefault();
+                    marker.closePopup();
+                    onBookCheckup(clinic);
+                };
+            }
+        }
+    });
 
     marker.bindTooltip(
         `<div style="font-family: 'Figtree', sans-serif; font-size: 11px; font-weight: 700; color: #065F46;">

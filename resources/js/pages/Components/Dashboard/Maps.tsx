@@ -61,6 +61,7 @@ export function Maps({
     onToggleRegisteredUsers,
     showClinics,
     onToggleClinics,
+    onBookCheckup,
 }: MapsProps) {
     const mapContainerRef = useRef<HTMLDivElement | null>(null);
     const mapInstanceRef = useRef<L.Map | null>(null);
@@ -524,10 +525,10 @@ export function Maps({
             : KALIMANTAN_CLINICS;
 
         for (const clinic of clinicsToRender) {
-            const marker = createClinicMarker(clinic, effectiveOrigin, handleStartRoute);
+            const marker = createClinicMarker(clinic, effectiveOrigin, handleStartRoute, onBookCheckup);
             layer.addLayer(marker);
         }
-    }, [shouldShowClinics, effectiveOrigin, activeRouteClinic]);
+    }, [shouldShowClinics, effectiveOrigin, activeRouteClinic, onBookCheckup]);
 
     const handleToggleRegisteredUsers = () => {
         if (onToggleRegisteredUsers) {

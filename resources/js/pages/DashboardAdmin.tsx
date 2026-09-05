@@ -9,6 +9,8 @@ import {
     CitizensListView,
     TriageView,
     FacilitiesView,
+    CheckupReservationsView,
+    type AdminReservationItem,
 } from '@/pages/Components/DashboardAdmin';
 import type { AdminMenuType } from '@/pages/Components/DashboardAdmin/AdminSidebar';
 import type { HotspotCategory, ConfidenceLevel } from '@/hooks/useWildfireData';
@@ -34,11 +36,15 @@ interface AdminStats {
 interface DashboardAdminProps {
     adminStats?: AdminStats;
     registeredUsers?: RegisteredUserLocation[];
+    reservations?: AdminReservationItem[];
+    pendingReservationsCount?: number;
 }
 
 export default function DashboardAdmin({
     adminStats,
     registeredUsers = [],
+    reservations = [],
+    pendingReservationsCount = 0,
 }: DashboardAdminProps) {
     const [activeMenu, setActiveMenu] = useState<AdminMenuType>('maps');
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -164,9 +170,8 @@ export default function DashboardAdmin({
 
         if (activeMenu === 'triage') {
             return (
-                <TriageView
-                    registeredUsers={registeredUsers}
-                    hotspots={visibleHotspots}
+                <CheckupReservationsView
+                    reservations={reservations}
                 />
             );
         }
@@ -224,6 +229,7 @@ export default function DashboardAdmin({
                     onMenuChange={setActiveMenu}
                     isMobileOpen={isMobileSidebarOpen}
                     onCloseMobile={() => setIsMobileSidebarOpen(false)}
+                    pendingReservationsCount={pendingReservationsCount}
                 />
 
                 <div className="flex-1 flex flex-col overflow-hidden">
@@ -233,7 +239,7 @@ export default function DashboardAdmin({
                             activeMenu === 'citizens'
                                 ? 'Data Warga Terdaftar'
                                 : activeMenu === 'triage'
-                                  ? 'Antrean Triase Spasial Karhutla'
+                                  ? 'Reservasi Medical Checkup & Faskes'
                                   : activeMenu === 'facilities'
                                     ? 'Fasilitas Kesehatan'
                                     : 'Peta Sebaran Spasial & Titik Api'

@@ -9,9 +9,13 @@ import {
     WildfirePanel,
     UserSafetyBanner,
     FamilyMemberModal,
+    BookCheckupModal,
+    UserReservationInboxModal,
     type FamilyMemberItem,
+    type UserReservationItem,
     type ProvinceItem,
 } from '@/pages/Components/Dashboard';
+import type { ClinicData } from '@/pages/Components/Dashboard/Maps/markers';
 import {
     useWildfireData,
     PROVINCE_CONFIG,
@@ -37,13 +41,30 @@ interface PageProps {
     familyMembers?: FamilyMemberItem[];
     isHeadOfFamily?: boolean;
     hasCompletedFamilyDocs?: boolean;
+    userReservations?: UserReservationItem[];
     [key: string]: unknown;
 }
 
 export default function Dashboard() {
-    const { auth, familyMembers, isHeadOfFamily, hasCompletedFamilyDocs } = usePage<PageProps>().props;
+    const {
+        auth,
+        familyMembers,
+        isHeadOfFamily,
+        hasCompletedFamilyDocs,
+        userReservations = [],
+    } = usePage<PageProps>().props;
     const [isAddMemberOpen, setIsAddMemberOpen] = useState<boolean>(false);
     const [editingMember, setEditingMember] = useState<FamilyMemberItem | null>(null);
+
+    // State Reservasi Medical Checkup & Inbox User
+    const [isBookModalOpen, setIsBookModalOpen] = useState<boolean>(false);
+    const [selectedCheckupClinic, setSelectedCheckupClinic] = useState<ClinicData | null>(null);
+    const [isInboxModalOpen, setIsInboxModalOpen] = useState<boolean>(false);
+
+    const handleBookCheckup = (clinic: ClinicData) => {
+        setSelectedCheckupClinic(clinic);
+        setIsBookModalOpen(true);
+    };
 
     const handleOpenAddMember = () => {
         setEditingMember(null);
@@ -281,7 +302,12 @@ export default function Dashboard() {
             {/* Layout Utama: Background Light Neutral & Typography Figtree / Fraunces */}
             <div className="flex min-h-screen flex-col bg-[#FAFAFA] font-sans text-[#262626] antialiased">
                 {/* 1. Header & Navigation (z-[100] sehingga peta tidak akan pernah menimpanya) */}
-                <Navbar onReset={handleResetAllFilters} lastUpdated={lastUpdated} />
+                <Navbar
+                    onReset={handleResetAllFilters}
+                    lastUpdated={lastUpdated}
+                    onOpenInbox={() => setIsInboxModalOpen(true)}
+                    inboxCount={userReservations?.length ?? 0}
+                />
 
                 {/* 2. Main Content */}
                 <main className="mx-auto w-full max-w-7xl flex-1 space-y-6 px-4 py-6 sm:px-6 lg:px-8">
@@ -536,6 +562,7 @@ export default function Dashboard() {
                             showUserHome={showUserHome}
                             onToggleUserHome={handleToggleUserHome}
                             onResetFilters={handleResetAllFilters}
+                            onBookCheckup={handleBookCheckup}
                         />
                     </section>
 
@@ -563,6 +590,22 @@ export default function Dashboard() {
                     isOpen={isAddMemberOpen}
                     onClose={() => setIsAddMemberOpen(false)}
                     editingMember={editingMember}
+                />
+
+                {/* 5. Modal Reservasi Medical Checkup Faskes */}
+                <BookCheckupModal
+                    isOpen={isBookModalOpen}
+                    onClose={() => setIsBookModalOpen(false)}
+                    clinic={selectedCheckupClinic}
+                    familyMembers={familyMembers ?? []}
+                    defaultPatientName={auth?.user?.name ?? ''}
+                />
+
+                {/* 6. Modal Inbox Status Reservasi Checkup */}
+                <UserReservationInboxModal
+                    isOpen={isInboxModalOpen}
+                    onClose={() => setIsInboxModalOpen(false)}
+                    reservations={userReservations ?? []}
                 />
             </div>
         </>

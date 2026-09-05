@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\SosStatus;
 use App\Enums\UserRole;
+use App\Models\CheckupReservation;
 use App\Models\Family;
 use App\Models\SafeZone;
 use App\Models\SosRequest;
@@ -88,9 +89,85 @@ class DashboardAdminController extends Controller
             ];
         }
 
+        $reservations = CheckupReservation::with(['user.family', 'user.healthProfile'])
+            ->orderByRaw("CASE WHEN status = 'pending' THEN 1 WHEN status = 'approved' THEN 2 ELSE 3 END")
+            ->orderBy('checkup_date', 'asc')
+            ->orderBy('checkup_time', 'asc')
+            ->get()
+            ->map(function ($r) {
+                $head = $r->user;
+                $cleanWa = preg_replace('/[^0-9]/', '', (string) ($head->whatsapp_number ?? ''));
+                if (str_starts_with($cleanWa, '0')) {
+                    $cleanWa = '62'.substr($cleanWa, 1);
+                }
+
+                return [
+                    'id' => $r->id,
+                    'clinic_id' => $r->clinic_id,
+                    'clinic_name' => $r->clinic_name,
+                    'clinic_address' => $r->clinic_address,
+                    'patient_name' => $r->patient_name,
+                    'patient_role' => $r->patient_role,
+                    'checkup_date' => $r->checkup_date?->format('Y-m-d'),
+                    'checkup_time' => $r->checkup_time,
+                    'symptoms' => $r->symptoms,
+                    'status' => $r->status,
+                    'admin_notes' => $r->admin_notes,
+                    'created_at' => $r->created_at?->diffForHumans(),
+                    'user' => [
+                        'id' => $head->id,
+                        'name' => $head->name,
+                        'no_kk' => $head->family?->no_kk,
+                        'home_address' => $head->home_address,
+                        'whatsapp_number' => $head->whatsapp_number,
+                        'whatsapp_link' => $cleanWa ? "https://wa.me/{$cleanWa}" : null,
+                    ],
+                ];
+            });
+
+        $pendingReservationsCount = CheckupReservation::pending()->count();
+
         return Inertia::render('DashboardAdmin', [
             'adminStats' => $adminStats,
             'registeredUsers' => $registeredUsers,
+            'reservations' => $reservations,
+            'pendingReservationsCount' => $pendingReservationsCount,
         ]);
+    }
+
+    /**
+     * Menyetujui permohonan reservasi jadwal medical checkup faskes.
+     */
+    public function approveReservation(CheckupReservation $reservation, Request $request)
+    {
+        $validated = $request->validate([
+            'admin_notes' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $reservation->update([
+            'status' => 'approved',
+            'admin_notes' => $validated['admin_notes'] ?? 'Jadwal telah dikonfirmasi oleh faskes. Silakan hadir 15 menit sebelum waktu pemeriksaan.',
+            'handled_at' => now(),
+        ]);
+
+        return back()->with('success', "Reservasi untuk {$reservation->patient_name} di {$reservation->clinic_name} berhasil disetujui.");
+    }
+
+    /**
+     * Menolak permohonan reservasi jadwal medical checkup faskes.
+     */
+    public function rejectReservation(CheckupReservation $reservation, Request $request)
+    {
+        $validated = $request->validate([
+            'admin_notes' => ['required', 'string', 'max:500'],
+        ]);
+
+        $reservation->update([
+            'status' => 'rejected',
+            'admin_notes' => $validated['admin_notes'],
+            'handled_at' => now(),
+        ]);
+
+        return back()->with('success', "Reservasi untuk {$reservation->patient_name} di {$reservation->clinic_name} telah ditolak.");
     }
 }

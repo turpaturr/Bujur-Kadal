@@ -35,6 +35,8 @@ export interface RegisteredUserLocation {
     members?: RegisteredFamilyMember[];
 }
 
+import type { ClinicData } from './markers';
+
 export interface MapsProps {
     center?: [number, number];
     zoom?: number;
@@ -66,5 +68,7 @@ export interface MapsProps {
     // Layer Klinik & Faskes Kalimantan
     showClinics?: boolean;
     onToggleClinics?: () => void;
+    onBookCheckup?: (clinic: ClinicData) => void;
 }
+
 

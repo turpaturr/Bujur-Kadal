@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\UserRole;
+use App\Models\CheckupReservation;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -43,10 +44,40 @@ class DashboardController extends Controller
                 });
         }
 
+        $userReservations = [];
+        if ($user) {
+            $userReservations = CheckupReservation::where(function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+                if ($user->family_id) {
+                    $q->orWhere('family_id', $user->family_id);
+                }
+            })
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->map(function ($r) {
+                    return [
+                        'id' => $r->id,
+                        'clinic_id' => $r->clinic_id,
+                        'clinic_name' => $r->clinic_name,
+                        'clinic_address' => $r->clinic_address,
+                        'patient_name' => $r->patient_name,
+                        'patient_role' => $r->patient_role,
+                        'checkup_date' => $r->checkup_date?->format('Y-m-d'),
+                        'checkup_time' => $r->checkup_time,
+                        'symptoms' => $r->symptoms,
+                        'status' => $r->status,
+                        'admin_notes' => $r->admin_notes,
+                        'created_at' => $r->created_at?->diffForHumans(),
+                        'created_at_raw' => $r->created_at?->toISOString(),
+                    ];
+                });
+        }
+
         return Inertia::render('Dashboard', [
             'familyMembers' => $familyMembers,
             'isHeadOfFamily' => $user?->role === UserRole::KepalaKeluarga,
             'hasCompletedFamilyDocs' => count($familyMembers) > 1,
+            'userReservations' => $userReservations,
         ]);
     }
 }
