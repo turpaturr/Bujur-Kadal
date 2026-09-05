@@ -218,7 +218,7 @@ export default function FamilyMemberTable({
                                                 <div className="space-y-1">
                                                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#B91C1C]/15 text-[#B91C1C] border border-[#B91C1C]/30 animate-pulse">
                                                         <span className="w-2 h-2 rounded-full bg-[#B91C1C]" />
-                                                        ⚠️ IN DANGER (SANGAT RENTAN)
+                                                        IN DANGER! (SANGAT RENTAN)
                                                     </span>
                                                     <div className="text-xs font-bold text-[#B91C1C] capitalize">
                                                         {category.replace('_', ' ')}
