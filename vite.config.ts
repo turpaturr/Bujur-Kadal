@@ -6,9 +6,10 @@ import react, { reactCompilerPreset } from '@vitejs/plugin-react';
 import laravel from 'laravel-vite-plugin';
 import { bunny } from 'laravel-vite-plugin/fonts';
 import { defineConfig, lazyPlugins } from 'vite-plus';
+import type { PluginOption } from 'vite'; // Tambahkan import tipe ini
 
 export default defineConfig({
-    plugins: lazyPlugins(() => [
+    plugins: lazyPlugins((async () => [
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.tsx'],
             refresh: true,
@@ -27,7 +28,7 @@ export default defineConfig({
         wayfinder({
             formVariants: true,
         }),
-    ]),
+    ]) as any),
     server: {
         watch: {
             ignored: [
