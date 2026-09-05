@@ -1,19 +1,19 @@
 import { useState } from 'react';
 import { Head } from '@inertiajs/react';
 import {
-    AdminNavbar,
-    AdminCommandRibbon,
-    AdminHeaderBanner,
     AdminMapSection,
     StatCards,
     WildfirePanel,
-    Footer,
+    AdminSidebar,
+    AdminTopBar,
+    CitizensListView,
+    TriageView,
     type ProvinceItem,
 } from '@/pages/Components/DashboardAdmin';
+import type { AdminMenuType } from '@/pages/Components/DashboardAdmin/AdminSidebar';
 import {
     useWildfireData,
     PROVINCE_CONFIG,
-    type HotspotCategory,
     type SensorSource,
     type WildfireHotspot,
 } from '@/hooks/useWildfireData';
@@ -38,35 +38,20 @@ export default function DashboardAdmin({
     adminStats,
     registeredUsers = [],
 }: DashboardAdminProps) {
-    const [selectedProvince, setSelectedProvince] = useState<string | null>(
-        null,
-    );
-    const [mapCenter, setMapCenter] = useState<[number, number]>([
-        0.9619, 114.5548,
-    ]);
-    const [mapZoom, setMapZoom] = useState<number>(6);
-    const [selectedHotspot, setSelectedHotspot] =
-        useState<WildfireHotspot | null>(null);
-    const [selectedUserLocation, setSelectedUserLocation] =
-        useState<RegisteredUserLocation | null>(null);
-    const [activeCategoryFilter, setActiveCategoryFilter] = useState<
-        'all' | HotspotCategory
-    >('all');
+    const [activeMenu, setActiveMenu] = useState<AdminMenuType>('maps');
+    const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
-    // Sensor yang diaktifkan; default: VIIRS SNPP + NOAA-20
-    const [enabledSensors, setEnabledSensors] = useState<SensorSource[]>([
-        'VIIRS_SNPP',
-        'VIIRS_NOAA20',
-    ]);
+    const [selectedProvince, setSelectedProvince] = useState<string | null>(null);
+    const [mapCenter, setMapCenter] = useState<[number, number]>([0.9619, 114.5548]);
+    const [mapZoom, setMapZoom] = useState<number>(6);
+    const [selectedHotspot, setSelectedHotspot] = useState<WildfireHotspot | null>(null);
+    const [selectedUserLocation, setSelectedUserLocation] = useState<RegisteredUserLocation | null>(null);
+
+    const [enabledSensors, setEnabledSensors] = useState<SensorSource[]>(['VIIRS_SNPP', 'VIIRS_NOAA20']);
 
     const wildfire = useWildfireData({ enabledSensors, dayRange: 1 });
-    const { stats, hotspots, isLoading, lastUpdated, refresh } = wildfire;
-    const visibleHotspots =
-        activeCategoryFilter === 'all'
-            ? hotspots
-            : hotspots.filter(
-                  (hotspot) => hotspot.category === activeCategoryFilter,
-              );
+    const { stats, hotspots, isLoading, refresh } = wildfire;
+    const visibleHotspots = hotspots;
 
     const handleSelectProvince = (province: ProvinceItem | null) => {
         setSelectedHotspot(null);
@@ -86,7 +71,7 @@ export default function DashboardAdmin({
             setMapCenter(found.center);
             setMapZoom(found.zoom);
             setSelectedHotspot(null);
-            window.scrollTo({ top: 220, behavior: 'smooth' });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     };
 
@@ -95,18 +80,16 @@ export default function DashboardAdmin({
         setSelectedUserLocation(null);
         setMapCenter([hotspot.latitude, hotspot.longitude]);
         setMapZoom(12);
-        window.scrollTo({ top: 220, behavior: 'smooth' });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    const handleSelectUserLocation = (
-        household: RegisteredUserLocation | null,
-    ) => {
+    const handleSelectUserLocation = (household: RegisteredUserLocation | null) => {
         setSelectedUserLocation(household);
         if (household) {
             setSelectedHotspot(null);
             setMapCenter([household.latitude, household.longitude]);
             setMapZoom(13);
-            window.scrollTo({ top: 220, behavior: 'smooth' });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     };
 
@@ -114,110 +97,91 @@ export default function DashboardAdmin({
         setSelectedProvince(null);
         setSelectedHotspot(null);
         setSelectedUserLocation(null);
-        setActiveCategoryFilter('all');
         setMapCenter([0.9619, 114.5548]);
         setMapZoom(6);
     };
 
-    const handleCategoryCardClick = (category: HotspotCategory) => {
-        setActiveCategoryFilter((prev) =>
-            prev === category ? 'all' : category,
-        );
-        window.scrollTo({ top: 260, behavior: 'smooth' });
-    };
-
     const handleToggleSensor = (sensor: SensorSource) => {
         setEnabledSensors((prev) =>
-            prev.includes(sensor)
-                ? prev.filter((s) => s !== sensor)
-                : [...prev, sensor],
+            prev.includes(sensor) ? prev.filter((s) => s !== sensor) : [...prev, sensor],
+        );
+    };
+
+    // Helper rendering content based on active menu
+    const renderContent = () => {
+        if (activeMenu === 'citizens') {
+            return <CitizensListView registeredUsers={registeredUsers} />;
+        }
+        
+        if (activeMenu === 'triage') {
+            return <TriageView registeredUsers={registeredUsers} hotspots={visibleHotspots} />;
+        }
+        
+        if (activeMenu === 'facilities') {
+            return (
+                <div className="flex items-center justify-center h-64 bg-white rounded-xl border border-[#EEEEEE]">
+                    <p className="text-gray-500 font-medium">Modul Manajemen Faskes akan segera hadir.</p>
+                </div>
+            );
+        }
+
+        // Default 'maps'
+        return (
+            <div className="space-y-6">
+                <StatCards
+                    stats={stats}
+                    isLoading={isLoading}
+                />
+
+                <AdminMapSection
+                    center={mapCenter}
+                    zoom={mapZoom}
+                    selectedProvince={selectedProvince}
+                    selectedHotspot={selectedHotspot}
+                    onClearSelectedHotspot={() => setSelectedHotspot(null)}
+                    visibleHotspots={visibleHotspots}
+                    registeredUsers={registeredUsers}
+                    selectedUserLocation={selectedUserLocation}
+                    onSelectUserLocation={handleSelectUserLocation}
+                />
+
+                <section>
+                    <WildfirePanel
+                        wildfire={wildfire}
+                        enabledSensors={enabledSensors}
+                        onToggleSensor={handleToggleSensor}
+                        onSelectProvince={handleSelectProvinceByName}
+                        onSelectHotspot={handleSelectHotspot}
+                    />
+                </section>
+            </div>
         );
     };
 
     return (
         <>
-            <Head title="Admin Command Center - Monitoring Karhutla & Satelit Borneo" />
-
-            {/* Layout Utama: Background Light Neutral & Typography Figtree / Fraunces */}
-            <div className="flex min-h-screen flex-col bg-[#FAFAFA] font-sans text-[#262626] antialiased">
-                {/* 1. Header & Admin Navigation */}
-                <AdminNavbar
-                    onReset={handleResetView}
-                    lastUpdated={lastUpdated}
+            <Head title="Admin Command Center - BorneoCare" />
+            
+            <div className="flex h-screen overflow-hidden bg-[#FAFAFA] font-sans text-[#262626] antialiased">
+                <AdminSidebar 
+                    activeMenu={activeMenu} 
+                    onMenuChange={setActiveMenu}
+                    isMobileOpen={isMobileSidebarOpen}
+                    onCloseMobile={() => setIsMobileSidebarOpen(false)}
                 />
-
-                {/* 2. Main Content */}
-                <main className="mx-auto w-full max-w-7xl flex-1 space-y-6 px-4 py-6 sm:px-6 lg:px-8">
-                    {/* Pusat Komando Satgas Ribbon */}
-                    <AdminCommandRibbon
-                        totalHotspots={stats.total}
-                        hazeRiskLevel={stats.hazeRiskLevel}
-                        onRefresh={refresh}
-                        isLoading={isLoading}
+                
+                <div className="flex-1 flex flex-col overflow-hidden">
+                    <AdminTopBar 
+                        onOpenMobile={() => setIsMobileSidebarOpen(true)} 
+                        title="BorneoCare Admin"
                     />
-
-                    {/* Header Banner & Status Alert Karhutla */}
-                    <AdminHeaderBanner
-                        hazeRiskLevel={stats.hazeRiskLevel}
-                        isLoading={isLoading}
-                        onRefresh={refresh}
-                        selectedProvince={selectedProvince}
-                        onSelectProvince={handleSelectProvince}
-                        countsByProvince={stats.byProvince}
-                        totalCount={stats.total}
-                    />
-
-                    {/* Ringkasan Kartu 3 Tanda (StatCards) */}
-                    <section>
-                        <StatCards
-                            stats={stats}
-                            isLoading={isLoading}
-                            onCategoryClick={handleCategoryCardClick}
-                        />
-                    </section>
-
-                    {/* Komponen Peta Interaktif Leaflet */}
-                    <AdminMapSection
-                        center={mapCenter}
-                        zoom={mapZoom}
-                        selectedProvince={selectedProvince}
-                        activeCategoryFilter={activeCategoryFilter}
-                        onClearCategoryFilter={() =>
-                            setActiveCategoryFilter('all')
-                        }
-                        selectedHotspot={selectedHotspot}
-                        onClearSelectedHotspot={() => setSelectedHotspot(null)}
-                        visibleHotspots={visibleHotspots}
-                        registeredUsers={registeredUsers}
-                        selectedUserLocation={selectedUserLocation}
-                        onSelectUserLocation={handleSelectUserLocation}
-                    />
-
-                    {/* Matriks Analisis Karhutla & Gambut: Khusus Administrator */}
-                    <section className="space-y-2">
-                        <div className="flex items-center justify-between px-1">
-                            <div className="flex items-center gap-2">
-                                <span className="shadow-2xs rounded-full bg-[#1F6F5F] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
-                                    Panel Khusus Administrator
-                                </span>
-                                <span className="text-xs text-[#262626]/70">
-                                    Matriks Analisis Karhutla, Klaster Radiasi
-                                    Panas (FRP) & Filter Sensor
-                                </span>
-                            </div>
+                    
+                    <main className="flex-1 overflow-y-auto bg-[#FAFAFA]">
+                        <div className="w-full p-4 md:p-6 space-y-6">
+                            {renderContent()}
                         </div>
-                        <WildfirePanel
-                            wildfire={wildfire}
-                            enabledSensors={enabledSensors}
-                            onToggleSensor={handleToggleSensor}
-                            onSelectProvince={handleSelectProvinceByName}
-                            onSelectHotspot={handleSelectHotspot}
-                        />
-                    </section>
-                </main>
-
-                {/* 3. Footer */}
-                <Footer />
+                    </main>
+                </div>
             </div>
         </>
     );

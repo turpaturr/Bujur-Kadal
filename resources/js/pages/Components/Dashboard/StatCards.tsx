@@ -21,7 +21,7 @@ export default function StatCards({
 
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Card 1: 🔴 Potensi Kebakaran Tinggi */}
+            {/* Card 1:  Potensi Kebakaran Tinggi */}
             <div
                 onClick={() => onCategoryClick?.('active_fire')}
                 className="bg-white rounded-2xl border border-[#EEEEEE] p-5 shadow-xs hover:border-rose-300 hover:shadow-sm transition-all cursor-pointer group"
@@ -31,9 +31,7 @@ export default function StatCards({
                         <span className="w-2 h-2 rounded-full bg-[#B91C1C] animate-pulse"></span>
                         Tinggi (&ge; 70&deg;C)
                     </span>
-                    <div className="w-8 h-8 rounded-lg bg-rose-50 text-[#B91C1C] flex items-center justify-center text-sm group-hover:scale-110 transition-transform">
-                        🔴
-                    </div>
+                    
                 </div>
 
                 <div className="mt-3">
@@ -61,7 +59,7 @@ export default function StatCards({
                 </div>
             </div>
 
-            {/* Card 2: 🟡 Potensi Kebakaran Sedang */}
+            {/* Card 2:  Potensi Kebakaran Sedang */}
             <div
                 onClick={() => onCategoryClick?.('smoke_peat')}
                 className="bg-white rounded-2xl border border-[#EEEEEE] p-5 shadow-xs hover:border-yellow-300 hover:shadow-sm transition-all cursor-pointer group"
@@ -71,9 +69,7 @@ export default function StatCards({
                         <span className="w-2 h-2 rounded-full bg-[#E5A910]"></span>
                         Sedang (60&ndash;69&deg;C)
                     </span>
-                    <div className="w-8 h-8 rounded-lg bg-yellow-50 text-[#CA8A04] flex items-center justify-center text-sm group-hover:scale-110 transition-transform">
-                        🟡
-                    </div>
+                    
                 </div>
 
                 <div className="mt-3">
@@ -103,7 +99,7 @@ export default function StatCards({
                 </div>
             </div>
 
-            {/* Card 3: 🟢 Potensi Kebakaran Rendah */}
+            {/* Card 3:  Potensi Kebakaran Rendah */}
             <div
                 onClick={() => onCategoryClick?.('heat_anomaly')}
                 className="bg-white rounded-2xl border border-[#EEEEEE] p-5 shadow-xs hover:border-emerald-300 hover:shadow-sm transition-all cursor-pointer group"
@@ -113,9 +109,7 @@ export default function StatCards({
                         <span className="w-2 h-2 rounded-full bg-[#15803D]"></span>
                         Rendah (&lt; 60&deg;C)
                     </span>
-                    <div className="w-8 h-8 rounded-lg bg-emerald-50 text-[#15803D] flex items-center justify-center text-sm group-hover:scale-110 transition-transform">
-                        🟢
-                    </div>
+                    
                 </div>
 
                 <div className="mt-3">
@@ -149,9 +143,7 @@ export default function StatCards({
                     <span className="text-xs font-bold text-[#1F6F5F] uppercase tracking-wider">
                         Total Pantauan Satelit
                     </span>
-                    <div className="w-8 h-8 rounded-lg bg-[#2FA084]/10 text-[#2FA084] flex items-center justify-center text-sm">
-                        🛰️
-                    </div>
+                    
                 </div>
 
                 <div className="mt-3">

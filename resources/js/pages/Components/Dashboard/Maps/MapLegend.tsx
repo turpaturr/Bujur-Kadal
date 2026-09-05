@@ -39,6 +39,7 @@ export function MapLegend({
     onResetFilters,
 }: MapLegendProps) {
     const [showInfoGuide, setShowInfoGuide] = useState<boolean>(false);
+    const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
 
     const totalActiveFilters =
         3 - selectedConfidenceLevels.length +
@@ -47,7 +48,7 @@ export function MapLegend({
     const hasAnyFilterActive = totalActiveFilters > 0;
 
     return (
-        <div className="absolute bottom-4 left-4 z-[1000] bg-white/95 backdrop-blur-sm p-3 rounded-2xl shadow-xl border border-[#EEEEEE] text-xs w-[270px] sm:w-[305px] pointer-events-auto max-h-[85%] overflow-y-auto no-scrollbar">
+        <div className="absolute bottom-4 left-4 z-[1000] bg-white/95 backdrop-blur-sm p-3 rounded-2xl shadow-xl border border-[#EEEEEE] text-xs w-[270px] sm:w-[305px] pointer-events-auto max-h-[85%] overflow-y-auto no-scrollbar transition-all">
             {/* Header Legenda & Tombol Reset */}
             <div className="flex items-center justify-between pb-2 border-b border-[#EEEEEE] mb-2">
                 <div className="flex items-center gap-1.5">
@@ -60,17 +61,31 @@ export function MapLegend({
                         </span>
                     )}
                 </div>
-                {hasAnyFilterActive && onResetFilters && (
+                <div className="flex items-center gap-2">
+                    {hasAnyFilterActive && onResetFilters && !isCollapsed && (
+                        <button
+                            type="button"
+                            onClick={onResetFilters}
+                            className="text-[10px] text-rose-600 font-bold hover:underline cursor-pointer flex items-center gap-0.5"
+                        >
+                            Reset
+                        </button>
+                    )}
                     <button
                         type="button"
-                        onClick={onResetFilters}
-                        className="text-[10px] text-rose-600 font-bold hover:underline cursor-pointer flex items-center gap-0.5"
+                        onClick={() => setIsCollapsed(!isCollapsed)}
+                        className="p-1 rounded-md bg-gray-100 hover:bg-gray-200 text-gray-600 cursor-pointer transition-colors flex items-center justify-center w-5 h-5"
+                        title={isCollapsed ? "Perbesar Legenda" : "Perkecil Legenda"}
                     >
-                        Reset
+                        <svg className="w-3.5 h-3.5 transition-transform duration-200" style={{ transform: isCollapsed ? 'rotate(180deg)' : 'rotate(0deg)' }} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
                     </button>
-                )}
+                </div>
             </div>
 
+            {!isCollapsed && (
+                <>
             {/* 1. Filter Situasi Anomali Suhu & Potensi Kebakaran (Multi-Pilih) */}
             <div className="space-y-1.5">
                 <div className="flex items-center justify-between text-[10px] uppercase font-bold text-[#262626]/60">
@@ -338,6 +353,8 @@ export function MapLegend({
                 <span>Radius lingkaran titik &prop; FRP (MW)</span>
                 <span className="text-[#1F6F5F] font-semibold">Live FIRMS</span>
             </div>
+            </>
+            )}
         </div>
     );
 }

@@ -1,15 +1,13 @@
 import React from 'react';
 import { Maps } from '@/pages/Components/Dashboard';
 import type { RegisteredUserLocation } from '@/pages/Components/Dashboard/Maps';
-import type { HotspotCategory, WildfireHotspot } from '@/hooks/useWildfireData';
+import type { WildfireHotspot } from '@/hooks/useWildfireData';
 import { Users, ShieldAlert } from '@/pages/Components/Dashboard/Icons';
 
 interface AdminMapSectionProps {
     center: [number, number];
     zoom: number;
     selectedProvince: string | null;
-    activeCategoryFilter: 'all' | HotspotCategory;
-    onClearCategoryFilter: () => void;
     selectedHotspot: WildfireHotspot | null;
     onClearSelectedHotspot: () => void;
     visibleHotspots: WildfireHotspot[];
@@ -22,8 +20,6 @@ export default function AdminMapSection({
     center,
     zoom,
     selectedProvince,
-    activeCategoryFilter,
-    onClearCategoryFilter,
     selectedHotspot,
     onClearSelectedHotspot,
     visibleHotspots,
@@ -57,27 +53,6 @@ export default function AdminMapSection({
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
-                    {/* Filter Kategori Titik Api Aktif (Tanpa Emoji) */}
-                    {activeCategoryFilter !== 'all' && (
-                        <div className="flex items-center gap-1.5 rounded-lg bg-[#2FA084]/15 px-2.5 py-1 text-xs font-bold text-[#1F6F5F]">
-                            <span>Filter:</span>
-                            <span>
-                                {activeCategoryFilter === 'active_fire'
-                                    ? 'Kebakaran Aktif'
-                                    : activeCategoryFilter === 'smoke_peat'
-                                      ? 'Asap & Gambut'
-                                      : 'Panas Berlebih'}
-                            </span>
-                            <button
-                                type="button"
-                                onClick={onClearCategoryFilter}
-                                className="ml-1 text-rose-600 hover:underline cursor-pointer"
-                            >
-                                ✕
-                            </button>
-                        </div>
-                    )}
-
                     {/* Titik Terpilih */}
                     {selectedHotspot && (
                         <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-1 text-xs text-amber-800">
@@ -94,47 +69,6 @@ export default function AdminMapSection({
                             >
                                 Batal
                             </button>
-                        </div>
-                    )}
-
-                    {/* Quick Selector Fokus Rumah Warga Terdaftar */}
-                    {registeredUsers.length > 0 && (
-                        <div className="flex items-center gap-1.5">
-                            <select
-                                value={selectedUserLocation?.id ?? ''}
-                                onChange={(e) => {
-                                    const val = e.target.value;
-                                    if (!val) {
-                                        onSelectUserLocation?.(null);
-                                    } else {
-                                        const found = registeredUsers.find(
-                                            (u) => u.id === Number(val),
-                                        );
-                                        if (found) {
-                                            onSelectUserLocation?.(found);
-                                        }
-                                    }
-                                }}
-                                className="rounded-xl border border-[#EEEEEE] bg-[#FAFAFA] px-2.5 py-1.5 text-xs text-[#262626] font-medium outline-hidden hover:border-[#1F6F5F] cursor-pointer focus:border-[#1F6F5F]"
-                            >
-                                <option value="">Fokus ke Tempat Tinggal Warga...</option>
-                                {registeredUsers.map((u) => (
-                                    <option key={u.id} value={u.id}>
-                                        {u.is_vulnerable ? '[Rentan] ' : ''}{u.name} ({u.total_members} Jiwa)
-                                    </option>
-                                ))}
-                            </select>
-
-                            {selectedUserLocation && (
-                                <button
-                                    type="button"
-                                    onClick={() => onSelectUserLocation?.(null)}
-                                    className="rounded-lg bg-neutral-100 px-2 py-1 text-[11px] text-neutral-600 hover:bg-neutral-200 cursor-pointer"
-                                    title="Batalkan fokus warga"
-                                >
-                                    ✕
-                                </button>
-                            )}
                         </div>
                     )}
                 </div>

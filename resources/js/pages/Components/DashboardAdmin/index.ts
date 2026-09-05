@@ -1,5 +1,4 @@
 export { default as AdminNavbar } from './AdminNavbar';
-export { default as AdminCommandRibbon } from './AdminCommandRibbon';
 export { default as AdminHeaderBanner } from './AdminHeaderBanner';
 export { default as AdminMapSection } from './AdminMapSection';
 export { default as WildfirePanel } from './WildfirePanel';
@@ -11,3 +10,7 @@ export {
     BORNEO_PROVINCES,
     type ProvinceItem,
 } from '@/pages/Components/Dashboard';
+export { default as AdminSidebar } from './AdminSidebar';
+export { default as AdminTopBar } from './AdminTopBar';
+export { default as CitizensListView } from './CitizensListView';
+export { default as TriageView } from './TriageView';

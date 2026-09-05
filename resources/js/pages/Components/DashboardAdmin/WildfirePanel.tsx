@@ -154,13 +154,13 @@ export default function WildfirePanel({
                                 <div className="col-span-4 sm:col-span-3">
                                     <div className="flex items-center justify-center gap-2 text-[11px]">
                                         <span className="inline-flex items-center gap-1 font-bold text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200" title="Kebakaran Aktif">
-                                            🔥 {prov.activeFireCount}
+                                            {prov.activeFireCount}
                                         </span>
                                         <span className="inline-flex items-center gap-1 font-bold text-orange-700 bg-orange-50 px-1.5 py-0.5 rounded border border-orange-200" title="Asap & Gambut">
-                                            💨 {prov.smokePeatCount}
+                                            {prov.smokePeatCount}
                                         </span>
                                         <span className="inline-flex items-center gap-1 font-semibold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 hidden md:inline-flex" title="Panas Berlebih">
-                                            ☀️ {prov.heatAnomalyCount}
+                                            {prov.heatAnomalyCount}
                                         </span>
                                     </div>
                                 </div>
@@ -222,7 +222,7 @@ export default function WildfirePanel({
                                                             ? 'bg-indigo-50 text-indigo-700'
                                                             : 'bg-amber-50 text-amber-700'
                                                     }`}>
-                                                        {h.daynight === 'N' ? '🌙 Malam' : '☀️ Siang'}
+                                                        {h.daynight === 'N' ? 'Malam' : 'Siang'}
                                                     </span>
                                                 </td>
                                                 <td className="py-2.5 px-2 text-right">
@@ -248,7 +248,6 @@ export default function WildfirePanel({
                             {/* Box 1: Kebakaran Aktif */}
                             <div className="p-4 rounded-xl border border-rose-200 bg-rose-50/50 space-y-2">
                                 <div className="flex items-center gap-2">
-                                    <span className="text-xl">🔥</span>
                                     <div>
                                         <h4 className="font-bold text-rose-800 text-sm">Kebakaran Aktif</h4>
                                         <span className="text-[10px] text-rose-600 uppercase font-semibold">Flaming Wildfire</span>
@@ -262,7 +261,6 @@ export default function WildfirePanel({
                             {/* Box 2: Potensi Asap & Gambut */}
                             <div className="p-4 rounded-xl border border-orange-200 bg-orange-50/50 space-y-2">
                                 <div className="flex items-center gap-2">
-                                    <span className="text-xl">💨</span>
                                     <div>
                                         <h4 className="font-bold text-orange-800 text-sm">Potensi Asap & Gambut</h4>
                                         <span className="text-[10px] text-orange-600 uppercase font-semibold">Peatland Smoldering</span>
@@ -276,7 +274,6 @@ export default function WildfirePanel({
                             {/* Box 3: Panas Berlebih */}
                             <div className="p-4 rounded-xl border border-amber-200 bg-amber-50/50 space-y-2">
                                 <div className="flex items-center gap-2">
-                                    <span className="text-xl">☀️</span>
                                     <div>
                                         <h4 className="font-bold text-amber-900 text-sm">Panas Berlebih</h4>
                                         <span className="text-[10px] text-amber-700 uppercase font-semibold">Thermal Anomaly</span>
