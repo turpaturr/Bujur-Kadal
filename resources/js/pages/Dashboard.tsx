@@ -5,8 +5,6 @@ import {
     ProvinceFilter,
     Maps,
     StatCards,
-    UserSafetyBanner,
-    FamilyMemberModal,
     BookCheckupModal,
     CitizenSidebar,
     type FamilyMemberItem,
@@ -38,8 +36,6 @@ interface PageProps {
         } | null;
     };
     familyMembers?: FamilyMemberItem[];
-    isHeadOfFamily?: boolean;
-    hasCompletedFamilyDocs?: boolean;
     userReservations?: UserReservationItem[];
     unreadReservationsCount?: number;
     [key: string]: unknown;
@@ -49,14 +45,10 @@ export default function Dashboard() {
     const {
         auth,
         familyMembers,
-        isHeadOfFamily,
-        hasCompletedFamilyDocs,
         userReservations = [],
         unreadReservationsCount = 0,
     } = usePage<PageProps>().props;
-    const [isAddMemberOpen, setIsAddMemberOpen] = useState<boolean>(false);
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-    const [editingMember, setEditingMember] = useState<FamilyMemberItem | null>(null);
 
     // State Reservasi Medical Checkup & Inbox User
     const [localReservations, setLocalReservations] = useState<UserReservationItem[]>(userReservations);
@@ -121,11 +113,6 @@ export default function Dashboard() {
     const handleBookCheckup = (clinic: ClinicData) => {
         setSelectedCheckupClinic(clinic);
         setIsBookModalOpen(true);
-    };
-
-    const handleOpenAddMember = () => {
-        setEditingMember(null);
-        setIsAddMemberOpen(true);
     };
 
     // 1. Ekstrak lokasi kediaman user jika tersedia dari database registrasi
@@ -368,72 +355,6 @@ export default function Dashboard() {
                     />
 
                     <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6">
-                        {/* Callout Prioritas Pertama: Lengkapi Berkas Keluarga */}
-                        {isHeadOfFamily && (
-                            <div
-                                className={`rounded-2xl p-5 border transition-all ${
-                                    !hasCompletedFamilyDocs
-                                        ? 'bg-gradient-to-r from-amber-500/10 via-rose-500/10 to-amber-500/10 border-amber-300 shadow-sm'
-                                        : 'bg-[#F6FBF9] border-[#2FA084]/30'
-                                }`}
-                            >
-                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                    <div className="flex items-start gap-3.5">
-                                        <div
-                                            className={`p-2.5 rounded-2xl shrink-0 ${
-                                                !hasCompletedFamilyDocs
-                                                    ? 'bg-[#B91C1C] text-white shadow-xs animate-bounce'
-                                                    : 'bg-[#2FA084] text-white'
-                                            }`}
-                                        >
-                                            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <div className="flex items-center gap-2">
-                                                <span
-                                                    className={`text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full ${
-                                                        !hasCompletedFamilyDocs
-                                                            ? 'bg-[#B91C1C] text-white'
-                                                            : 'bg-[#2FA084] text-white'
-                                                    }`}
-                                                >
-                                                    {!hasCompletedFamilyDocs ? 'Langkah Wajib Pertama' : 'Berkas Keluarga Aktif'}
-                                                </span>
-                                                <span className="text-xs text-[#262626]/60 font-semibold">
-                                                    Koordinator Evakuasi Keluarga
-                                                </span>
-                                            </div>
-                                            <h2 className="font-display text-base sm:text-lg font-bold text-[#1F6F5F] mt-1">
-                                                {!hasCompletedFamilyDocs
-                                                    ? 'Perhatian: Lengkapi Berkas Anggota Keluarga Anda'
-                                                    : `Data Keluarga Anda Terlindungi (${familyMembers?.length ?? 1} Anggota Terdaftar)`}
-                                            </h2>
-                                            <p className="text-xs text-[#262626]/80 mt-0.5 max-w-2xl leading-relaxed">
-                                                {!hasCompletedFamilyDocs
-                                                    ? 'Sebagai Kepala Keluarga, daftarkan seluruh anggota keluarga Anda (balita, anak-anak, lansia, ibu hamil, maupun riwayat penyakit bawaan). Sistem memerlukan data kerentanan ini untuk aktivasi sistem perlindungan kabut asap dan penentuan prioritas evakuasi sebelum Anda menjelajah peta lebih lanjut.'
-                                                    : 'Seluruh anggota keluarga telah terdaftar dalam sistem pemantauan satelit dan mitigasi evakuasi darurat BorneoCare. Anda dapat menambahkan anggota lainnya kapan saja.'}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-                                        <button
-                                            type="button"
-                                            onClick={() => setIsAddMemberOpen(true)}
-                                            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#2FA084] text-white hover:bg-[#1F6F5F] transition-all text-xs font-bold shadow-md hover:shadow-lg active:scale-95 cursor-pointer"
-                                        >
-                                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M12 4v16m8-8H4" />
-                                            </svg>
-                                            <span>Tambah Anggota Keluarga</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
                         {/* Header Banner & Status Alert Karhutla */}
                         <div className="rounded-2xl border border-[#EEEEEE] bg-white p-5 shadow-xs">
                             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -493,17 +414,6 @@ export default function Dashboard() {
                                 </div>
                             </div>
                         </div>
-
-                        {/* Banner Deteksi Keamanan Lingkungan Tempat Tinggal Pengguna */}
-                        {hasHome && (
-                            <UserSafetyBanner
-                                safety={userSafety}
-                                isFocusedOnHome={isHomeSelected}
-                                onFocusHome={handleFocusHome}
-                                onFocusNearestHotspot={handleFocusNearestHotspot}
-                                onResetToBorneo={handleResetView}
-                            />
-                        )}
 
                         {/* Ringkasan Kartu 3 Tanda (StatCards) */}
                         <section>
@@ -626,14 +536,7 @@ export default function Dashboard() {
                     </main>
                 </div>
 
-                {/* 4. Modal Tambah Anggota Keluarga */}
-                <FamilyMemberModal
-                    isOpen={isAddMemberOpen}
-                    onClose={() => setIsAddMemberOpen(false)}
-                    editingMember={editingMember}
-                />
-
-                {/* 5. Modal Reservasi Medical Checkup Faskes */}
+                {/* Modal Reservasi Medical Checkup Faskes */}
                 <BookCheckupModal
                     isOpen={isBookModalOpen}
                     onClose={() => setIsBookModalOpen(false)}
