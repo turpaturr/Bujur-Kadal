@@ -9,6 +9,7 @@ enum UserRole: string
     case KepalaKeluarga = 'kepala_keluarga';
     case Anggota = 'anggota';
     case Pendatang = 'pendatang';
+    case Faskes = 'faskes';
 
     /**
      * Get human-readable label for the role.
@@ -21,6 +22,7 @@ enum UserRole: string
             self::KepalaKeluarga => 'Kepala Keluarga',
             self::Anggota => 'Anggota Keluarga',
             self::Pendatang => 'Pendatang / Tamu',
+            self::Faskes => 'Fasilitas Kesehatan',
         };
     }
 }
