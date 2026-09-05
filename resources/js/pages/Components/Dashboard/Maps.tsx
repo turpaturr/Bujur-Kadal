@@ -205,7 +205,35 @@ export function Maps({
         const registeredUsersLayer = L.markerClusterGroup({ maxClusterRadius: 50 }).addTo(map);
         registeredUsersLayerRef.current = registeredUsersLayer;
 
-        const clinicsLayer = L.markerClusterGroup({ maxClusterRadius: 50 }).addTo(map);
+        const clinicsLayer = L.markerClusterGroup({
+            maxClusterRadius: 50,
+            iconCreateFunction: (cluster) => {
+                const count = cluster.getChildCount();
+                let size = 36;
+                let textSize = '12px';
+                if (count >= 100) {
+                    size = 46;
+                    textSize = '14px';
+                } else if (count >= 10) {
+                    size = 40;
+                    textSize = '13px';
+                }
+
+                return L.divIcon({
+                    html: `
+                        <div style="position: relative; width: ${size}px; height: ${size}px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                            <div style="position: absolute; inset: 0; border-radius: 50%; background: rgba(2, 132, 199, 0.28); box-shadow: 0 0 10px rgba(2, 132, 199, 0.35);"></div>
+                            <div style="position: relative; width: ${size - 10}px; height: ${size - 10}px; border-radius: 50%; background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%); border: 2px solid #ffffff; box-shadow: 0 2px 8px rgba(3, 105, 161, 0.45); display: flex; align-items: center; justify-content: center; color: #ffffff; font-family: 'Figtree', sans-serif; font-size: ${textSize}; font-weight: 800; line-height: 1;">
+                                ${count}
+                            </div>
+                        </div>
+                    `,
+                    className: 'custom-clinic-cluster-marker',
+                    iconSize: [size, size],
+                    iconAnchor: [size / 2, size / 2],
+                });
+            },
+        }).addTo(map);
         clinicsLayerRef.current = clinicsLayer;
 
         const resizeTimeout = setTimeout(() => {
