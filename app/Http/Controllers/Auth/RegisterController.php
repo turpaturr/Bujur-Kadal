@@ -62,6 +62,9 @@ class RegisterController extends Controller
                 'family_id' => $family->id,
                 'nik' => $validated['nik'],
                 'name' => $validated['name'],
+                'birth_date' => $validated['birth_date'],
+                'gender' => $validated['gender'],
+                'occupation' => $validated['occupation'],
                 'whatsapp_number' => $validated['whatsapp_number'],
                 'pin' => $validated['pin'], // User model cast 'pin' => 'hashed' automatically hashes
                 'role' => UserRole::KepalaKeluarga,

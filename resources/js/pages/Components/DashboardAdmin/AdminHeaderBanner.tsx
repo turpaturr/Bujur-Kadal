@@ -94,18 +94,6 @@ export default function AdminHeaderBanner({
                 </div>
             </div>
 
-            {/* Filter Tombol 5 Provinsi */}
-            <div className="mt-5 flex flex-col justify-between gap-3 border-t border-[#EEEEEE] pt-4 sm:flex-row sm:items-center">
-                <div className="text-xs font-semibold text-[#1F6F5F]">
-                    Filter Wilayah Spasial:
-                </div>
-                <ProvinceFilter
-                    selectedProvince={selectedProvince}
-                    onSelect={onSelectProvince}
-                    countsByProvince={countsByProvince}
-                    totalCount={totalCount}
-                />
-            </div>
         </div>
     );
 }

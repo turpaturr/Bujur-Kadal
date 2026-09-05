@@ -43,6 +43,17 @@ interface PageProps {
 export default function Dashboard() {
     const { auth, familyMembers, isHeadOfFamily, hasCompletedFamilyDocs } = usePage<PageProps>().props;
     const [isAddMemberOpen, setIsAddMemberOpen] = useState<boolean>(false);
+    const [editingMember, setEditingMember] = useState<FamilyMemberItem | null>(null);
+
+    const handleOpenAddMember = () => {
+        setEditingMember(null);
+        setIsAddMemberOpen(true);
+    };
+
+    const handleOpenEditMember = (member: FamilyMemberItem) => {
+        setEditingMember(member);
+        setIsAddMemberOpen(true);
+    };
 
     // 1. Ekstrak lokasi kediaman user jika tersedia dari database registrasi
     const userLocation: UserLocation | null = useMemo(() => {
@@ -398,23 +409,6 @@ export default function Dashboard() {
                                 </button>
                             </div>
                         </div>
-
-                        {/* Filter Tombol 5 Wilayah & Shortcut Rumah Pengguna */}
-                        <div className="mt-5 pt-4 border-t border-[#EEEEEE] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                            <div className="text-xs font-semibold text-[#1F6F5F]">
-                                Filter Wilayah Spasial:
-                            </div>
-                            <ProvinceFilter
-                                selectedProvince={activeProvinceSingle}
-                                onSelect={handleSelectProvinceFromBar}
-                                countsByProvince={stats.byProvince}
-                                totalCount={stats.total}
-                                hasUserHome={hasHome}
-                                isHomeSelected={isHomeSelected}
-                                onSelectHome={handleFocusHome}
-                                userSafetyStatus={userSafety.status}
-                            />
-                        </div>
                     </div>
 
                     {/* Banner Deteksi Keamanan Lingkungan Tempat Tinggal Pengguna */}
@@ -555,7 +549,8 @@ export default function Dashboard() {
                             onSelectHotspot={handleSelectHotspot}
                             familyMembers={familyMembers ?? []}
                             isHeadOfFamily={Boolean(isHeadOfFamily)}
-                            onOpenAddMember={() => setIsAddMemberOpen(true)}
+                            onOpenAddMember={handleOpenAddMember}
+                            onOpenEditMember={handleOpenEditMember}
                         />
                     </section>
                 </main>
@@ -567,6 +562,7 @@ export default function Dashboard() {
                 <FamilyMemberModal
                     isOpen={isAddMemberOpen}
                     onClose={() => setIsAddMemberOpen(false)}
+                    editingMember={editingMember}
                 />
             </div>
         </>

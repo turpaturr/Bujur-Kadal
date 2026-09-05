@@ -1,0 +1,3 @@
+sed -i 's/interface FamilyMemberModalProps {/import type { FamilyMemberItem } from ".\/FamilyMemberTable";\n\ninterface FamilyMemberModalProps {/g' resources/js/pages/Components/Dashboard/FamilyMemberModal.tsx
+sed -i 's/onClose: () => void;/onClose: () => void;\n    editingMember?: FamilyMemberItem | null;/g' resources/js/pages/Components/Dashboard/FamilyMemberModal.tsx
+sed -i 's/export default function FamilyMemberModal({ isOpen, onClose }: FamilyMemberModalProps) {/export default function FamilyMemberModal({ isOpen, onClose, editingMember }: FamilyMemberModalProps) {/g' resources/js/pages/Components/Dashboard/FamilyMemberModal.tsx

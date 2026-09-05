@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { router } from '@inertiajs/react';
 
+import type { FamilyMemberItem } from "./FamilyMemberTable";
+
 interface FamilyMemberModalProps {
     isOpen: boolean;
     onClose: () => void;
+    editingMember?: FamilyMemberItem | null;
 }
 
 export type VulnerabilityType =
@@ -74,7 +77,7 @@ const VULNERABILITY_OPTIONS: VulnerabilityOption[] = [
     },
 ];
 
-export default function FamilyMemberModal({ isOpen, onClose }: FamilyMemberModalProps) {
+export default function FamilyMemberModal({ isOpen, onClose, editingMember }: FamilyMemberModalProps) {
     const [formData, setFormData] = useState({
         name: '',
         nik: '',
@@ -88,16 +91,45 @@ export default function FamilyMemberModal({ isOpen, onClose }: FamilyMemberModal
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [submitting, setSubmitting] = useState(false);
 
+    React.useEffect(() => {
+        if (isOpen) {
+            if (editingMember) {
+                setFormData({
+                    name: editingMember.name,
+                    nik: '', // Don't show NIK during edit
+                    birth_date: editingMember.birth_date || '',
+                    gender: (editingMember.gender as 'laki-laki' | 'perempuan') || 'laki-laki',
+                    occupation: editingMember.occupation || '',
+                    vulnerability_category: (editingMember.health_profile?.vulnerability_category as VulnerabilityType) || 'tidak_rentan',
+                    comorbidity_notes: editingMember.health_profile?.comorbidity_notes || '',
+                });
+            } else {
+                setFormData({
+                    name: '',
+                    nik: '',
+                    birth_date: '',
+                    gender: 'laki-laki',
+                    occupation: '',
+                    vulnerability_category: 'tidak_rentan',
+                    comorbidity_notes: '',
+                });
+            }
+            setErrors({});
+        }
+    }, [isOpen, editingMember]);
+
     if (!isOpen) return null;
 
     const validate = () => {
         const errs: Record<string, string> = {};
 
         if (!formData.name.trim()) errs.name = 'Nama lengkap anggota keluarga wajib diisi.';
-        if (!formData.nik.trim()) {
-            errs.nik = 'NIK anggota keluarga wajib diisi.';
-        } else if (formData.nik.length !== 16 || !/^\d{16}$/.test(formData.nik)) {
-            errs.nik = 'NIK harus terdiri dari tepat 16 digit angka.';
+        if (!editingMember) {
+            if (!formData.nik.trim()) {
+                errs.nik = 'NIK anggota keluarga wajib diisi.';
+            } else if (formData.nik.length !== 16 || !/^\d{16}$/.test(formData.nik)) {
+                errs.nik = 'NIK harus terdiri dari tepat 16 digit angka.';
+            }
         }
         if (!formData.birth_date) {
             errs.birth_date = 'Tanggal lahir wajib ditentukan.';
@@ -122,27 +154,27 @@ export default function FamilyMemberModal({ isOpen, onClose }: FamilyMemberModal
         if (!validate()) return;
 
         setSubmitting(true);
-        router.post('/family/members', formData, {
+
+        const options = {
             preserveScroll: true,
             onSuccess: () => {
                 setSubmitting(false);
-                setFormData({
-                    name: '',
-                    nik: '',
-                    birth_date: '',
-                    gender: 'laki-laki',
-                    occupation: '',
-                    vulnerability_category: 'tidak_rentan',
-                    comorbidity_notes: '',
-                });
-                setErrors({});
                 onClose();
             },
-            onError: (errs) => {
+            onError: (errs: any) => {
                 setSubmitting(false);
                 setErrors(errs as Record<string, string>);
             },
-        });
+        };
+
+        if (editingMember) {
+            // For editing, only send fields that are present
+            const payload = { ...formData };
+            if (!payload.nik) delete (payload as any).nik; // don't send empty nik
+            router.put(`/family/members/${editingMember.id}`, payload, options);
+        } else {
+            router.post('/family/members', formData, options);
+        }
     };
 
     return (
@@ -150,21 +182,21 @@ export default function FamilyMemberModal({ isOpen, onClose }: FamilyMemberModal
             <div className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-[#EEEEEE] overflow-hidden my-8">
                 {/* Modal Header */}
                 <div className="px-6 py-5 bg-gradient-to-r from-[#1F6F5F] to-[#2FA084] text-white flex items-start justify-between">
-                    <div>
-                        <div className="flex items-center gap-2">
-                            <span className="p-1.5 rounded-lg bg-white/20 text-white">
-                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                                </svg>
-                            </span>
-                            <h3 className="font-display text-lg font-bold tracking-tight">
-                                Tambah Anggota Keluarga
-                            </h3>
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <span className="p-1.5 rounded-lg bg-white/20 text-white">
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                                    </svg>
+                                </span>
+                                <h3 className="font-display text-lg font-bold tracking-tight">
+                                    {editingMember ? 'Edit Data Anggota' : 'Tambah Anggota Keluarga'}
+                                </h3>
+                            </div>
+                            <p className="mt-1 text-xs text-white/80">
+                                {editingMember ? 'Perbarui data profil kesehatan anggota keluarga.' : 'Setiap anggota keluarga akan tercatat dalam pemetaan mitigasi kerentanan ISPA dan mewarisi PIN login keluarga.'}
+                            </p>
                         </div>
-                        <p className="mt-1 text-xs text-white/80">
-                            Setiap anggota keluarga akan tercatat dalam pemetaan mitigasi kerentanan ISPA dan mewarisi PIN login keluarga.
-                        </p>
-                    </div>
 
                     <button
                         type="button"
@@ -197,17 +229,28 @@ export default function FamilyMemberModal({ isOpen, onClose }: FamilyMemberModal
 
                         <div>
                             <label className="block text-xs font-bold text-[#1F6F5F] mb-1.5">
-                                NIK Anggota (16 Digit) <span className="text-rose-500">*</span>
+                                NIK Anggota (16 Digit) {!editingMember && <span className="text-rose-500">*</span>}
                             </label>
-                            <input
-                                type="text"
-                                maxLength={16}
-                                value={formData.nik}
-                                onChange={(e) => setFormData({ ...formData, nik: e.target.value.replace(/\D/g, '') })}
-                                placeholder="16 Digit NIK KTP / KIA"
-                                className="w-full px-3.5 py-2.5 rounded-xl bg-[#EEEEEE]/50 border border-[#EEEEEE] text-xs sm:text-sm text-[#262626] font-mono tracking-wide focus:outline-none focus:ring-2 focus:ring-[#2FA084] focus:bg-white transition-all"
-                            />
-                            {errors.nik && <p className="mt-1 text-[11px] text-rose-500 font-medium">{errors.nik}</p>}
+                            {editingMember ? (
+                                <input
+                                    type="text"
+                                    disabled
+                                    value={editingMember.nik_masked || ''}
+                                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#EEEEEE] border border-[#EEEEEE] text-xs sm:text-sm text-[#262626]/50 font-mono tracking-wide cursor-not-allowed"
+                                />
+                            ) : (
+                                <>
+                                    <input
+                                        type="text"
+                                        maxLength={16}
+                                        value={formData.nik}
+                                        onChange={(e) => setFormData({ ...formData, nik: e.target.value.replace(/\D/g, '') })}
+                                        placeholder="16 Digit NIK KTP / KIA"
+                                        className="w-full px-3.5 py-2.5 rounded-xl bg-[#EEEEEE]/50 border border-[#EEEEEE] text-xs sm:text-sm text-[#262626] font-mono tracking-wide focus:outline-none focus:ring-2 focus:ring-[#2FA084] focus:bg-white transition-all"
+                                    />
+                                    {errors.nik && <p className="mt-1 text-[11px] text-rose-500 font-medium">{errors.nik}</p>}
+                                </>
+                            )}
                         </div>
                     </div>
 
@@ -375,7 +418,7 @@ export default function FamilyMemberModal({ isOpen, onClose }: FamilyMemberModal
                                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                                     </svg>
-                                    <span>Simpan Anggota Keluarga</span>
+                                    <span>{editingMember ? 'Simpan Perubahan' : 'Simpan Anggota Keluarga'}</span>
                                 </>
                             )}
                         </button>

@@ -21,6 +21,7 @@ interface FamilyMemberTableProps {
     members: FamilyMemberItem[];
     isHeadOfFamily: boolean;
     onOpenAddModal: () => void;
+    onOpenEditModal: (member: FamilyMemberItem) => void;
 }
 
 // Menghitung usia dari tanggal lahir
@@ -85,6 +86,7 @@ export default function FamilyMemberTable({
     members,
     isHeadOfFamily,
     onOpenAddModal,
+    onOpenEditModal,
 }: FamilyMemberTableProps) {
     const handleDelete = (member: FamilyMemberItem) => {
         if (confirm(`Apakah Anda yakin ingin menghapus data anggota keluarga "${member.name}"?`)) {
@@ -265,23 +267,28 @@ export default function FamilyMemberTable({
                                             </div>
                                         </td>
 
-                                        {/* 6. Aksi */}
                                         {isHeadOfFamily && (
                                             <td className="py-3.5 px-3 text-right">
-                                                {!member.is_head ? (
+                                                <div className="flex items-center justify-end gap-1">
                                                     <button
                                                         type="button"
-                                                        onClick={() => handleDelete(member)}
-                                                        className="px-2.5 py-1.5 rounded-lg text-rose-600 hover:bg-rose-50 transition-all font-semibold text-xs cursor-pointer"
-                                                        title="Hapus Anggota Keluarga"
+                                                        onClick={() => onOpenEditModal(member)}
+                                                        className="px-2.5 py-1.5 rounded-lg text-[#1F6F5F] hover:bg-[#1F6F5F]/10 transition-all font-semibold text-xs cursor-pointer"
+                                                        title="Edit Data Anggota"
                                                     >
-                                                        Hapus
+                                                        Edit
                                                     </button>
-                                                ) : (
-                                                    <span className="text-[10px] text-[#262626]/40 italic">
-                                                        Utama
-                                                    </span>
-                                                )}
+                                                    {!member.is_head && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleDelete(member)}
+                                                            className="px-2.5 py-1.5 rounded-lg text-rose-600 hover:bg-rose-50 transition-all font-semibold text-xs cursor-pointer"
+                                                            title="Hapus Anggota Keluarga"
+                                                        >
+                                                            Hapus
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </td>
                                         )}
                                     </tr>
