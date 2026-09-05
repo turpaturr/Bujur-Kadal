@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { router } from '@inertiajs/react';
 import type { ClinicData } from './Maps/markers';
+import { showReservationSubmittedAlert } from '@/utils/alerts';
 
 interface FamilyMemberOption {
     id: number;
@@ -100,6 +101,7 @@ export default function BookCheckupModal({
                 onSuccess: () => {
                     setIsSubmitting(false);
                     onClose();
+                    showReservationSubmittedAlert();
                 },
                 onError: (errs) => {
                     setIsSubmitting(false);

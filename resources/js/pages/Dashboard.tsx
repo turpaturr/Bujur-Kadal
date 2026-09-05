@@ -23,6 +23,7 @@ import {
     type ConfidenceLevel,
 } from '@/hooks/useWildfireData';
 import { analyzeUserSafety, type UserLocation } from '@/utils/geoSafety';
+import { showReservationNotificationAlert } from '@/utils/alerts';
 import { AdminTopBar } from '@/pages/Components/DashboardAdmin';
 
 interface PageProps {
@@ -91,6 +92,7 @@ export default function Dashboard() {
                         );
                         // Nyalakan badge angka notifikasi baru saat ada aksi terima / tolak dari faskes
                         setLocalUnreadCount((prev) => prev + 1);
+                        showReservationNotificationAlert();
                     }
                 },
             );
@@ -423,16 +425,6 @@ export default function Dashboard() {
                         <div className="rounded-2xl border border-[#EEEEEE] bg-white p-5 shadow-xs">
                             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                                 <div>
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#2FA084]/15 text-[#1F6F5F] border border-[#2FA084]/20">
-                                            <span className="w-2 h-2 rounded-full bg-[#2FA084] animate-pulse"></span>
-                                            NASA FIRMS Near Real-Time
-                                        </span>
-                                        <span className="text-xs text-[#262626]/50">·</span>
-                                        <span className="text-xs text-[#262626]/70">
-                                            Sistem Klasifikasi 3 Tanda Bahaya
-                                        </span>
-                                    </div>
                                     <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-[#1F6F5F]">
                                         Wildfire & Hotspot Tracker Kalimantan
                                     </h1>
@@ -443,27 +435,6 @@ export default function Dashboard() {
 
                                 {/* Status Bahaya & Quick Action dengan Tombol Sinkron Satelit */}
                                 <div className="flex flex-wrap items-center gap-2 sm:gap-3 shrink-0">
-                                    <div className="px-3.5 py-2 rounded-xl bg-[#EEEEEE]/80 border border-[#EEEEEE] flex items-center gap-2.5">
-                                        <div className="text-right">
-                                            <div className="text-[10px] uppercase font-bold text-[#262626]/60 tracking-wider">
-                                                Status Asap
-                                            </div>
-                                            <div className="text-xs font-bold text-[#1F6F5F]">
-                                                {stats.hazeRiskLevel}
-                                            </div>
-                                        </div>
-                                        <span
-                                            className={`w-3 h-3 rounded-full ${
-                                                stats.hazeRiskLevel === 'Kritis' || stats.hazeRiskLevel === 'Tinggi'
-                                                    ? 'bg-[#B91C1C] animate-ping'
-                                                    : stats.hazeRiskLevel === 'Waspada'
-                                                      ? 'bg-[#E5A910]'
-                                                      : 'bg-[#15803D]'
-                                            }`}
-                                            title={`Status Asap Saat Ini: ${stats.hazeRiskLevel}`}
-                                        />
-                                    </div>
-
                                     <div className="flex flex-col items-end gap-1">
                                         <button
                                             type="button"
@@ -518,7 +489,7 @@ export default function Dashboard() {
                                 <div className="flex items-center gap-2 flex-wrap">
                                     {isHomeSelected && (
                                         <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-[#2FA084]/15 text-[#1F6F5F]">
-                                            <span>🏠 Kediaman Anda Aktif</span>
+                                            <span>Kediaman Anda Aktif</span>
                                         </div>
                                     )}
 

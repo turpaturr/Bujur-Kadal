@@ -23,6 +23,7 @@ import {
 } from '@/hooks/useWildfireData';
 
 import type { RegisteredUserLocation } from '@/pages/Components/Dashboard/Maps';
+import { showAdminNewReservationAlert } from '@/utils/alerts';
 import HouseholdDetailModal from './Components/DashboardAdmin/HouseholdDetailModal';
 
 interface AdminStats {
@@ -77,6 +78,7 @@ export default function DashboardAdmin({
                 if (data?.reservation) {
                     setLocalReservations((prev) => [data.reservation, ...prev.filter((r) => r.id !== data.reservation.id)]);
                     setLocalPendingCount((prev) => prev + 1);
+                    showAdminNewReservationAlert(data.reservation.patient_name, data.reservation.clinic_name);
                 }
             });
             channel.listen('.reservation.updated', (data: { reservation: { id: number; status: string; admin_notes?: string } }) => {

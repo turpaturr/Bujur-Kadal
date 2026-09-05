@@ -132,7 +132,7 @@ export default function UserReservationInboxModal({
                     {filteredReservations.length === 0 ? (
                         <div className="text-center py-12 px-4">
                             <div className="w-14 h-14 mx-auto rounded-full bg-gray-100 flex items-center justify-center text-2xl mb-3 text-gray-400">
-                                📭
+                                
                             </div>
                             <h4 className="font-bold text-gray-700 text-sm">Belum Ada Notifikasi Reservasi</h4>
                             <p className="text-xs text-gray-500 max-w-sm mx-auto mt-1">
@@ -174,7 +174,7 @@ export default function UserReservationInboxModal({
                                                         ? '✓ Reservasi Disetujui (Diterima)'
                                                         : isRejected
                                                           ? '✕ Reservasi Ditolak'
-                                                          : '⏳ Menunggu Konfirmasi'}
+                                                          : 'Menunggu Konfirmasi'}
                                                 </span>
                                                 <span className="text-[11px] text-gray-500">
                                                     Diajukan {item.created_at ?? 'baru saja'}
@@ -230,7 +230,7 @@ export default function UserReservationInboxModal({
                                             )}
                                         >
                                             <span className="text-sm">
-                                                {isApproved ? '💬' : isRejected ? '⚠️' : 'ℹ️'}
+                                                {isApproved}
                                             </span>
                                             <div className="min-w-0 flex-1">
                                                 <strong className="block text-[11px] font-bold">
