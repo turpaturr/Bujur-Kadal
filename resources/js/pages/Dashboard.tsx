@@ -5,6 +5,8 @@ import {
     ProvinceFilter,
     Maps,
     StatCards,
+    WildfirePanel,
+    FamilyMemberModal,
     BookCheckupModal,
     CitizenSidebar,
     type FamilyMemberItem,
@@ -162,6 +164,38 @@ export default function Dashboard() {
 
     const wildfire = useWildfireData({ enabledSensors, dayRange: 1 });
     const { stats, hotspots, isLoading, lastUpdated, refresh } = wildfire;
+
+    const [syncToast, setSyncToast] = useState<{
+        type: 'success' | 'error';
+        message: string;
+    } | null>(null);
+
+    const handleSyncSatellite = async () => {
+        try {
+            const freshHotspots = await refresh(true);
+            const timeStr = new Date().toLocaleTimeString('id-ID', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+            });
+            setSyncToast({
+                type: 'success',
+                message: `Sinkronisasi satelit NASA FIRMS berhasil! Terdeteksi ${freshHotspots.length.toLocaleString('id-ID')} titik anomali termal (pukul ${timeStr}).`,
+            });
+            setTimeout(() => {
+                setSyncToast((cur) => (cur?.type === 'success' ? null : cur));
+            }, 5000);
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : 'Gagal menyinkronkan data satelit NASA.';
+            setSyncToast({
+                type: 'error',
+                message: msg,
+            });
+            setTimeout(() => {
+                setSyncToast((cur) => (cur?.type === 'error' ? null : cur));
+            }, 6000);
+        }
+    };
 
     // Filter Titik Api berdasarkan kategori atas, level confidence legenda, dan filter wilayah provinsi
     const visibleHotspots = useMemo(() => {
@@ -355,6 +389,36 @@ export default function Dashboard() {
                     />
 
                     <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6">
+                        {/* Floating Toast Notifikasi Status Sinkronisasi Satelit */}
+                        {syncToast && (
+                            <div
+                                className={`fixed top-5 right-5 z-50 flex items-center gap-3 px-4 py-3 rounded-2xl shadow-xl border text-xs font-semibold backdrop-blur-md transition-all duration-300 ${
+                                    syncToast.type === 'success'
+                                        ? 'bg-emerald-50/95 text-[#1F6F5F] border-emerald-200 shadow-emerald-900/10'
+                                        : 'bg-rose-50/95 text-rose-800 border-rose-200 shadow-rose-900/10'
+                                }`}
+                            >
+                                {syncToast.type === 'success' ? (
+                                    <svg className="w-5 h-5 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                ) : (
+                                    <svg className="w-5 h-5 text-rose-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                    </svg>
+                                )}
+                                <span>{syncToast.message}</span>
+                                <button
+                                    type="button"
+                                    onClick={() => setSyncToast(null)}
+                                    className="ml-2 text-current opacity-60 hover:opacity-100 cursor-pointer"
+                                    title="Tutup Notifikasi"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                        )}
+
                         {/* Header Banner & Status Alert Karhutla */}
                         <div className="rounded-2xl border border-[#EEEEEE] bg-white p-5 shadow-xs">
                             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -377,7 +441,7 @@ export default function Dashboard() {
                                     </p>
                                 </div>
 
-                                {/* Status Bahaya & Quick Action dengan Palet Warna Baru */}
+                                {/* Status Bahaya & Quick Action dengan Tombol Sinkron Satelit */}
                                 <div className="flex flex-wrap items-center gap-2 sm:gap-3 shrink-0">
                                     <div className="px-3.5 py-2 rounded-xl bg-[#EEEEEE]/80 border border-[#EEEEEE] flex items-center gap-2.5">
                                         <div className="text-right">
@@ -400,17 +464,25 @@ export default function Dashboard() {
                                         />
                                     </div>
 
-                                    <button
-                                        type="button"
-                                        onClick={refresh}
-                                        disabled={isLoading}
-                                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#2FA084] text-white hover:bg-[#1F6F5F] transition-all text-xs font-bold shadow-xs disabled:opacity-50 cursor-pointer"
-                                    >
-                                        <svg className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                        </svg>
-                                        <span>{isLoading ? 'Menyinkronkan...' : 'Sinkron Satelit'}</span>
-                                    </button>
+                                    <div className="flex flex-col items-end gap-1">
+                                        <button
+                                            type="button"
+                                            onClick={handleSyncSatellite}
+                                            disabled={isLoading}
+                                            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#2FA084] text-white hover:bg-[#1F6F5F] active:scale-95 transition-all text-xs font-bold shadow-xs disabled:opacity-50 cursor-pointer"
+                                            title="Klik untuk menyinkronkan data satelit NASA secara langsung"
+                                        >
+                                            <svg className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                            </svg>
+                                            <span>{isLoading ? 'Menyinkronkan...' : 'Sinkron Satelit'}</span>
+                                        </button>
+                                        {lastUpdated && (
+                                            <span className="text-[10px] text-[#262626]/50">
+                                                Sinkron: {lastUpdated.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>

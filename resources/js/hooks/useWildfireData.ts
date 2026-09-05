@@ -202,7 +202,7 @@ export interface WildfireData {
     isLoading: boolean;
     error: string | null;
     lastUpdated: Date | null;
-    refresh: () => void;
+    refresh: (force?: boolean | unknown) => Promise<WildfireHotspot[]>;
 }
 
 /** Batas bounding box per provinsi Kalimantan untuk klasifikasi titik api */
@@ -400,11 +400,14 @@ const cache: Record<string, CacheEntry> = {};
 async function fetchSensorData(
     source: SensorSource,
     dayRange: number,
+    forceRefresh = false,
 ): Promise<WildfireHotspot[]> {
     const cacheKey = `${source}-${dayRange}`;
-    const cached = cache[cacheKey];
-    if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
-        return cached.data;
+    if (!forceRefresh) {
+        const cached = cache[cacheKey];
+        if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
+            return cached.data;
+        }
     }
 
     const params = new URLSearchParams({
@@ -412,10 +415,15 @@ async function fetchSensorData(
         days: String(dayRange),
     });
 
+    if (forceRefresh) {
+        params.set('_t', String(Date.now()));
+    }
+
     const response = await fetch(`/api/wildfire/hotspots?${params.toString()}`, {
         headers: {
             Accept: 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
+            ...(forceRefresh ? { 'Cache-Control': 'no-cache, no-store' } : {}),
         },
     });
 
@@ -605,67 +613,82 @@ export function useWildfireData({
 
     const sensorsKey = enabledSensors.join(',');
 
-    const fetchData = useCallback(async () => {
-        abortRef.current?.abort();
-        abortRef.current = new AbortController();
+    const fetchData = useCallback(
+        async (force = false): Promise<WildfireHotspot[]> => {
+            abortRef.current?.abort();
+            abortRef.current = new AbortController();
 
-        setIsLoading(true);
-        setError(null);
+            setIsLoading(true);
+            setError(null);
 
-        try {
-            const results = await Promise.allSettled(
-                enabledSensors.map((sensor) =>
-                    fetchSensorData(sensor, dayRange),
-                ),
-            );
-
-            const allHotspots: WildfireHotspot[] = [];
-            const errors: string[] = [];
-
-            for (const result of results) {
-                if (result.status === 'fulfilled') {
-                    allHotspots.push(...result.value);
-                } else {
-                    errors.push(
-                        result.reason instanceof Error
-                            ? result.reason.message
-                            : String(result.reason),
-                    );
+            try {
+                if (force) {
+                    for (const sensor of enabledSensors) {
+                        delete cache[`${sensor}-${dayRange}`];
+                    }
                 }
-            }
 
-            // Urutkan titik api berdasarkan FRP (paling intens di atas)
-            const sorted = allHotspots.sort((a, b) => b.frp - a.frp);
-
-            // Deduplikasi yang berdekatan
-            const unique = sorted.filter((h, i) => {
-                return !sorted.slice(0, i).some(
-                    (prev) =>
-                        Math.abs(prev.latitude - h.latitude) < 0.008 &&
-                        Math.abs(prev.longitude - h.longitude) < 0.008,
+                const results = await Promise.allSettled(
+                    enabledSensors.map((sensor) =>
+                        fetchSensorData(sensor, dayRange, force),
+                    ),
                 );
-            });
 
-            setHotspots(unique);
-            setLastUpdated(new Date());
+                const allHotspots: WildfireHotspot[] = [];
+                const errors: string[] = [];
 
-            if (errors.length > 0 && allHotspots.length === 0) {
-                setError(errors.join('; '));
-            } else if (errors.length > 0) {
-                console.warn('[useWildfireData] Partial errors:', errors);
+                for (const result of results) {
+                    if (result.status === 'fulfilled') {
+                        allHotspots.push(...result.value);
+                    } else {
+                        errors.push(
+                            result.reason instanceof Error
+                                ? result.reason.message
+                                : String(result.reason),
+                        );
+                    }
+                }
+
+                // Urutkan titik api berdasarkan FRP (paling intens di atas)
+                const sorted = allHotspots.sort((a, b) => b.frp - a.frp);
+
+                // Deduplikasi yang berdekatan
+                const unique = sorted.filter((h, i) => {
+                    return !sorted.slice(0, i).some(
+                        (prev) =>
+                            Math.abs(prev.latitude - h.latitude) < 0.008 &&
+                            Math.abs(prev.longitude - h.longitude) < 0.008,
+                    );
+                });
+
+                setHotspots(unique);
+                setLastUpdated(new Date());
+
+                if (errors.length > 0 && allHotspots.length === 0) {
+                    const msg = errors.join('; ');
+                    setError(msg);
+                    throw new Error(msg);
+                } else if (errors.length > 0) {
+                    console.warn('[useWildfireData] Partial errors:', errors);
+                }
+
+                return unique;
+            } catch (err) {
+                if (err instanceof Error && err.name !== 'AbortError') {
+                    setError(err.message);
+                    throw err;
+                }
+                return [];
+            } finally {
+                setIsLoading(false);
             }
-        } catch (err) {
-            if (err instanceof Error && err.name !== 'AbortError') {
-                setError(err.message);
-            }
-        } finally {
-            setIsLoading(false);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [sensorsKey, dayRange]);
+            // eslint-disable-next-line react-hooks/exhaustive-deps
+        },
+        [sensorsKey, dayRange],
+    );
 
     useEffect(() => {
-        void fetchData();
+        void fetchData(false);
         return () => {
             abortRef.current?.abort();
         };
@@ -673,12 +696,20 @@ export function useWildfireData({
 
     const stats = computeStats(hotspots);
 
+    const refresh = useCallback(
+        (force: boolean | unknown = true) => {
+            const isForce = typeof force === 'boolean' ? force : true;
+            return fetchData(isForce);
+        },
+        [fetchData],
+    );
+
     return {
         hotspots,
         stats,
         isLoading,
         error,
         lastUpdated,
-        refresh: fetchData,
+        refresh,
     };
 }
