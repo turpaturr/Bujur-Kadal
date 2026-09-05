@@ -306,6 +306,7 @@ export default function DashboardAdmin({
                 isOpen={isHouseholdModalOpen}
                 onClose={() => setIsHouseholdModalOpen(false)}
                 household={selectedUserLocation}
+                hotspots={hotspots}
                 onFocusMap={(h) => {
                     setMapCenter([h.latitude, h.longitude]);
                     setMapZoom(13);

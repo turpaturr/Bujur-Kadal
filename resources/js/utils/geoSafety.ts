@@ -113,17 +113,23 @@ export function analyzeUserSafety(
     const uLat = Number(location.latitude);
     const uLon = Number(location.longitude);
 
-    let within10 = 0;
+    let within5 = 0;
+    let within15 = 0;
     let within25 = 0;
-    let within50 = 0;
     let nearest: NearestHotspotInfo | null = null;
+    let hasHighConfidenceDanger = false;
 
     for (const h of hotspots) {
         const dist = calculateDistanceKm(uLat, uLon, h.latitude, h.longitude);
 
-        if (dist <= 10) within10++;
+        if (dist <= 5) {
+            within5++;
+            if (h.confidenceLevel === 'high') {
+                hasHighConfidenceDanger = true;
+            }
+        }
+        if (dist <= 15) within15++;
         if (dist <= 25) within25++;
-        if (dist <= 50) within50++;
 
         if (!nearest || dist < nearest.distanceKm) {
             nearest = {
@@ -134,25 +140,25 @@ export function analyzeUserSafety(
         }
     }
 
-    if (within10 > 0) {
+    if (within5 > 0 && hasHighConfidenceDanger) {
         return {
             hasLocation: true,
             userLocation: { ...location, latitude: uLat, longitude: uLon },
             status: 'danger',
-            statusLabel: 'BAHAYA KARHUTLA',
+            statusLabel: 'BAHAYA KARHUTLA (RADIUS 5KM)',
             statusColor: '#ef4444',
             statusBadgeBg: 'bg-rose-500/15 text-rose-700',
             statusBorder: 'border-rose-300',
-            hotspotsWithin10Km: within10,
+            hotspotsWithin10Km: within5, // reuse property for compatibility
             hotspotsWithin25Km: within25,
-            hotspotsWithin50Km: within50,
+            hotspotsWithin50Km: 0,
             nearestHotspot: nearest,
-            summaryText: `PERINGATAN DARURAT: Terdeteksi ${within10} titik potensi kebakaran tinggi dalam radius sangat dekat (< 10 km) dari kediaman Anda!`,
-            recommendation: 'Tutup seluruh ventilasi, nyalakan pembersih udara, gunakan masker N95/PM2.5 jika ke luar, dan bersiap evakuasi ke shelter aman bila asap pekat.',
+            summaryText: `PERINGATAN DARURAT: Terdeteksi titik api berpotensi TINGGI (KARHUTLA) dalam radius sangat dekat (< 5 km) dari kediaman Anda!`,
+            recommendation: 'Segera lakukan evakuasi ke fasilitas kesehatan terdekat jika asap mulai pekat. Tekan tombol "Cari Rute ke Faskes Terdekat" di peta.',
         };
     }
 
-    if (within25 > 0) {
+    if (within15 > 0) {
         return {
             hasLocation: true,
             userLocation: { ...location, latitude: uLat, longitude: uLon },
@@ -161,11 +167,11 @@ export function analyzeUserSafety(
             statusColor: '#f97316',
             statusBadgeBg: 'bg-amber-500/15 text-amber-800',
             statusBorder: 'border-amber-300',
-            hotspotsWithin10Km: 0,
+            hotspotsWithin10Km: within15,
             hotspotsWithin25Km: within25,
-            hotspotsWithin50Km: within50,
+            hotspotsWithin50Km: 0,
             nearestHotspot: nearest,
-            summaryText: `Terdeteksi ${within25} titik anomali suhu dalam radius 25 km dari rumah Anda. Titik terdekat berjarak ${nearest?.distanceKm ?? '-'} km arah ${nearest?.direction ?? '-'}.`,
+            summaryText: `Terdeteksi ${within15} titik anomali suhu dalam radius 15 km dari rumah Anda. Titik terdekat berjarak ${nearest?.distanceKm ?? '-'} km arah ${nearest?.direction ?? '-'}.`,
             recommendation: 'Kualitas udara berpotensi menurun terbawa hembusan angin. Hindari aktivitas fisik berat di luar dan pantau arah pergerakan asap.',
         };
     }
@@ -179,10 +185,10 @@ export function analyzeUserSafety(
         statusBadgeBg: 'bg-[#2FA084]/15 text-[#1F6F5F]',
         statusBorder: 'border-[#2FA084]/30',
         hotspotsWithin10Km: 0,
-        hotspotsWithin25Km: 0,
-        hotspotsWithin50Km: within50,
+        hotspotsWithin25Km: within25,
+        hotspotsWithin50Km: 0,
         nearestHotspot: nearest,
-        summaryText: `Kondisi sekitar kediaman Anda aman. Tidak terdeteksi titik potensi kebakaran dalam radius 25 km.${nearest ? ` Titik terdekat berjarak ${nearest.distanceKm} km arah ${nearest.direction}.` : ''}`,
+        summaryText: `Kondisi sekitar kediaman Anda aman. Tidak terdeteksi ancaman karhutla tingkat tinggi dalam radius bahaya 5 km.${nearest ? ` Titik terdekat berjarak ${nearest.distanceKm} km arah ${nearest.direction}.` : ''}`,
         recommendation: 'Ventilasi udara dapat dibuka normal. Pantau terus peta pantauan satelit secara berkala.',
     };
 }

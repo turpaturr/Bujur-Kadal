@@ -82,9 +82,9 @@ export default function UserSafetyBanner({
                             </span>
                             <span
                                 className={`text-base font-bold tabular-nums ${
-                                    hotspotsWithin10Km > 0
+                                    status === 'danger'
                                         ? 'text-rose-600'
-                                        : hotspotsWithin25Km > 0
+                                        : status === 'warning'
                                           ? 'text-amber-600'
                                           : 'text-[#2FA084]'
                                 }`}

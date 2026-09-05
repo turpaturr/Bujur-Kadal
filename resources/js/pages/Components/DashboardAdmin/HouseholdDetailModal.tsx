@@ -1,12 +1,30 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import type { RegisteredUserLocation, RegisteredFamilyMember } from '@/pages/Components/Dashboard/Maps';
 import { Home, Users, ShieldAlert, PhoneCall, X, MapPin, HeartPulse } from '@/pages/Components/Dashboard/Icons';
+import type { WildfireHotspot } from '@/hooks/useWildfireData';
 
 interface HouseholdDetailModalProps {
     isOpen: boolean;
     onClose: () => void;
     household: RegisteredUserLocation | null;
+    hotspots?: WildfireHotspot[];
     onFocusMap?: (household: RegisteredUserLocation) => void;
+}
+
+function deg2rad(deg: number) {
+    return deg * (Math.PI / 180);
+}
+
+function getDistanceInKm(lat1: number, lon1: number, lat2: number, lon2: number) {
+    const R = 6371; // Radius of the earth in km
+    const dLat = deg2rad(lat2 - lat1);
+    const dLon = deg2rad(lon2 - lon1);
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c; // Distance in km
 }
 
 function calculateAge(birthDateString?: string | null): number | null {
@@ -55,12 +73,25 @@ export default function HouseholdDetailModal({
     isOpen,
     onClose,
     household,
+    hotspots = [],
     onFocusMap,
 }: HouseholdDetailModalProps) {
     if (!isOpen || !household) return null;
 
     const isVulnerable = household.is_vulnerable;
     const members = household.members ?? [];
+
+    const isInDangerZone = useMemo(() => {
+        if (!household.latitude || !household.longitude || hotspots.length === 0) return false;
+        const lat = Number(household.latitude);
+        const lng = Number(household.longitude);
+        for (const h of hotspots) {
+            if (h.confidenceLevel === 'high' && getDistanceInKm(lat, lng, h.latitude, h.longitude) <= 5) {
+                return true;
+            }
+        }
+        return false;
+    }, [household, hotspots]);
 
     return (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs animate-fadeIn">
@@ -271,14 +302,42 @@ export default function HouseholdDetailModal({
 
                 {/* Modal Footer */}
                 <div className="flex items-center justify-between px-6 py-3.5 border-t border-[#EEEEEE] bg-[#FAFAFA]">
-                    <span className="text-[11px] text-[#262626]/50">
-                        Data terverifikasi oleh Kepala Keluarga &amp; Dukcapil
-                    </span>
+                    <div className="flex items-center gap-3">
+                        {isInDangerZone ? (
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    if (isVulnerable) {
+                                        alert(`Evakuasi Darurat (Penjemputan Langsung) telah diinstruksikan untuk keluarga ${household.name}. Tim medis sedang dikerahkan karena terdapat anggota keluarga rentan di radius bahaya.`);
+                                    } else {
+                                        alert(`Instruksi Evakuasi Mandiri ke Fasilitas Kesehatan terdekat telah dikirimkan ke perangkat ${household.name} (Radius Bahaya).`);
+                                    }
+                                    onClose();
+                                }}
+                                className={`px-4 py-2 rounded-xl font-bold text-xs shadow-xs transition-colors cursor-pointer flex items-center gap-1.5 ${
+                                    isVulnerable 
+                                        ? 'bg-rose-600 hover:bg-rose-700 text-white' 
+                                        : 'bg-amber-500 hover:bg-amber-600 text-white'
+                                }`}
+                            >
+                                <ShieldAlert className="w-4 h-4" />
+                                {isVulnerable ? 'Kirim Tim Penjemputan' : 'Instruksi Ke Faskes'}
+                            </button>
+                        ) : (
+                            <div className="px-4 py-2 rounded-xl bg-emerald-50 text-emerald-700 font-bold text-xs flex items-center gap-1.5 border border-emerald-200">
+                                <ShieldAlert className="w-4 h-4" />
+                                Lokasi Aman
+                            </div>
+                        )}
+                        <span className="hidden sm:inline-block text-[11px] text-[#262626]/50">
+                            Data terverifikasi oleh Kepala Keluarga &amp; Dukcapil
+                        </span>
+                    </div>
 
                     <button
                         type="button"
                         onClick={onClose}
-                        className="px-4 py-2 rounded-xl bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold text-xs transition-colors cursor-pointer"
+                        className="px-4 py-2 rounded-xl bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold text-xs transition-colors cursor-pointer shrink-0"
                     >
                         Tutup
                     </button>
