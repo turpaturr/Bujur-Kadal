@@ -6,7 +6,7 @@ import react, { reactCompilerPreset } from '@vitejs/plugin-react';
 import laravel from 'laravel-vite-plugin';
 import { bunny } from 'laravel-vite-plugin/fonts';
 import { defineConfig, lazyPlugins } from 'vite-plus';
-import type { PluginOption } from 'vite'; // Tambahkan import tipe ini
+import type { PluginOption } from 'vite';
 
 export default defineConfig({
     envPrefix: ['VITE_', 'NASA_'],
@@ -29,7 +29,8 @@ export default defineConfig({
         wayfinder({
             formVariants: true,
         }),
-    ]) as any),
+    ] as any), // Perhatikan penempatan 'as any' di sini (membungkus array plugin)
+
     server: {
         watch: {
             ignored: [
