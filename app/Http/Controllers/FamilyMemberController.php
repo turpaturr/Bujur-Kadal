@@ -74,4 +74,60 @@ class FamilyMemberController extends Controller
 
         return back()->with('success', 'Data anggota keluarga berhasil dihapus.');
     }
+
+    /**
+     * Update a family member's data.
+     */
+    public function update(Request $request, User $member): RedirectResponse
+    {
+        $headUser = $request->user();
+
+        // Security check: must be Kepala Keluarga in the same family
+        if (
+            $headUser->role !== UserRole::KepalaKeluarga ||
+            $member->family_id !== $headUser->family_id
+        ) {
+            abort(403, 'Anda tidak memiliki hak akses untuk mengubah anggota keluarga ini.');
+        }
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'birth_date' => ['required', 'date', 'before_or_equal:today'],
+            'gender' => ['required', 'string', 'in:laki-laki,perempuan'],
+            'occupation' => ['required', 'string', 'max:255'],
+            'vulnerability_category' => [
+                'required',
+                'string',
+                'in:ibu_hamil,balita,anak_anak,penyakit_bawaan,lansia,tidak_rentan',
+            ],
+            'comorbidity_notes' => [
+                'nullable',
+                'string',
+                'max:1000',
+                'required_if:vulnerability_category,penyakit_bawaan',
+            ],
+        ]);
+
+        DB::transaction(function () use ($member, $validated) {
+            $isVulnerable = $validated['vulnerability_category'] !== 'tidak_rentan';
+
+            $member->update([
+                'name' => $validated['name'],
+                'birth_date' => $validated['birth_date'],
+                'gender' => $validated['gender'],
+                'occupation' => $validated['occupation'],
+            ]);
+
+            HealthProfile::updateOrCreate(
+                ['user_id' => $member->id],
+                [
+                    'is_vulnerable' => $isVulnerable,
+                    'vulnerability_category' => $validated['vulnerability_category'],
+                    'comorbidity_notes' => $validated['comorbidity_notes'] ?? null,
+                ]
+            );
+        });
+
+        return back()->with('success', 'Data anggota keluarga berhasil diperbarui.');
+    }
 }

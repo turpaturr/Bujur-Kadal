@@ -50,6 +50,9 @@ class RegisterRequest extends FormRequest
                 },
             ],
             'name' => ['required', 'string', 'max:255'],
+            'birth_date' => ['required', 'date', 'before_or_equal:today'],
+            'gender' => ['required', 'string', 'in:laki-laki,perempuan'],
+            'occupation' => ['required', 'string', 'max:255'],
 
             // Step 2: Address & Geocoordinates
             'home_address' => ['required', 'string', 'max:1000'],
@@ -76,6 +79,12 @@ class RegisterRequest extends FormRequest
             'nik.size' => 'NIK Kepala Keluarga harus 16 digit.',
             'nik.unique' => 'NIK ini telah terdaftar di BorneoCare.',
             'name.required' => 'Nama lengkap Kepala Keluarga wajib diisi.',
+            'birth_date.required' => 'Tanggal lahir wajib diisi.',
+            'birth_date.date' => 'Format tanggal lahir tidak valid.',
+            'birth_date.before_or_equal' => 'Tanggal lahir tidak boleh di masa depan.',
+            'gender.required' => 'Jenis kelamin wajib dipilih.',
+            'gender.in' => 'Pilihan jenis kelamin tidak valid.',
+            'occupation.required' => 'Pekerjaan Kepala Keluarga wajib diisi.',
             'home_address.required' => 'Alamat tempat tinggal wajib diisi.',
             'home_latitude.required' => 'Titik koordinat latitude wajib ditentukan.',
             'home_longitude.required' => 'Titik koordinat longitude wajib ditentukan.',

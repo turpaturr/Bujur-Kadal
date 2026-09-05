@@ -1,7 +1,7 @@
 import React from 'react';
 import { Maps } from '@/pages/Components/Dashboard';
 import type { RegisteredUserLocation } from '@/pages/Components/Dashboard/Maps';
-import type { HotspotCategory, WildfireHotspot } from '@/hooks/useWildfireData';
+import type { HotspotCategory, WildfireHotspot, ConfidenceLevel } from '@/hooks/useWildfireData';
 import { Users, ShieldAlert } from '@/pages/Components/Dashboard/Icons';
 
 interface AdminMapSectionProps {
@@ -16,6 +16,11 @@ interface AdminMapSectionProps {
     registeredUsers?: RegisteredUserLocation[];
     selectedUserLocation?: RegisteredUserLocation | null;
     onSelectUserLocation?: (user: RegisteredUserLocation | null) => void;
+    selectedProvinces?: string[];
+    onToggleProvince?: (province: string) => void;
+    selectedConfidenceLevels?: ConfidenceLevel[];
+    onToggleConfidenceLevel?: (level: ConfidenceLevel) => void;
+    onResetFilters?: () => void;
 }
 
 export default function AdminMapSection({
@@ -30,6 +35,11 @@ export default function AdminMapSection({
     registeredUsers = [],
     selectedUserLocation = null,
     onSelectUserLocation,
+    selectedProvinces = [],
+    onToggleProvince,
+    selectedConfidenceLevels = ['high', 'nominal', 'low'],
+    onToggleConfidenceLevel,
+    onResetFilters,
 }: AdminMapSectionProps) {
     const vulnerableCount = registeredUsers.filter((u) => u.is_vulnerable).length;
 
@@ -170,6 +180,11 @@ export default function AdminMapSection({
                 registeredUsers={registeredUsers}
                 selectedUserLocation={selectedUserLocation}
                 onSelectUserLocation={onSelectUserLocation}
+                selectedProvinces={selectedProvinces}
+                onToggleProvince={onToggleProvince}
+                selectedConfidenceLevels={selectedConfidenceLevels}
+                onToggleConfidenceLevel={onToggleConfidenceLevel}
+                onResetFilters={onResetFilters}
             />
         </section>
     );

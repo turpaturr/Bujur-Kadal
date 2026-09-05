@@ -17,6 +17,9 @@ export default function RegisterIndex() {
         no_kk: '',
         nik: '',
         name: '',
+        birth_date: '',
+        gender: 'laki-laki',
+        occupation: '',
         home_address: '',
         home_latitude: '',
         home_longitude: '',
@@ -104,7 +107,7 @@ export default function RegisterIndex() {
 
                 {/* Main Split Card Container */}
                 <div className="relative z-10 w-full max-w-5xl bg-white rounded-[32px] shadow-[0_20px_50px_rgba(31,111,95,0.12)] overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[620px] border border-surface">
-                    
+
                     {/* LEFT PANEL: Gradient Banner (Primary -> Primary Dark) */}
                     <div className="lg:col-span-5 bg-gradient-to-br from-primary via-primary-dark to-[#175246] text-white p-8 sm:p-10 flex flex-col justify-between relative overflow-hidden">
                         {/* Decorative subtle patterns */}

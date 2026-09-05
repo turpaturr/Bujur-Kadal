@@ -14,7 +14,7 @@ export default function AdminNavbar({ onReset, lastUpdated }: AdminNavbarProps) 
     }>().props;
 
     return (
-        <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#EEEEEE] shadow-xs">
+        <header className="sticky top-0 z-[9999] bg-white/95 backdrop-blur-md border-b border-[#EEEEEE] shadow-xs">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                 {/* Logo & Brand */}
                 <Link href="/admin/dashboard" className="flex items-center gap-3 hover:opacity-95 transition-opacity group">
@@ -37,9 +37,6 @@ export default function AdminNavbar({ onReset, lastUpdated }: AdminNavbarProps) 
                         <div className="flex items-center gap-2">
                             <span className="font-display text-xl font-bold text-[#1F6F5F] tracking-tight">
                                 Borneo<span className="text-[#2FA084]">Care</span>
-                            </span>
-                            <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-[#1F6F5F] text-white rounded-full shadow-2xs">
-                                Command Center
                             </span>
                         </div>
                         <span className="hidden sm:block text-[11px] text-[#262626]/70 leading-none">

@@ -16,6 +16,7 @@ import {
     type HotspotCategory,
     type SensorSource,
     type WildfireHotspot,
+    type ConfidenceLevel,
 } from '@/hooks/useWildfireData';
 
 import type { RegisteredUserLocation } from '@/pages/Components/Dashboard/Maps';
@@ -58,15 +59,31 @@ export default function DashboardAdmin({
         'VIIRS_SNPP',
         'VIIRS_NOAA20',
     ]);
+    const [selectedProvinces, setSelectedProvinces] = useState<string[]>([]);
+    const [selectedConfidenceLevels, setSelectedConfidenceLevels] = useState<
+        ConfidenceLevel[]
+    >(['high', 'nominal', 'low']);
 
     const wildfire = useWildfireData({ enabledSensors, dayRange: 1 });
     const { stats, hotspots, isLoading, lastUpdated, refresh } = wildfire;
-    const visibleHotspots =
-        activeCategoryFilter === 'all'
-            ? hotspots
-            : hotspots.filter(
-                  (hotspot) => hotspot.category === activeCategoryFilter,
-              );
+
+    const visibleHotspots = hotspots.filter((hotspot) => {
+        if (activeCategoryFilter !== 'all' && hotspot.category !== activeCategoryFilter) {
+            return false;
+        }
+        if (!selectedConfidenceLevels.includes(hotspot.confidenceLevel)) {
+            return false;
+        }
+        if (selectedProvinces.length > 0) {
+            const hotspotProv = (hotspot.province || '').toUpperCase();
+            const matched = selectedProvinces.some((p) => {
+                const pName = p.toUpperCase();
+                return hotspotProv.includes(pName) || pName.includes(hotspotProv);
+            });
+            if (!matched) return false;
+        }
+        return true;
+    });
 
     const handleSelectProvince = (province: ProvinceItem | null) => {
         setSelectedHotspot(null);
@@ -134,6 +151,41 @@ export default function DashboardAdmin({
         );
     };
 
+    const handleToggleProvinceMap = (provName: string) => {
+        setSelectedHotspot(null);
+        setSelectedProvinces((prev) => {
+            const upper = provName.toUpperCase();
+            const exists = prev.some((p) => p.toUpperCase() === upper);
+            if (exists) {
+                const updated = prev.filter((p) => p.toUpperCase() !== upper);
+                if (updated.length === 0) {
+                    setMapCenter([0.9619, 114.5548]);
+                    setMapZoom(6);
+                }
+                return updated;
+            } else {
+                return [...prev, provName];
+            }
+        });
+    };
+
+    const handleToggleConfidenceLevel = (level: ConfidenceLevel) => {
+        setSelectedConfidenceLevels((prev) => {
+            if (prev.includes(level)) {
+                const next = prev.filter((l) => l !== level);
+                return next.length === 0 ? ['high', 'nominal', 'low'] : next;
+            } else {
+                return [...prev, level];
+            }
+        });
+    };
+
+    const handleResetAllFiltersMap = () => {
+        setSelectedProvinces([]);
+        setSelectedConfidenceLevels(['high', 'nominal', 'low']);
+        handleResetView();
+    };
+
     return (
         <>
             <Head title="Admin Command Center - Monitoring Karhutla & Satelit Borneo" />
@@ -191,6 +243,11 @@ export default function DashboardAdmin({
                         registeredUsers={registeredUsers}
                         selectedUserLocation={selectedUserLocation}
                         onSelectUserLocation={handleSelectUserLocation}
+                        selectedProvinces={selectedProvinces}
+                        onToggleProvince={handleToggleProvinceMap}
+                        selectedConfidenceLevels={selectedConfidenceLevels}
+                        onToggleConfidenceLevel={handleToggleConfidenceLevel}
+                        onResetFilters={handleResetAllFiltersMap}
                     />
 
                     {/* Matriks Analisis Karhutla & Gambut: Khusus Administrator */}
