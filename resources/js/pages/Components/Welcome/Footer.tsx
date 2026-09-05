@@ -126,9 +126,6 @@ export function Footer() {
         <footer className="bg-[#1A5C4F] text-white">
             {/* Tech Partner Carousel */}
             <div className="border-b border-white/10 py-5 overflow-hidden">
-                <p className="text-center text-[10px] uppercase tracking-[0.25em] text-white/40 font-semibold mb-4">
-                    Ditenagai oleh
-                </p>
                 <div className="relative overflow-hidden">
                     <div ref={trackRef} className="flex gap-10 items-center w-max will-change-transform">
                         {CAROUSEL_LOOP.map((partner, i) => (
@@ -177,9 +174,6 @@ export function Footer() {
                     {/* Brand */}
                     <div>
                         <div className="flex items-center gap-2.5 mb-4">
-                            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#2FA084] shadow-xs text-white">
-                                <Wind className="h-4 w-4" strokeWidth={2.2} />
-                            </div>
                             <span className="font-heading font-serif text-lg font-bold tracking-tight text-white">
                                 Borneo<span className="text-[#6FCF97]">Care</span>
                             </span>

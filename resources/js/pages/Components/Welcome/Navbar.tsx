@@ -1,6 +1,6 @@
 import { useState, type MouseEvent } from "react";
 import { Link, usePage } from "@inertiajs/react";
-import { Wind, Menu, X, ArrowRight } from "@/pages/Components/Welcome/Icons";
+import { Menu, X, ArrowRight } from "@/pages/Components/Welcome/Icons";
 
 export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -35,9 +35,6 @@ export function Navbar() {
     <header className="sticky top-0 z-50 w-full border-b border-[#EEEEEE] bg-white/90 backdrop-blur-md transition-all duration-300">
       <div className="container mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
         <a href="#beranda" onClick={handleAnchorClick} className="flex items-center gap-2.5 group">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#2FA084] shadow-xs text-white group-hover:bg-[#1F6F5F] transition-colors">
-            <Wind className="h-5 w-5" strokeWidth={2.2} />
-          </div>
           <span className="font-heading font-serif text-xl font-bold tracking-tight text-[#1F6F5F]">
             Borneo<span className="text-[#2FA084]">Care</span>
           </span>
