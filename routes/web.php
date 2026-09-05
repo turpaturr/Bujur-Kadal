@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\WildfireController;
 use Illuminate\Support\Facades\Route;
 
 // 1. Landing Page (Welcome)
@@ -17,8 +18,10 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [LoginController::class, 'store'])->name('login.store');
 });
 
-// 3. Authenticated Area (Dashboard & Logout)
 Route::middleware('auth')->group(function () {
     Route::inertia('/dashboard', 'Dashboard')->name('dashboard');
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
+
+    Route::get('/api/wildfire/hotspots', [WildfireController::class, 'hotspots'])
+        ->name('wildfire.hotspots');
 });
