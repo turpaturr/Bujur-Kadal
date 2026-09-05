@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { ArrowRight, MapPinned } from '@/pages/Components/Welcome/Icons';
 import { cn } from '@/lib/utils';
 
@@ -28,6 +28,7 @@ interface HeroSectionProps {
 
 export default function HeroSection({ aqi }: HeroSectionProps) {
     const activeCategory = getCategory(aqi);
+    const { auth } = usePage<{ auth?: { user?: { name?: string } } }>().props;
 
     return (
         <section className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:items-center lg:gap-16 lg:py-10">
@@ -50,10 +51,10 @@ export default function HeroSection({ aqi }: HeroSectionProps) {
 
                 <div className="mt-8 flex flex-wrap gap-3">
                     <Link
-                        href="/dashboard"
+                        href={auth?.user ? "/dashboard" : "/login"}
                         className="inline-flex items-center justify-center rounded-full px-7 py-3 text-sm font-semibold bg-[#14967F] hover:bg-[#107b68] text-white shadow-xs transition-colors"
                     >
-                        Buka Peta Satelit <ArrowRight className="ml-2 h-4 w-4" />
+                        {auth?.user ? "Buka Dashboard" : "Masuk ke Dashboard"} <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
                     <a
                         href="#analisis"

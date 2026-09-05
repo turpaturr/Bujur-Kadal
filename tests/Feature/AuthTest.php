@@ -50,7 +50,7 @@ test('full 5-step registration creates family, user, health profile and logs in'
 
     $response = $this->post(route('register.store'), $payload);
 
-    $response->assertRedirect(route('home'));
+    $response->assertRedirect(route('dashboard'));
 
     // Assert Family created
     $family = Family::where('no_kk', '6472010101010002')->first();
@@ -105,7 +105,7 @@ test('rapid login with nik and 6-digit pin succeeds', function () {
         'pin' => '654321',
     ]);
 
-    $response->assertRedirect(route('home'));
+    $response->assertRedirect(route('dashboard'));
     expect(Auth::id())->toBe($user->id);
 });
 
@@ -131,4 +131,32 @@ test('authenticated user can logout', function () {
 
     $response->assertRedirect('/');
     expect(Auth::check())->toBeFalse();
+});
+
+test('application flow works: landing page -> guest cannot access dashboard -> login -> dashboard -> logout', function () {
+    // 1. Landing page is accessible to everyone
+    $landingResponse = $this->get(route('home'));
+    $landingResponse->assertOk()
+        ->assertInertia(fn ($page) => $page->component('Welcome'));
+
+    // 2. Guest cannot access dashboard directly, gets redirected to login
+    $dashboardGuest = $this->get(route('dashboard'));
+    $dashboardGuest->assertRedirect(route('login'));
+
+    // 3. User logs in
+    $user = User::factory()->create([
+        'nik' => '6472019909900001',
+        'pin' => '123456',
+    ]);
+
+    $loginResponse = $this->post(route('login.store'), [
+        'nik' => '6472019909900001',
+        'pin' => '123456',
+    ]);
+    $loginResponse->assertRedirect(route('dashboard'));
+
+    // 4. Authenticated user can access dashboard
+    $dashboardAuth = $this->actingAs($user)->get(route('dashboard'));
+    $dashboardAuth->assertOk()
+        ->assertInertia(fn ($page) => $page->component('Dashboard'));
 });
