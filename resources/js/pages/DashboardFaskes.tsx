@@ -4,6 +4,7 @@ import { getEcho } from '@/echo';
 import { CheckupReservationsView, type AdminReservationItem, AdminTopBar } from '@/pages/Components/DashboardAdmin';
 import FaskesSidebar from '@/pages/Components/DashboardFaskes/FaskesSidebar';
 import { HeartPulse, LogOut, X, Menu } from '@/pages/Components/Dashboard/Icons';
+import { showAdminNewReservationAlert } from '@/utils/alerts';
 
 interface DashboardFaskesProps {
     faskesName?: string;
@@ -39,6 +40,7 @@ export default function DashboardFaskes({
                 if (data?.reservation) {
                     setLocalReservations((prev) => [data.reservation, ...prev.filter((r) => r.id !== data.reservation.id)]);
                     setLocalPendingCount((prev) => prev + 1);
+                    showAdminNewReservationAlert(data.reservation.patient_name, data.reservation.clinic_name);
                 }
             });
             channel.listen('.reservation.updated', (data: { reservation: { id: number; status: string; admin_notes?: string } }) => {
