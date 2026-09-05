@@ -21,7 +21,7 @@ export function Navbar() {
         <nav className="hidden items-center gap-7 text-xs font-semibold uppercase tracking-wider md:flex">
           <a href="#beranda" className="text-[#1F6F5F]/80 transition hover:text-[#2FA084]">Beranda</a>
           <a href="#quote-section" className="text-[#1F6F5F]/80 transition hover:text-[#2FA084]">Esensi</a>
-          <a href="#gallery-section" className="text-[#1F6F5F]/80 transition hover:text-[#2FA084]">Stasiun Rimba</a>
+          <a href="#gallery-section" className="text-[#1F6F5F]/80 transition hover:text-[#2FA084]">Provinsi</a>
           <a href="#analisis" className="text-[#1F6F5F]/80 transition hover:text-[#2FA084]">Analisis</a>
           <a href="#edukasi" className="text-[#1F6F5F]/80 transition hover:text-[#2FA084]">Edukasi</a>
           <a href="#solusi" className="text-[#1F6F5F]/80 transition hover:text-[#2FA084]">Solusi</a>
@@ -69,7 +69,7 @@ export function Navbar() {
         <div className="md:hidden border-t border-[#EEEEEE] bg-white px-6 py-4 space-y-3 text-sm">
           <a href="#beranda" onClick={() => setMenuOpen(false)} className="block py-1 text-[#1F6F5F]/80 hover:text-[#2FA084]">Beranda</a>
           <a href="#quote-section" onClick={() => setMenuOpen(false)} className="block py-1 text-[#1F6F5F]/80 hover:text-[#2FA084]">Esensi Rimba</a>
-          <a href="#gallery-section" onClick={() => setMenuOpen(false)} className="block py-1 text-[#1F6F5F]/80 hover:text-[#2FA084]">Stasiun Rimba</a>
+          <a href="#gallery-section" onClick={() => setMenuOpen(false)} className="block py-1 text-[#1F6F5F]/80 hover:text-[#2FA084]">Provinsi</a>
           <a href="#analisis" onClick={() => setMenuOpen(false)} className="block py-1 text-[#1F6F5F]/80 hover:text-[#2FA084]">Analisis</a>
           <a href="#edukasi" onClick={() => setMenuOpen(false)} className="block py-1 text-[#1F6F5F]/80 hover:text-[#2FA084]">Edukasi</a>
           <a href="#solusi" onClick={() => setMenuOpen(false)} className="block py-1 text-[#1F6F5F]/80 hover:text-[#2FA084]">Solusi</a>
