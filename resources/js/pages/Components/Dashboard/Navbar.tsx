@@ -9,7 +9,7 @@ export default function Navbar({ onReset, lastUpdated }: NavbarProps) {
     const { auth } = usePage<{ auth?: { user?: { name?: string; nik?: string } } }>().props;
 
     return (
-        <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#EEEEEE] shadow-xs">
+        <header className="sticky top-0 z-[100] bg-white/95 backdrop-blur-md border-b border-[#EEEEEE] shadow-xs">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                 {/* Logo & Brand */}
                 <Link href="/" className="flex items-center gap-3 hover:opacity-95 transition-opacity group">

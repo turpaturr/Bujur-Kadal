@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Head, usePage } from '@inertiajs/react';
 import {
     Navbar,
@@ -16,6 +16,7 @@ import {
     type HotspotCategory,
     type SensorSource,
     type WildfireHotspot,
+    type ConfidenceLevel,
 } from '@/hooks/useWildfireData';
 import { analyzeUserSafety, type UserLocation } from '@/utils/geoSafety';
 
@@ -59,19 +60,18 @@ export default function Dashboard() {
 
     const hasHome = Boolean(userLocation);
 
-    // Default map center & zoom: jika user memiliki koordinat tempat tinggal,
-    // langsung arahkan pandangan pertama ke posisi user (zoom 11)
-    const [selectedProvince, setSelectedProvince] = useState<string | null>(null);
-    const [isHomeSelected, setIsHomeSelected] = useState<boolean>(hasHome);
-    const [mapCenter, setMapCenter] = useState<[number, number]>(() => {
-        if (userLocation) {
-            return [userLocation.latitude, userLocation.longitude];
-        }
-        return [0.9619, 114.5548];
-    });
-    const [mapZoom, setMapZoom] = useState<number>(() => {
-        return userLocation ? 11 : 6;
-    });
+    // Default tampilan peta: Menampilkan keseluruhan Pulau Kalimantan (Borneo) secara penuh sesuai referensi
+    const [selectedProvinces, setSelectedProvinces] = useState<string[]>([]);
+    const [selectedConfidenceLevels, setSelectedConfidenceLevels] = useState<ConfidenceLevel[]>([
+        'high',
+        'nominal',
+        'low',
+    ]);
+    const [showUserHome, setShowUserHome] = useState<boolean>(true);
+
+    const [isHomeSelected, setIsHomeSelected] = useState<boolean>(false);
+    const [mapCenter, setMapCenter] = useState<[number, number]>([0.35, 114.4]);
+    const [mapZoom, setMapZoom] = useState<number>(6);
 
     const [selectedHotspot, setSelectedHotspot] = useState<WildfireHotspot | null>(null);
     const [activeCategoryFilter, setActiveCategoryFilter] = useState<'all' | HotspotCategory>('all');
@@ -85,31 +85,72 @@ export default function Dashboard() {
     const wildfire = useWildfireData({ enabledSensors, dayRange: 1 });
     const { stats, hotspots, isLoading, lastUpdated, refresh } = wildfire;
 
-    const visibleHotspots = activeCategoryFilter === 'all'
-        ? hotspots
-        : hotspots.filter((hotspot) => hotspot.category === activeCategoryFilter);
+    // Filter Titik Api berdasarkan kategori atas, level confidence legenda, dan filter wilayah provinsi
+    const visibleHotspots = useMemo(() => {
+        return hotspots.filter((hotspot) => {
+            // 1. Kategori (Kebakaran Aktif / Asap Gambut / Panas Berlebih)
+            if (activeCategoryFilter !== 'all' && hotspot.category !== activeCategoryFilter) {
+                return false;
+            }
+
+            // 2. Filter Tingkat Bahaya (Tinggi / Sedang / Rendah) dari Legenda
+            if (!selectedConfidenceLevels.includes(hotspot.confidenceLevel)) {
+                return false;
+            }
+
+            // 3. Filter Multi-Select Wilayah Provinsi dari Legenda / Bar Atas
+            if (selectedProvinces.length > 0) {
+                const hotspotProv = (hotspot.province || '').toUpperCase();
+                const matched = selectedProvinces.some((p) => {
+                    const upper = p.toUpperCase();
+                    return hotspotProv.includes(upper) || upper.includes(hotspotProv);
+                });
+                if (!matched) {
+                    return false;
+                }
+            }
+
+            return true;
+        });
+    }, [hotspots, activeCategoryFilter, selectedConfidenceLevels, selectedProvinces]);
 
     // 2. Analisis Keamanan Karhutla Spasial di Sekitar Kediaman User (Radius 10km & 25km)
     const userSafety = useMemo(() => {
         return analyzeUserSafety(userLocation, visibleHotspots);
     }, [userLocation, visibleHotspots]);
 
+    // 3. Otomatis fokus/scroll ke peta saat pertama kali membuka dashboard
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            const mapElem = document.getElementById('map-section');
+            if (mapElem) {
+                mapElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }, 350);
+
+        return () => clearTimeout(timer);
+    }, []);
+
     const handleFocusHome = () => {
         if (userLocation) {
-            setSelectedProvince(null);
+            setSelectedProvinces([]);
             setSelectedHotspot(null);
             setIsHomeSelected(true);
+            setShowUserHome(true);
             setMapCenter([userLocation.latitude, userLocation.longitude]);
             setMapZoom(11);
-            window.scrollTo({ top: 220, behavior: 'smooth' });
+            const mapElem = document.getElementById('map-section');
+            if (mapElem) {
+                mapElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
         }
     };
 
-    const handleSelectProvince = (province: ProvinceItem | null) => {
+    const handleSelectProvinceFromBar = (province: ProvinceItem | null) => {
         setSelectedHotspot(null);
         setIsHomeSelected(false);
         if (province) {
-            setSelectedProvince(province.name);
+            setSelectedProvinces([province.name]);
             setMapCenter(province.center);
             setMapZoom(province.zoom);
         } else {
@@ -117,16 +158,57 @@ export default function Dashboard() {
         }
     };
 
-    const handleSelectProvinceByName = (provinceName: string) => {
-        const found = PROVINCE_CONFIG.find((p) => p.name === provinceName);
-        if (found) {
-            setIsHomeSelected(false);
-            setSelectedProvince(found.name);
-            setMapCenter(found.center);
-            setMapZoom(found.zoom);
-            setSelectedHotspot(null);
-            window.scrollTo({ top: 180, behavior: 'smooth' });
-        }
+    const handleToggleProvince = (provName: string) => {
+        setSelectedHotspot(null);
+        setIsHomeSelected(false);
+
+        setSelectedProvinces((prev) => {
+            const upper = provName.toUpperCase();
+            const exists = prev.some((p) => p.toUpperCase() === upper);
+            if (exists) {
+                const updated = prev.filter((p) => p.toUpperCase() !== upper);
+                if (updated.length === 0) {
+                    setMapCenter([0.35, 114.4]);
+                    setMapZoom(6);
+                }
+                return updated;
+            } else {
+                const found = PROVINCE_CONFIG.find(
+                    (p) => p.name.toUpperCase() === upper
+                );
+                if (found) {
+                    setMapCenter(found.center);
+                    setMapZoom(found.zoom);
+                }
+                return [...prev, provName];
+            }
+        });
+    };
+
+    const handleToggleConfidenceLevel = (level: ConfidenceLevel) => {
+        setSelectedConfidenceLevels((prev) => {
+            if (prev.includes(level)) {
+                const next = prev.filter((l) => l !== level);
+                return next.length === 0 ? ['high', 'nominal', 'low'] : next;
+            } else {
+                return [...prev, level];
+            }
+        });
+    };
+
+    const handleToggleUserHome = () => {
+        setShowUserHome((prev) => !prev);
+    };
+
+    const handleResetAllFilters = () => {
+        setSelectedConfidenceLevels(['high', 'nominal', 'low']);
+        setSelectedProvinces([]);
+        setShowUserHome(true);
+        setSelectedHotspot(null);
+        setIsHomeSelected(false);
+        setActiveCategoryFilter('all');
+        setMapCenter([0.35, 114.4]);
+        setMapZoom(6);
     };
 
     const handleSelectHotspot = (hotspot: WildfireHotspot) => {
@@ -134,7 +216,10 @@ export default function Dashboard() {
         setIsHomeSelected(false);
         setMapCenter([hotspot.latitude, hotspot.longitude]);
         setMapZoom(12);
-        window.scrollTo({ top: 180, behavior: 'smooth' });
+        const mapElem = document.getElementById('map-section');
+        if (mapElem) {
+            mapElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
     };
 
     const handleFocusNearestHotspot = () => {
@@ -144,17 +229,20 @@ export default function Dashboard() {
     };
 
     const handleResetView = () => {
-        setSelectedProvince(null);
+        setSelectedProvinces([]);
         setSelectedHotspot(null);
         setIsHomeSelected(false);
         setActiveCategoryFilter('all');
-        setMapCenter([0.9619, 114.5548]);
+        setMapCenter([0.35, 114.4]);
         setMapZoom(6);
     };
 
     const handleCategoryCardClick = (category: HotspotCategory) => {
         setActiveCategoryFilter((prev) => (prev === category ? 'all' : category));
-        window.scrollTo({ top: 220, behavior: 'smooth' });
+        const mapElem = document.getElementById('map-section');
+        if (mapElem) {
+            mapElem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
     };
 
     const handleToggleSensor = (sensor: SensorSource) => {
@@ -165,14 +253,17 @@ export default function Dashboard() {
         );
     };
 
+    // Helper: string nama provinsi pertama yang aktif untuk kompatibilitas filter bar
+    const activeProvinceSingle = selectedProvinces.length === 1 ? selectedProvinces[0] : null;
+
     return (
         <>
             <Head title="Dashboard Karhutla & Gambut - BorneoCare" />
 
             {/* Layout Utama: Background Light Neutral & Typography Figtree / Fraunces */}
             <div className="flex min-h-screen flex-col bg-[#FAFAFA] font-sans text-[#262626] antialiased">
-                {/* 1. Header & Navigation */}
-                <Navbar onReset={handleResetView} lastUpdated={lastUpdated} />
+                {/* 1. Header & Navigation (z-[100] sehingga peta tidak akan pernah menimpanya) */}
+                <Navbar onReset={handleResetAllFilters} lastUpdated={lastUpdated} />
 
                 {/* 2. Main Content */}
                 <main className="mx-auto w-full max-w-7xl flex-1 space-y-6 px-4 py-6 sm:px-6 lg:px-8">
@@ -198,7 +289,7 @@ export default function Dashboard() {
                                 </p>
                             </div>
 
-                            {/* Status Bahaya & Quick Action */}
+                            {/* Status Bahaya & Quick Action dengan Palet Warna Baru */}
                             <div className="flex flex-wrap items-center gap-2 sm:gap-3 shrink-0">
                                 <div className="px-3.5 py-2 rounded-xl bg-[#EEEEEE]/80 border border-[#EEEEEE] flex items-center gap-2.5">
                                     <div className="text-right">
@@ -209,13 +300,16 @@ export default function Dashboard() {
                                             {stats.hazeRiskLevel}
                                         </div>
                                     </div>
-                                    <span className={`w-3 h-3 rounded-full ${
-                                        stats.hazeRiskLevel === 'Kritis'
-                                            ? 'bg-rose-500 animate-ping'
-                                            : stats.hazeRiskLevel === 'Tinggi'
-                                              ? 'bg-amber-500'
-                                              : 'bg-[#2FA084]'
-                                    }`} />
+                                    <span
+                                        className={`w-3 h-3 rounded-full ${
+                                            stats.hazeRiskLevel === 'Kritis' || stats.hazeRiskLevel === 'Tinggi'
+                                                ? 'bg-[#B91C1C] animate-ping'
+                                                : stats.hazeRiskLevel === 'Sedang'
+                                                  ? 'bg-[#E5A910]'
+                                                  : 'bg-[#15803D]'
+                                        }`}
+                                        title={`Status Asap Saat Ini: ${stats.hazeRiskLevel}`}
+                                    />
                                 </div>
 
                                 <button
@@ -238,8 +332,8 @@ export default function Dashboard() {
                                 Filter Wilayah Spasial:
                             </div>
                             <ProvinceFilter
-                                selectedProvince={selectedProvince}
-                                onSelect={handleSelectProvince}
+                                selectedProvince={activeProvinceSingle}
+                                onSelect={handleSelectProvinceFromBar}
                                 countsByProvince={stats.byProvince}
                                 totalCount={stats.total}
                                 hasUserHome={hasHome}
@@ -270,8 +364,11 @@ export default function Dashboard() {
                         />
                     </section>
 
-                    {/* Komponen Peta Interaktif Leaflet Terintegrasi */}
-                    <section className="overflow-hidden rounded-2xl border border-[#EEEEEE] bg-white p-3 shadow-xs sm:p-4">
+                    {/* Komponen Peta Interaktif Leaflet Terintegrasi (dengan Stacking Context Terisolasi) */}
+                    <section
+                        id="map-section"
+                        className="relative z-10 isolate overflow-hidden rounded-2xl border border-[#EEEEEE] bg-white p-3 shadow-xs sm:p-4"
+                    >
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3 px-1">
                             <div>
                                 <h2 className="font-display text-base sm:text-lg font-bold text-[#1F6F5F]">
@@ -280,16 +377,44 @@ export default function Dashboard() {
                                 <p className="text-[11px] text-[#262626]/60">
                                     {isHomeSelected
                                         ? `Fokus: Kediaman Anda (${userLocation?.name ?? 'Warga'}) & Radius Pantauan 25 km`
-                                        : selectedProvince
-                                          ? `Fokus: ${selectedProvince}`
+                                        : selectedProvinces.length > 0
+                                          ? `Filter Wilayah: ${selectedProvinces.join(', ')}`
                                           : 'Cakupan: Seluruh Pulau Kalimantan'} · Klik tanda titik untuk melihat detail suhu dan jenis kebakaran.
                                 </p>
                             </div>
 
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                                 {isHomeSelected && (
                                     <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-[#2FA084]/15 text-[#1F6F5F]">
                                         <span>🏠 Kediaman Anda Aktif</span>
+                                    </div>
+                                )}
+
+                                {selectedProvinces.length > 0 && (
+                                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-[#2FA084]/15 text-[#1F6F5F]">
+                                        <span>Wilayah ({selectedProvinces.length}): <strong>{selectedProvinces.join(', ')}</strong></span>
+                                        <button
+                                            type="button"
+                                            onClick={() => setSelectedProvinces([])}
+                                            className="ml-1 hover:underline text-rose-600 cursor-pointer"
+                                            title="Tampilkan Seluruh Kalimantan"
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                )}
+
+                                {selectedConfidenceLevels.length < 3 && (
+                                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                                        <span>Status: {selectedConfidenceLevels.length} Tingkat</span>
+                                        <button
+                                            type="button"
+                                            onClick={() => setSelectedConfidenceLevels(['high', 'nominal', 'low'])}
+                                            className="ml-1 hover:underline text-amber-900 cursor-pointer"
+                                            title="Tampilkan Semua Tingkat"
+                                        >
+                                            ✕
+                                        </button>
                                     </div>
                                 )}
 
@@ -337,6 +462,13 @@ export default function Dashboard() {
                             userLocation={userLocation}
                             userSafety={userSafety}
                             onFocusHome={handleFocusHome}
+                            selectedProvinces={selectedProvinces}
+                            onToggleProvince={handleToggleProvince}
+                            selectedConfidenceLevels={selectedConfidenceLevels}
+                            onToggleConfidenceLevel={handleToggleConfidenceLevel}
+                            showUserHome={showUserHome}
+                            onToggleUserHome={handleToggleUserHome}
+                            onResetFilters={handleResetAllFilters}
                         />
                     </section>
 
@@ -346,7 +478,7 @@ export default function Dashboard() {
                             wildfire={wildfire}
                             enabledSensors={enabledSensors}
                             onToggleSensor={handleToggleSensor}
-                            onSelectProvince={handleSelectProvinceByName}
+                            onSelectProvince={handleToggleProvince}
                             onSelectHotspot={handleSelectHotspot}
                         />
                     </section>
