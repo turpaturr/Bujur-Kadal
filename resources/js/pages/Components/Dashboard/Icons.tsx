@@ -110,6 +110,17 @@ export function Users(props: IconProps) {
     );
 }
 
+export function Mailbox(props: IconProps) {
+    return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+            <path d="M3 19h18" />
+            <path d="M5 19V8a5 5 0 0 1 10 0v11" />
+            <path d="M15 19V9h2a4 4 0 0 1 4 4v6" />
+            <path d="M5 13h5" />
+        </svg>
+    );
+}
+
 export function ShieldAlert(props: IconProps) {
     return (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
