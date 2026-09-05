@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import 'leaflet.markercluster';
+import 'leaflet.markercluster/dist/MarkerCluster.css';
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 
 import { cn } from '@/lib/utils';
 import type { ConfidenceLevel } from '@/hooks/useWildfireData';
@@ -65,10 +68,10 @@ export function Maps({
 }: MapsProps) {
     const mapContainerRef = useRef<HTMLDivElement | null>(null);
     const mapInstanceRef = useRef<L.Map | null>(null);
-    const hotspotLayerRef = useRef<L.LayerGroup | null>(null);
+    const hotspotLayerRef = useRef<L.MarkerClusterGroup | null>(null);
     const userLayerRef = useRef<L.LayerGroup | null>(null);
-    const registeredUsersLayerRef = useRef<L.LayerGroup | null>(null);
-    const clinicsLayerRef = useRef<L.LayerGroup | null>(null);
+    const registeredUsersLayerRef = useRef<L.MarkerClusterGroup | null>(null);
+    const clinicsLayerRef = useRef<L.MarkerClusterGroup | null>(null);
     const provinceLayerRef = useRef<L.GeoJSON | null>(null);
 
     const [activeBasemap, setActiveBasemap] = useState<'osm' | 'nasa'>('osm');
@@ -193,16 +196,16 @@ export function Maps({
         nasaLayerRef.current = satelliteLayer;
 
         // Layer Groups
-        const hotspotLayer = L.layerGroup().addTo(map);
+        const hotspotLayer = L.markerClusterGroup({ maxClusterRadius: 50 }).addTo(map);
         hotspotLayerRef.current = hotspotLayer;
 
         const userLayer = L.layerGroup().addTo(map);
         userLayerRef.current = userLayer;
 
-        const registeredUsersLayer = L.layerGroup().addTo(map);
+        const registeredUsersLayer = L.markerClusterGroup({ maxClusterRadius: 50 }).addTo(map);
         registeredUsersLayerRef.current = registeredUsersLayer;
 
-        const clinicsLayer = L.layerGroup().addTo(map);
+        const clinicsLayer = L.markerClusterGroup({ maxClusterRadius: 50 }).addTo(map);
         clinicsLayerRef.current = clinicsLayer;
 
         const resizeTimeout = setTimeout(() => {
@@ -341,6 +344,7 @@ export function Maps({
             selectedConfidenceLevels.includes(h.confidenceLevel),
         );
 
+        const markers = [];
         for (const hotspot of filtered) {
             const marker = createHotspotMarker(hotspot, (e) => {
                 const map = mapInstanceRef.current;
@@ -352,8 +356,9 @@ export function Maps({
                 }
                 onHotspotSelect?.(hotspot);
             });
-            layer.addLayer(marker);
+            markers.push(marker);
         }
+        layer.addLayers(markers);
     }, [wildfireHotspots, selectedConfidenceLevels, onHotspotSelect]);
 
     // 6. FlyTo jika hotspot spesifik dipilih dari list
@@ -403,6 +408,7 @@ export function Maps({
             return;
         }
 
+        const markers = [];
         for (const household of registeredUsers) {
             if (
                 household.latitude === null ||
@@ -414,8 +420,9 @@ export function Maps({
             }
 
             const marker = createRegisteredUserMarker(household, onSelectUserLocation);
-            layer.addLayer(marker);
+            markers.push(marker);
         }
+        layer.addLayers(markers);
     }, [registeredUsers, shouldShowRegisteredUsers, onSelectUserLocation]);
 
     // 9. FlyTo jika lokasi warga tertentu dipilih dari list admin (hanya jika jarak > 0.05 agar popup tidak tertutup)
@@ -524,10 +531,12 @@ export function Maps({
             ? [activeRouteClinic]
             : KALIMANTAN_CLINICS;
 
+        const markers = [];
         for (const clinic of clinicsToRender) {
             const marker = createClinicMarker(clinic, effectiveOrigin, handleStartRoute, onBookCheckup);
-            layer.addLayer(marker);
+            markers.push(marker);
         }
+        layer.addLayers(markers);
     }, [shouldShowClinics, effectiveOrigin, activeRouteClinic, onBookCheckup]);
 
     const handleToggleRegisteredUsers = () => {
