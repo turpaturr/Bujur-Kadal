@@ -48,6 +48,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/family/members/{member}', [FamilyMemberController::class, 'destroy'])->name('family.members.destroy');
 
     Route::post('/checkup-reservations', [CheckupReservationController::class, 'store'])->name('checkup-reservations.store');
+    Route::post('/checkup-reservations/mark-as-read', [CheckupReservationController::class, 'markAsRead'])->name('checkup-reservations.mark-as-read');
 
     Route::get('/api/wildfire/hotspots', [WildfireController::class, 'hotspots'])
         ->name('wildfire.hotspots');

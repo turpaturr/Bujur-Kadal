@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\CheckupReservationCreated;
 use App\Models\CheckupReservation;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -26,7 +27,7 @@ class CheckupReservationController extends Controller
 
         $user = $request->user();
 
-        CheckupReservation::create([
+        $reservation = CheckupReservation::create([
             'user_id' => $user->id,
             'family_id' => $user->family_id,
             'clinic_id' => $validated['clinic_id'],
@@ -38,8 +39,25 @@ class CheckupReservationController extends Controller
             'checkup_time' => $validated['checkup_time'],
             'symptoms' => $validated['symptoms'] ?? null,
             'status' => 'pending',
+            'is_read' => true,
         ]);
 
+        broadcast(new CheckupReservationCreated($reservation->load(['user.family'])))->toOthers();
+
         return back()->with('success', 'Permohonan reservasi jadwal pemeriksaan berhasil dikirim! Pihak faskes akan meninjau jadwal Anda.');
+    }
+
+    /**
+     * Menandai seluruh notifikasi reservasi pengguna sebagai telah dibaca.
+     */
+    public function markAsRead(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        CheckupReservation::where('user_id', $user->id)
+            ->where('is_read', false)
+            ->update(['is_read' => true]);
+
+        return back();
     }
 }

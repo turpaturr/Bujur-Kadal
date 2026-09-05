@@ -22,6 +22,7 @@ class CheckupReservation extends Model
         'checkup_time',
         'symptoms',
         'status',
+        'is_read',
         'admin_notes',
         'handled_at',
     ];
@@ -33,6 +34,7 @@ class CheckupReservation extends Model
     {
         return [
             'checkup_date' => 'date:Y-m-d',
+            'is_read' => 'boolean',
             'handled_at' => 'datetime',
         ];
     }

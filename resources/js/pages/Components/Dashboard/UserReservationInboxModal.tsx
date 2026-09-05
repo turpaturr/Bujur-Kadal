@@ -12,6 +12,7 @@ export interface UserReservationItem {
     checkup_time: string;
     symptoms?: string | null;
     status: 'pending' | 'approved' | 'rejected' | string;
+    is_read?: boolean;
     admin_notes?: string | null;
     created_at?: string;
     created_at_raw?: string;

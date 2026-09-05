@@ -1,5 +1,6 @@
-import { useState, useMemo } from 'react';
-import { Head } from '@inertiajs/react';
+import { useState, useMemo, useEffect } from 'react';
+import { Head, router } from '@inertiajs/react';
+import { getEcho } from '@/echo';
 import {
     AdminMapSection,
     StatCards,
@@ -55,6 +56,54 @@ export default function DashboardAdmin({
     const [selectedHotspot, setSelectedHotspot] = useState<WildfireHotspot | null>(null);
     const [selectedUserLocation, setSelectedUserLocation] = useState<RegisteredUserLocation | null>(null);
     const [isHouseholdModalOpen, setIsHouseholdModalOpen] = useState<boolean>(false);
+
+    // State Real-Time Reservasi Admin
+    const [localReservations, setLocalReservations] = useState<AdminReservationItem[]>(reservations);
+    const [localPendingCount, setLocalPendingCount] = useState<number>(pendingReservationsCount);
+
+    useEffect(() => {
+        setLocalReservations(reservations);
+        setLocalPendingCount(pendingReservationsCount);
+    }, [reservations, pendingReservationsCount]);
+
+    // Reverb WebSocket Listener & Polling Fallback
+    useEffect(() => {
+        const echo = getEcho();
+        let channel: any = null;
+
+        if (echo) {
+            channel = echo.channel('admin-reservations');
+            channel.listen('.reservation.created', (data: { reservation: AdminReservationItem }) => {
+                if (data?.reservation) {
+                    setLocalReservations((prev) => [data.reservation, ...prev.filter((r) => r.id !== data.reservation.id)]);
+                    setLocalPendingCount((prev) => prev + 1);
+                }
+            });
+            channel.listen('.reservation.updated', (data: { reservation: { id: number; status: string; admin_notes?: string } }) => {
+                if (data?.reservation) {
+                    setLocalReservations((prev) =>
+                        prev.map((r) =>
+                            r.id === data.reservation.id
+                                ? { ...r, status: data.reservation.status, admin_notes: data.reservation.admin_notes ?? r.admin_notes }
+                                : r,
+                        ),
+                    );
+                    router.reload({ only: ['pendingReservationsCount', 'reservations'] });
+                }
+            });
+        }
+
+        const interval = setInterval(() => {
+            router.reload({ only: ['reservations', 'pendingReservationsCount'] });
+        }, 8000);
+
+        return () => {
+            clearInterval(interval);
+            if (channel && echo) {
+                echo.leaveChannel('admin-reservations');
+            }
+        };
+    }, []);
 
     const [enabledSensors, setEnabledSensors] = useState<SensorSource[]>([
         'VIIRS_SNPP',
@@ -171,7 +220,7 @@ export default function DashboardAdmin({
         if (activeMenu === 'triage') {
             return (
                 <CheckupReservationsView
-                    reservations={reservations}
+                    reservations={localReservations}
                 />
             );
         }
@@ -229,7 +278,7 @@ export default function DashboardAdmin({
                     onMenuChange={setActiveMenu}
                     isMobileOpen={isMobileSidebarOpen}
                     onCloseMobile={() => setIsMobileSidebarOpen(false)}
-                    pendingReservationsCount={pendingReservationsCount}
+                    pendingReservationsCount={localPendingCount}
                 />
 
                 <div className="flex-1 flex flex-col overflow-hidden">

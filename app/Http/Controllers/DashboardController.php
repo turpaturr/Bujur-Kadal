@@ -66,6 +66,7 @@ class DashboardController extends Controller
                         'checkup_time' => $r->checkup_time,
                         'symptoms' => $r->symptoms,
                         'status' => $r->status,
+                        'is_read' => (bool) $r->is_read,
                         'admin_notes' => $r->admin_notes,
                         'created_at' => $r->created_at?->diffForHumans(),
                         'created_at_raw' => $r->created_at?->toISOString(),
@@ -73,11 +74,14 @@ class DashboardController extends Controller
                 });
         }
 
+        $unreadReservationsCount = $userReservations->where('is_read', false)->count();
+
         return Inertia::render('Dashboard', [
             'familyMembers' => $familyMembers,
             'isHeadOfFamily' => $user?->role === UserRole::KepalaKeluarga,
             'hasCompletedFamilyDocs' => count($familyMembers) > 1,
             'userReservations' => $userReservations,
+            'unreadReservationsCount' => $unreadReservationsCount,
         ]);
     }
 }

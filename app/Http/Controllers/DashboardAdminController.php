@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\SosStatus;
 use App\Enums\UserRole;
+use App\Events\CheckupReservationStatusUpdated;
 use App\Models\CheckupReservation;
 use App\Models\Family;
 use App\Models\SafeZone;
@@ -146,9 +147,12 @@ class DashboardAdminController extends Controller
 
         $reservation->update([
             'status' => 'approved',
+            'is_read' => false,
             'admin_notes' => $validated['admin_notes'] ?? 'Jadwal telah dikonfirmasi oleh faskes. Silakan hadir 15 menit sebelum waktu pemeriksaan.',
             'handled_at' => now(),
         ]);
+
+        broadcast(new CheckupReservationStatusUpdated($reservation));
 
         return back()->with('success', "Reservasi untuk {$reservation->patient_name} di {$reservation->clinic_name} berhasil disetujui.");
     }
@@ -164,9 +168,12 @@ class DashboardAdminController extends Controller
 
         $reservation->update([
             'status' => 'rejected',
+            'is_read' => false,
             'admin_notes' => $validated['admin_notes'],
             'handled_at' => now(),
         ]);
+
+        broadcast(new CheckupReservationStatusUpdated($reservation));
 
         return back()->with('success', "Reservasi untuk {$reservation->patient_name} di {$reservation->clinic_name} telah ditolak.");
     }

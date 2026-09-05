@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Head, usePage } from '@inertiajs/react';
+import { Head, usePage, router } from '@inertiajs/react';
+import { getEcho } from '@/echo';
 import {
     Navbar,
     ProvinceFilter,
@@ -42,6 +43,7 @@ interface PageProps {
     isHeadOfFamily?: boolean;
     hasCompletedFamilyDocs?: boolean;
     userReservations?: UserReservationItem[];
+    unreadReservationsCount?: number;
     [key: string]: unknown;
 }
 
@@ -52,14 +54,82 @@ export default function Dashboard() {
         isHeadOfFamily,
         hasCompletedFamilyDocs,
         userReservations = [],
+        unreadReservationsCount = 0,
     } = usePage<PageProps>().props;
     const [isAddMemberOpen, setIsAddMemberOpen] = useState<boolean>(false);
     const [editingMember, setEditingMember] = useState<FamilyMemberItem | null>(null);
 
     // State Reservasi Medical Checkup & Inbox User
+    const [localReservations, setLocalReservations] = useState<UserReservationItem[]>(userReservations);
+    const [localUnreadCount, setLocalUnreadCount] = useState<number>(unreadReservationsCount);
     const [isBookModalOpen, setIsBookModalOpen] = useState<boolean>(false);
     const [selectedCheckupClinic, setSelectedCheckupClinic] = useState<ClinicData | null>(null);
     const [isInboxModalOpen, setIsInboxModalOpen] = useState<boolean>(false);
+
+    useEffect(() => {
+        setLocalReservations(userReservations);
+        setLocalUnreadCount(unreadReservationsCount);
+    }, [userReservations, unreadReservationsCount]);
+
+    // Reverb WebSocket Listener & Real-Time Sync untuk Warga
+    useEffect(() => {
+        const userId = auth?.user?.id;
+        if (!userId) return;
+
+        const echo = getEcho();
+        let channel: any = null;
+
+        if (echo) {
+            channel = echo.channel(`user-reservations.${userId}`);
+            channel.listen(
+                '.reservation.updated',
+                (data: { reservation: { id: number; status: string; admin_notes?: string } }) => {
+                    if (data?.reservation) {
+                        setLocalReservations((prev) =>
+                            prev.map((r) =>
+                                r.id === data.reservation.id
+                                    ? {
+                                          ...r,
+                                          status: data.reservation.status,
+                                          admin_notes: data.reservation.admin_notes ?? r.admin_notes,
+                                          is_read: false,
+                                      }
+                                    : r,
+                            ),
+                        );
+                        // Nyalakan badge angka notifikasi baru saat ada aksi terima / tolak dari faskes
+                        setLocalUnreadCount((prev) => prev + 1);
+                    }
+                },
+            );
+        }
+
+        const interval = setInterval(() => {
+            router.reload({ only: ['userReservations', 'unreadReservationsCount'] });
+        }, 8000);
+
+        return () => {
+            clearInterval(interval);
+            if (channel && echo) {
+                echo.leaveChannel(`user-reservations.${userId}`);
+            }
+        };
+    }, [auth?.user?.id]);
+
+    const handleOpenInbox = () => {
+        setIsInboxModalOpen(true);
+        if (localUnreadCount > 0) {
+            setLocalUnreadCount(0);
+            router.post(
+                '/checkup-reservations/mark-as-read',
+                {},
+                {
+                    preserveScroll: true,
+                    preserveState: true,
+                },
+            );
+        }
+    };
 
     const handleBookCheckup = (clinic: ClinicData) => {
         setSelectedCheckupClinic(clinic);
@@ -305,8 +375,8 @@ export default function Dashboard() {
                 <Navbar
                     onReset={handleResetAllFilters}
                     lastUpdated={lastUpdated}
-                    onOpenInbox={() => setIsInboxModalOpen(true)}
-                    inboxCount={userReservations?.length ?? 0}
+                    onOpenInbox={handleOpenInbox}
+                    inboxCount={localUnreadCount}
                 />
 
                 {/* 2. Main Content */}
@@ -605,7 +675,7 @@ export default function Dashboard() {
                 <UserReservationInboxModal
                     isOpen={isInboxModalOpen}
                     onClose={() => setIsInboxModalOpen(false)}
-                    reservations={userReservations ?? []}
+                    reservations={localReservations}
                 />
             </div>
         </>
