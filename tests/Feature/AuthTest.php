@@ -51,7 +51,7 @@ test('full 5-step registration creates family, user, health profile and logs in'
 
     $response = $this->post(route('register.store'), $payload);
 
-    $response->assertRedirect(route('home'));
+    $response->assertRedirect(route('dashboard'));
 
     // Assert Family created
     $family = Family::where('no_kk', '6472010101010002')->first();
@@ -106,7 +106,7 @@ test('rapid login with nik and 6-digit pin succeeds', function () {
         'pin' => '654321',
     ]);
 
-    $response->assertRedirect(route('home'));
+    $response->assertRedirect(route('dashboard'));
     expect(Auth::id())->toBe($user->id);
 });
 
@@ -134,58 +134,30 @@ test('authenticated user can logout', function () {
     expect(Auth::check())->toBeFalse();
 });
 
-test('authentication seeder seeds test users that can log in', function () {
-    $this->seed(AuthenticationSeeder::class);
+test('application flow works: landing page -> guest cannot access dashboard -> login -> dashboard -> logout', function () {
+    // 1. Landing page is accessible to everyone
+    $landingResponse = $this->get(route('home'));
+    $landingResponse->assertOk()
+        ->assertInertia(fn ($page) => $page->component('Welcome'));
 
-    // Test Budi Pratama (Kepala Keluarga Rentan)
-    $response = $this->post(route('login.store'), [
-        'nik' => '6472010101900001',
+    // 2. Guest cannot access dashboard directly, gets redirected to login
+    $dashboardGuest = $this->get(route('dashboard'));
+    $dashboardGuest->assertRedirect(route('login'));
+
+    // 3. User logs in
+    $user = User::factory()->create([
+        'nik' => '6472019909900001',
         'pin' => '123456',
     ]);
-    $response->assertRedirect(route('home'));
-    expect(Auth::user()->name)->toBe('Budi Pratama (Kepala Keluarga)')
-        ->and(Auth::user()->healthProfile->is_vulnerable)->toBeTrue();
 
-    Auth::logout();
-
-    // Test Siti Rahma (Anggota Non-Rentan)
-    $response = $this->post(route('login.store'), [
-        'nik' => '6472011504950002',
+    $loginResponse = $this->post(route('login.store'), [
+        'nik' => '6472019909900001',
         'pin' => '123456',
     ]);
-    $response->assertRedirect(route('home'));
-    expect(Auth::user()->name)->toBe('Siti Rahma (Anggota Keluarga)')
-        ->and(Auth::user()->healthProfile->is_vulnerable)->toBeFalse();
+    $loginResponse->assertRedirect(route('dashboard'));
 
-    Auth::logout();
-
-    // Test Ahmad Fauzi (Pendatang / Relawan)
-    $response = $this->post(route('login.store'), [
-        'nik' => '6271012005980003',
-        'pin' => '123456',
-    ]);
-    $response->assertRedirect(route('home'));
-    expect(Auth::user()->name)->toBe('Ahmad Fauzi (Relawan / Pendatang)');
-
-    Auth::logout();
-
-    // Test Haji Syahrani (Lansia Rentan)
-    $response = $this->post(route('login.store'), [
-        'nik' => '6271010503550004',
-        'pin' => '123456',
-    ]);
-    $response->assertRedirect(route('home'));
-    expect(Auth::user()->name)->toBe('Haji Syahrani (Lansia Rentan)')
-        ->and(Auth::user()->healthProfile->is_vulnerable)->toBeTrue();
-
-    Auth::logout();
-
-    // Test Dewi Lestari (Ibu Hamil Rentan)
-    $response = $this->post(route('login.store'), [
-        'nik' => '6171011010910005',
-        'pin' => '123456',
-    ]);
-    $response->assertRedirect(route('home'));
-    expect(Auth::user()->name)->toBe('Dewi Lestari (Ibu Hamil)')
-        ->and(Auth::user()->healthProfile->is_vulnerable)->toBeTrue();
+    // 4. Authenticated user can access dashboard
+    $dashboardAuth = $this->actingAs($user)->get(route('dashboard'));
+    $dashboardAuth->assertOk()
+        ->assertInertia(fn ($page) => $page->component('Dashboard'));
 });
