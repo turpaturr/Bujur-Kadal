@@ -24,7 +24,7 @@ export default function Navbar({ onReset }: NavbarProps) {
                         </svg>
                     </div>
                     <div>
-                        <span className="text-lg font-bold text-[#095D7E] tracking-tight">
+                        <span className="font-display text-lg font-bold text-[#095D7E] tracking-tight">
                             Borneo<span className="text-[#14967F]">Care</span>
                         </span>
                         <span className="hidden sm:block text-[11px] text-[#262626]/70 leading-none">
