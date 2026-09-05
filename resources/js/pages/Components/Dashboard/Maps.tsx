@@ -20,6 +20,12 @@ const DefaultIcon = L.icon({
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
+// Batas wilayah koordinat Pulau Kalimantan (Borneo)
+export const KALIMANTAN_BOUNDS: L.LatLngBoundsExpression = [
+    [-5.5, 107.0], // Barat Daya (Batas Selatan Kalsel / Laut Jawa / Selat Karimata)
+    [7.8, 121.0],  // Timur Laut (Batas Utara Kaltara-Sabah / Laut Sulu / Selat Makassar)
+];
+
 // Mengambil API Key dari .env (NASA_API_KEY)
 export const NASA_API_KEY: string =
     import.meta.env.NASA_API_KEY ||
@@ -54,10 +60,15 @@ export function Maps({
             return;
         }
 
-        // Inisialisasi peta Leaflet
+        // Inisialisasi peta Leaflet terkunci pada wilayah Kalimantan & pencegahan pengulangan dunia
         const map = L.map(mapContainerRef.current, {
             center,
             zoom,
+            minZoom: 5, // Batas zoom out maks agar tidak mengecil ke seluruh bola dunia
+            maxZoom: 18,
+            maxBounds: KALIMANTAN_BOUNDS, // Batas wilayah hanya pulau Kalimantan
+            maxBoundsViscosity: 1.0, // Nilai 1.0 mengunci map secara rigid agar tidak bisa digeser ke luar batas
+            worldCopyJump: false,
             zoomControl: true,
         });
         mapInstanceRef.current = map;
@@ -66,7 +77,9 @@ export function Maps({
         const osmLayer = L.tileLayer(
             'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
             {
+                minZoom: 5,
                 maxZoom: 19,
+                noWrap: true, // Mencegah perulangan peta secara horizontal
                 attribution:
                     '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
             },
@@ -81,7 +94,9 @@ export function Maps({
         const nasaGibsLayer = L.tileLayer(
             `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/${gibsDate}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg`,
             {
+                minZoom: 5,
                 maxZoom: 9,
+                noWrap: true, // Mencegah perulangan peta secara horizontal
                 attribution:
                     'Imagery &copy; <a href="https://earthdata.nasa.gov/gibs">NASA EOSDIS GIBS</a>',
             },
@@ -102,6 +117,7 @@ export function Maps({
                     layers: 'fires_viirs_snpp',
                     format: 'image/png',
                     transparent: true,
+                    noWrap: true, // Mencegah perulangan peta secara horizontal
                     attribution:
                         'Active Fires &copy; <a href="https://firms.modaps.eosdis.nasa.gov/">NASA FIRMS</a>',
                 },
@@ -132,14 +148,12 @@ export function Maps({
     return (
         <div
             className={cn(
-                'relative w-full h-[500px] rounded-2xl overflow-hidden border border-slate-200 dark:border-zinc-800 shadow-sm z-0',
+                'relative w-full h-[500px] rounded-2xl overflow-hidden border border-slate-200 dark:border-zinc-800 shadow-sm z-0 bg-[#aad3df]',
                 className,
             )}
         >
             {/* Map Container */}
-            <div ref={mapContainerRef} className="w-full h-full" />
-
-           
+            <div ref={mapContainerRef} className="w-full h-full bg-[#aad3df]" />
         </div>
     );
 }

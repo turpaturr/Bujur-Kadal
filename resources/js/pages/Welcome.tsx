@@ -92,7 +92,7 @@ export default function Welcome() {
                             <div className="mt-6 p-4 rounded-2xl bg-[#EEEEEE]/70 border border-[#EEEEEE] flex items-center justify-between">
                                 <div>
                                     <span className="text-[11px] uppercase tracking-wider text-[#1F6F5F]/70 block font-medium">
-                                        Indeks Standar Pencemar (ISPU)
+                                        Indeks Standar Pencemar Udara (ISPU)
                                     </span>
                                     <div className="flex items-baseline gap-2 mt-1">
                                         <span className="font-heading font-serif text-4xl font-bold text-[#1F6F5F] tabular-nums">

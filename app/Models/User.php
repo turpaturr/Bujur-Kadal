@@ -3,11 +3,13 @@
 namespace App\Models;
 
 use App\Enums\UserRole;
+use App\Models\Builders\UserBuilder;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
@@ -48,6 +50,44 @@ class User extends Authenticatable
         'home_latitude',
         'home_longitude',
     ];
+
+    /**
+     * Create a new Eloquent query builder for the model.
+     *
+     * @param  Builder  $query
+     * @return UserBuilder<static>
+     */
+    public function newEloquentBuilder($query): UserBuilder
+    {
+        return new UserBuilder($query);
+    }
+
+    /**
+     * Hash a plain 16-digit NIK using SHA-256 for secure, privacy-compliant storage.
+     */
+    public static function hashNik(?string $nik): ?string
+    {
+        if ($nik === null || $nik === '') {
+            return $nik;
+        }
+
+        $trimmed = trim($nik);
+
+        // If already a 64-character hex string (SHA-256), do not re-hash
+        if (strlen($trimmed) === 64 && ctype_xdigit($trimmed)) {
+            return $trimmed;
+        }
+
+        return hash('sha256', $trimmed);
+    }
+
+    /**
+     * Automatically hash NIK when setting the attribute.
+     */
+    protected function setNikAttribute($value): void
+    {
+        $this->attributes['nik'] = self::hashNik((string) $value);
+    }
 
     /**
      * The attributes that should be hidden for serialization.
