@@ -8,6 +8,7 @@ import {
     AdminTopBar,
     CitizensListView,
     TriageView,
+    HouseholdDetailModal,
 } from '@/pages/Components/DashboardAdmin';
 import type { AdminMenuType } from '@/pages/Components/DashboardAdmin/AdminSidebar';
 import type { HotspotCategory, ConfidenceLevel } from '@/hooks/useWildfireData';
@@ -46,6 +47,7 @@ export default function DashboardAdmin({
     const [mapZoom, setMapZoom] = useState<number>(6);
     const [selectedHotspot, setSelectedHotspot] = useState<WildfireHotspot | null>(null);
     const [selectedUserLocation, setSelectedUserLocation] = useState<RegisteredUserLocation | null>(null);
+    const [isHouseholdModalOpen, setIsHouseholdModalOpen] = useState<boolean>(false);
 
     const [enabledSensors, setEnabledSensors] = useState<SensorSource[]>([
         'VIIRS_SNPP',
@@ -137,10 +139,8 @@ export default function DashboardAdmin({
     const handleSelectUserLocation = (household: RegisteredUserLocation | null) => {
         setSelectedUserLocation(household);
         if (household) {
+            setIsHouseholdModalOpen(true);
             setSelectedHotspot(null);
-            setMapCenter([household.latitude, household.longitude]);
-            setMapZoom(13);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     };
 
@@ -153,11 +153,21 @@ export default function DashboardAdmin({
     // Helper rendering content based on active menu
     const renderContent = () => {
         if (activeMenu === 'citizens') {
-            return <CitizensListView registeredUsers={registeredUsers} />;
+            return (
+                <CitizensListView
+                    registeredUsers={registeredUsers}
+                    onSelectHousehold={handleSelectUserLocation}
+                />
+            );
         }
 
         if (activeMenu === 'triage') {
-            return <TriageView registeredUsers={registeredUsers} hotspots={visibleHotspots} />;
+            return (
+                <TriageView
+                    registeredUsers={registeredUsers}
+                    hotspots={visibleHotspots}
+                />
+            );
         }
 
         if (activeMenu === 'facilities') {
@@ -238,6 +248,18 @@ export default function DashboardAdmin({
                     </main>
                 </div>
             </div>
+
+            {/* Pop-up Detail Kediaman & Status Kerentanan Keluarga */}
+            <HouseholdDetailModal
+                isOpen={isHouseholdModalOpen}
+                onClose={() => setIsHouseholdModalOpen(false)}
+                household={selectedUserLocation}
+                onFocusMap={(h) => {
+                    setMapCenter([h.latitude, h.longitude]);
+                    setMapZoom(13);
+                    setActiveMenu('maps');
+                }}
+            />
         </>
     );
 }

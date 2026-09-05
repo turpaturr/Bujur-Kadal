@@ -8,6 +8,11 @@ export interface RegisteredFamilyMember {
     id: number;
     name: string;
     role: string;
+    is_head?: boolean;
+    gender?: string | null;
+    birth_date?: string | null;
+    occupation?: string | null;
+    nik_masked?: string | null;
     is_vulnerable: boolean;
     vulnerability_category?: string | null;
     comorbidity_notes?: string | null;
@@ -17,6 +22,8 @@ export interface RegisteredUserLocation {
     id: number;
     family_id?: number | null;
     name: string;
+    head_name?: string | null;
+    no_kk?: string | null;
     whatsapp_number?: string | null;
     whatsapp_link?: string | null;
     home_address?: string | null;

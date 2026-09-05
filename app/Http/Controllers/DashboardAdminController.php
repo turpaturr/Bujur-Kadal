@@ -26,7 +26,7 @@ class DashboardAdminController extends Controller
             'safeZonesCount' => SafeZone::count(),
         ];
 
-        $usersWithLocation = User::with('healthProfile')
+        $usersWithLocation = User::with(['healthProfile', 'family'])
             ->where('role', '!=', UserRole::Admin)
             ->whereNotNull('home_latitude')
             ->whereNotNull('home_longitude')
@@ -39,15 +39,20 @@ class DashboardAdminController extends Controller
         $registeredUsers = [];
 
         foreach ($groupedFamilies as $groupId => $familyUsers) {
-            $head = $familyUsers->first();
+            $head = $familyUsers->firstWhere('role', UserRole::KepalaKeluarga) ?? $familyUsers->first();
 
             $members = $familyUsers->map(function ($u) {
                 return [
                     'id' => $u->id,
                     'name' => $u->name,
-                    'role' => 'Anggota Keluarga',
-                    'is_vulnerable' => $u->healthProfile?->is_vulnerable ?? false,
-                    'vulnerability_category' => $u->healthProfile?->vulnerability_category,
+                    'nik_masked' => $u->nik_masked ?? (strlen((string) $u->nik) === 64 ? '6472••••••••'.substr((string) $u->id, -4) : $u->nik),
+                    'role' => $u->role === UserRole::KepalaKeluarga ? 'Kepala Keluarga' : 'Anggota Keluarga',
+                    'is_head' => $u->role === UserRole::KepalaKeluarga,
+                    'birth_date' => $u->birth_date?->format('Y-m-d'),
+                    'gender' => $u->gender,
+                    'occupation' => $u->occupation,
+                    'is_vulnerable' => (bool) ($u->healthProfile?->is_vulnerable ?? false),
+                    'vulnerability_category' => $u->healthProfile?->vulnerability_category ?? ($u->healthProfile?->is_vulnerable ? 'penyakit_bawaan' : 'tidak_rentan'),
                     'comorbidity_notes' => $u->healthProfile?->comorbidity_notes,
                 ];
             });
@@ -68,7 +73,9 @@ class DashboardAdminController extends Controller
             $registeredUsers[] = [
                 'id' => is_numeric($groupId) ? (int) $groupId : $head->id,
                 'family_id' => $head->family_id,
+                'no_kk' => $head->family?->no_kk,
                 'name' => $head->family_id ? 'Keluarga '.$head->name : $head->name,
+                'head_name' => $head->name,
                 'whatsapp_number' => $wa,
                 'whatsapp_link' => $waLink,
                 'home_address' => $head->home_address,

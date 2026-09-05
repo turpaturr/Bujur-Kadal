@@ -363,14 +363,20 @@ export function Maps({
         }
     }, [registeredUsers, shouldShowRegisteredUsers, onSelectUserLocation]);
 
-    // 9. FlyTo jika lokasi warga tertentu dipilih dari list admin
+    // 9. FlyTo jika lokasi warga tertentu dipilih dari list admin (hanya jika jarak > 0.05 agar popup tidak tertutup)
     useEffect(() => {
         if (!mapInstanceRef.current || !selectedUserLocation) return;
-        mapInstanceRef.current.flyTo(
-            [selectedUserLocation.latitude, selectedUserLocation.longitude],
-            13,
-            { duration: 1.2 },
-        );
+        const curCenter = mapInstanceRef.current.getCenter();
+        const dist =
+            Math.abs(curCenter.lat - Number(selectedUserLocation.latitude)) +
+            Math.abs(curCenter.lng - Number(selectedUserLocation.longitude));
+        if (dist > 0.05) {
+            mapInstanceRef.current.flyTo(
+                [selectedUserLocation.latitude, selectedUserLocation.longitude],
+                13,
+                { duration: 1.0 },
+            );
+        }
     }, [selectedUserLocation]);
 
     const handleToggleRegisteredUsers = () => {

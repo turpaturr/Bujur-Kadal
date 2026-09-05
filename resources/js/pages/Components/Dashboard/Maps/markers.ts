@@ -190,17 +190,19 @@ export function createRegisteredUserMarker(
     });
 
     marker.bindPopup(buildRegisteredUserPopupHtml(household), {
-        maxWidth: 295,
-        minWidth: 260,
+        maxWidth: 330,
+        minWidth: 285,
         className: 'registered-user-popup-custom',
         autoPan: true,
         autoPanPaddingTopLeft: L.point(40, 85),
         autoPanPaddingBottomRight: L.point(40, 45),
+        keepInView: true,
     });
 
     marker.bindTooltip(
-        `<div style="font-family: 'Figtree', sans-serif; font-size: 11px; font-weight: 700; color: ${isVulnerable ? '#7C3AED' : '#0D9488'};">
-            ${household.name} (${household.total_members} Jiwa${isVulnerable ? ' · Rentan' : ''})
+        `<div style="font-family: 'Figtree', sans-serif; font-size: 11px; font-weight: 700; color: ${isVulnerable ? '#B91C1C' : '#0F766E'};">
+            🏠 ${household.name} (${household.total_members} Jiwa${isVulnerable ? ' &middot; Prioritas Rentan' : ''})
+            <div style="font-size: 9.5px; font-weight: 500; color: #64748B; margin-top: 1px;">Klik untuk melihat pop up detail lengkap</div>
         </div>`,
         {
             direction: 'top',
@@ -208,9 +210,12 @@ export function createRegisteredUserMarker(
         },
     );
 
-    if (onSelect) {
-        marker.on('click', () => onSelect(household));
-    }
+    marker.on('click', () => {
+        marker.openPopup();
+        if (onSelect) {
+            onSelect(household);
+        }
+    });
 
     return marker;
 }
