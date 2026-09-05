@@ -29,6 +29,12 @@ export const NASA_API_KEY: string =
     (import.meta.env.VITE_NASA_API_KEY as string | undefined) ??
     '';
 
+// Batas wilayah koordinat Pulau Kalimantan (Borneo)
+export const KALIMANTAN_BOUNDS: L.LatLngBoundsExpression = [
+    [-5.5, 107.0], // Barat Daya (Batas Selatan Kalsel / Laut Jawa / Selat Karimata)
+    [7.8, 121.0],  // Timur Laut (Batas Utara Kaltara-Sabah / Laut Sulu / Selat Makassar)
+];
+
 /** Warna marker hotspot berdasarkan level confidence */
 const CONFIDENCE_COLORS: Record<ConfidenceLevel, string> = {
     high: '#ef4444',    // Merah intens
@@ -134,23 +140,30 @@ export function Maps({
             return;
         }
 
-        // Buat map instance dengan preferCanvas: true untuk akselerasi performa ribuan titik
+        // Buat map instance dengan batas pulau Kalimantan & preferCanvas untuk akselerasi performa
         const map = L.map(mapContainerRef.current, {
             center,
             zoom,
+            minZoom: 5, // Batas zoom out maks agar tidak mengecil ke seluruh bola dunia
+            maxZoom: 18,
+            maxBounds: KALIMANTAN_BOUNDS, // Mengunci batas viewport hanya di pulau Kalimantan
+            maxBoundsViscosity: 1.0, // Batas keras agar peta tidak dapat digeser keluar Kalimantan
+            worldCopyJump: false,
             zoomControl: false,
             preferCanvas: true,
         });
         mapInstanceRef.current = map;
 
-        // Custom Zoom Control di kiri bawah
+        // Custom Zoom Control di kanan bawah
         L.control.zoom({ position: 'bottomright' }).addTo(map);
 
         // Base Layer 1: OpenStreetMap
         const osmLayer = L.tileLayer(
             'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
             {
+                minZoom: 5,
                 maxZoom: 18,
+                noWrap: true, // Mencegah perulangan peta secara horizontal
                 attribution: '&copy; OpenStreetMap contributors',
             },
         );
@@ -165,7 +178,9 @@ export function Maps({
         const nasaLayer = L.tileLayer(
             `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/${gibsDate}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg`,
             {
+                minZoom: 5,
                 maxZoom: 9,
+                noWrap: true, // Mencegah perulangan peta secara horizontal
                 attribution: 'NASA EOSDIS GIBS',
             },
         );
@@ -287,12 +302,12 @@ export function Maps({
     return (
         <div
             className={cn(
-                'relative w-full h-[520px] rounded-2xl overflow-hidden border border-[#EEEEEE] shadow-sm z-0',
+                'relative w-full h-[520px] rounded-2xl overflow-hidden border border-[#EEEEEE] shadow-sm z-0 bg-[#aad3df]',
                 className,
             )}
         >
             {/* Map Container */}
-            <div ref={mapContainerRef} className="w-full h-full" />
+            <div ref={mapContainerRef} className="w-full h-full bg-[#aad3df]" />
 
             {/* Top Left Floating HUD: Basemap Switcher & Confidence Filter */}
             <div className="absolute top-3 left-3 z-[1000] flex flex-wrap items-center gap-2">
