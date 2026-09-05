@@ -1,4 +1,4 @@
-import { Wind } from "lucide-react";
+import { Wind } from "@/pages/Components/Welcome/Icons";
 
 export function Footer() {
   return (
