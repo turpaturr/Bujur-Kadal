@@ -1,0 +1,5 @@
+- *Primary (Dominant):* Borneo Teal #14967F (Use for main buttons, brand logo, key highlights).
+- *Secondary:* Trust Blue #095D7E (Use for headings, trustworthy elements, secondary buttons).
+- *Accent / Alert:* Pure Oxygen Blue #CCECEE (Use for subtle backgrounds, alert banners, card backgrounds).
+- *Neutral Dark:* Charcoal #262626 (Use for body text and paragraph typography to ensure readability).
+- *Neutral Light:* Clean Whisper #F1F9FF (Use for the main page background).
