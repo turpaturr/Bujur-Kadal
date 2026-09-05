@@ -120,7 +120,6 @@ export default function HouseholdDetailModal({
                                 </span>
                             </div>
                             <p className="text-xs text-[#262626]/60">
-                                {household.no_kk ? `No. Kartu Keluarga: ${household.no_kk} · ` : ''}
                                 Total Penghuni: <strong className="text-[#262626]">{household.total_members} Jiwa</strong>
                             </p>
                         </div>

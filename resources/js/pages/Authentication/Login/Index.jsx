@@ -219,7 +219,7 @@ export default function LoginIndex({ defaultType = 'warga' }) {
                             ) : (
                                 <button
                                     type="button"
-                                    onClick={() => setData({ ...data, email: 'admin@borneocare.id', password: 'password' })}
+                                    onClick={() => setData({ ...data, email: 'admin@borneocare.id', password: 'admin12345' })}
                                     className="w-full py-2 px-3 rounded-lg border border-gray-100 hover:border-[#2FA084]/30 hover:bg-[#2FA084]/5 text-center transition-all"
                                 >
                                     <span className="block text-[12px] font-semibold text-gray-800">Akun Administrator</span>
