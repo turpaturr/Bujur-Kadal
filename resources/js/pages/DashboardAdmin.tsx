@@ -18,18 +18,26 @@ import {
     type WildfireHotspot,
 } from '@/hooks/useWildfireData';
 
+import type { RegisteredUserLocation } from '@/pages/Components/Dashboard/Maps';
+
 interface AdminStats {
     totalUsers: number;
     totalFamilies: number;
+    totalRegisteredLocations?: number;
+    vulnerableFamiliesCount?: number;
     activeSosCount: number;
     safeZonesCount: number;
 }
 
 interface DashboardAdminProps {
     adminStats?: AdminStats;
+    registeredUsers?: RegisteredUserLocation[];
 }
 
-export default function DashboardAdmin({ adminStats }: DashboardAdminProps) {
+export default function DashboardAdmin({
+    adminStats,
+    registeredUsers = [],
+}: DashboardAdminProps) {
     const [selectedProvince, setSelectedProvince] = useState<string | null>(
         null,
     );
@@ -39,6 +47,8 @@ export default function DashboardAdmin({ adminStats }: DashboardAdminProps) {
     const [mapZoom, setMapZoom] = useState<number>(6);
     const [selectedHotspot, setSelectedHotspot] =
         useState<WildfireHotspot | null>(null);
+    const [selectedUserLocation, setSelectedUserLocation] =
+        useState<RegisteredUserLocation | null>(null);
     const [activeCategoryFilter, setActiveCategoryFilter] = useState<
         'all' | HotspotCategory
     >('all');
@@ -82,14 +92,28 @@ export default function DashboardAdmin({ adminStats }: DashboardAdminProps) {
 
     const handleSelectHotspot = (hotspot: WildfireHotspot) => {
         setSelectedHotspot(hotspot);
+        setSelectedUserLocation(null);
         setMapCenter([hotspot.latitude, hotspot.longitude]);
         setMapZoom(12);
         window.scrollTo({ top: 220, behavior: 'smooth' });
     };
 
+    const handleSelectUserLocation = (
+        household: RegisteredUserLocation | null,
+    ) => {
+        setSelectedUserLocation(household);
+        if (household) {
+            setSelectedHotspot(null);
+            setMapCenter([household.latitude, household.longitude]);
+            setMapZoom(13);
+            window.scrollTo({ top: 220, behavior: 'smooth' });
+        }
+    };
+
     const handleResetView = () => {
         setSelectedProvince(null);
         setSelectedHotspot(null);
+        setSelectedUserLocation(null);
         setActiveCategoryFilter('all');
         setMapCenter([0.9619, 114.5548]);
         setMapZoom(6);
@@ -164,6 +188,9 @@ export default function DashboardAdmin({ adminStats }: DashboardAdminProps) {
                         selectedHotspot={selectedHotspot}
                         onClearSelectedHotspot={() => setSelectedHotspot(null)}
                         visibleHotspots={visibleHotspots}
+                        registeredUsers={registeredUsers}
+                        selectedUserLocation={selectedUserLocation}
+                        onSelectUserLocation={handleSelectUserLocation}
                     />
 
                     {/* Matriks Analisis Karhutla & Gambut: Khusus Administrator */}
