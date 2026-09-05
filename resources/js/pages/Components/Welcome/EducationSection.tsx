@@ -26,16 +26,16 @@ export const EDUCATION_ITEMS = [
 
 export default function EducationSection() {
     return (
-        <section id="edukasi" className="mt-20">
+        <section id="edukasi" className="mt-24">
             <div className="mb-8">
-                <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#14967F]">
+                <div className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#2FA084]">
                     <BookOpen className="h-3.5 w-3.5" /> Pusat Edukasi
                 </div>
-                <h2 className="mt-2 font-display text-2xl font-bold tracking-tight text-[#095D7E] sm:text-3xl">
+                <h2 className="mt-2 font-heading font-serif text-2xl font-bold tracking-tight text-[#1F6F5F] sm:text-3xl">
                     Napas Sehat Dimulai dari Pengetahuan
                 </h2>
                 <p className="mt-1 text-sm text-muted-foreground">
-                    Panduan praktis mitigasi medis dan perlindungan keluarga dari paparan asap.
+                    Panduan praktis mitigasi medis dan perlindungan keluarga dari paparan asap Karhutla.
                 </p>
             </div>
 
@@ -45,19 +45,19 @@ export default function EducationSection() {
                     return (
                         <div
                             key={i}
-                            className="flex flex-col justify-between rounded-2xl border border-[#CCECEE] bg-white dark:bg-card p-6 shadow-xs hover:border-[#14967F]/40 transition-colors"
+                            className="flex flex-col justify-between rounded-2xl border border-[#EEEEEE] bg-white dark:bg-card p-6 shadow-xs hover:border-[#2FA084]/40 transition-colors"
                         >
                             <div>
                                 <div className="flex items-center justify-between mb-4">
-                                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#CCECEE] text-[#14967F]">
+                                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#EEEEEE] text-[#2FA084]">
                                         <IconComponent className="h-5 w-5" />
                                     </div>
                                     <span className="text-[11px] font-medium text-muted-foreground">{art.minutes} min baca</span>
                                 </div>
-                                <span className="inline-block text-[10px] font-semibold uppercase tracking-widest text-[#14967F] mb-2">
+                                <span className="inline-block text-[10px] font-semibold uppercase tracking-widest text-[#2FA084] mb-2">
                                     {art.tag}
                                 </span>
-                                <h4 className="font-display text-lg font-bold leading-snug tracking-tight text-[#095D7E]">
+                                <h4 className="font-heading font-serif text-lg font-bold leading-snug tracking-tight text-[#1F6F5F]">
                                     {art.title}
                                 </h4>
                                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
@@ -65,7 +65,7 @@ export default function EducationSection() {
                                 </p>
                             </div>
                             <div className="mt-6 pt-4 border-t border-border/60 flex items-center justify-between">
-                                <span className="text-xs font-semibold text-[#14967F] inline-flex items-center gap-1 hover:underline cursor-pointer">
+                                <span className="text-xs font-semibold text-[#2FA084] inline-flex items-center gap-1 hover:underline cursor-pointer">
                                     Baca Panduan <ArrowRight className="h-3 w-3" />
                                 </span>
                             </div>
@@ -76,3 +76,4 @@ export default function EducationSection() {
         </section>
     );
 }
+
