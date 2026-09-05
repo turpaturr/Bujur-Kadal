@@ -12,6 +12,7 @@ interface PageProps {
     auth?: { user?: { name?: string } | null };
     familyMembers?: FamilyMemberItem[];
     isHeadOfFamily?: boolean;
+    [key: string]: unknown;
 }
 
 export default function Family() {

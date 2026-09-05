@@ -311,7 +311,7 @@ export default function CheckupReservationsView({
                                             )}
 
                                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-700 border border-gray-200">
-                                                🏥 {item.clinic_name}
+                                                {item.clinic_name}
                                             </span>
 
                                             {item.created_at && (
@@ -368,7 +368,7 @@ export default function CheckupReservationsView({
 
                                                 {item.clinic_address && (
                                                     <div className="mt-2 text-xs text-gray-500 truncate" title={item.clinic_address}>
-                                                        📍 {item.clinic_address}
+                                                        {item.clinic_address}
                                                     </div>
                                                 )}
                                             </div>
@@ -400,16 +400,6 @@ export default function CheckupReservationsView({
                                                 <span className="text-xs font-bold text-gray-700 uppercase tracking-wider">
                                                     Tindakan Otoritas
                                                 </span>
-                                                {item.user?.whatsapp_link && (
-                                                    <a
-                                                        href={item.user.whatsapp_link}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 hover:bg-emerald-100 transition-colors inline-flex items-center gap-1"
-                                                    >
-                                                        <span>WA Warga &nearr;</span>
-                                                    </a>
-                                                )}
                                             </div>
 
                                             {/* Note input for decisions */}
