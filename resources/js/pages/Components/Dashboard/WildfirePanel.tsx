@@ -7,6 +7,7 @@ import {
     type WildfireData,
     type WildfireHotspot,
 } from '@/hooks/useWildfireData';
+import FamilyMemberTable, { type FamilyMemberItem } from './FamilyMemberTable';
 
 interface WildfirePanelProps {
     wildfire: WildfireData;
@@ -14,6 +15,9 @@ interface WildfirePanelProps {
     onToggleSensor: (sensor: SensorSource) => void;
     onSelectProvince?: (provinceName: string) => void;
     onSelectHotspot?: (hotspot: WildfireHotspot) => void;
+    familyMembers?: FamilyMemberItem[];
+    isHeadOfFamily?: boolean;
+    onOpenAddMember?: () => void;
 }
 
 const SENSOR_INFO: Record<SensorSource, { name: string; tag: string }> = {
@@ -28,9 +32,14 @@ export default function WildfirePanel({
     onToggleSensor,
     onSelectProvince,
     onSelectHotspot,
+    familyMembers,
+    isHeadOfFamily,
+    onOpenAddMember,
 }: WildfirePanelProps) {
     const { stats, hotspots, isLoading, error, lastUpdated, refresh } = wildfire;
-    const [activeTab, setActiveTab] = useState<'provinces' | 'clusters' | 'guide'>('provinces');
+    const [activeTab, setActiveTab] = useState<'family' | 'provinces' | 'clusters' | 'guide'>(
+        familyMembers && familyMembers.length > 0 ? 'family' : 'provinces'
+    );
 
     // Top 8 titik api dengan FRP tertinggi
     const topHotspots = [...hotspots].sort((a, b) => b.frp - a.frp).slice(0, 10);
@@ -47,51 +56,94 @@ export default function WildfirePanel({
                         </h2>
                     </div>
                     <p className="text-xs text-[#262626]/70 mt-0.5">
-                        Pemilahan data antara kebakaran aktif berkobar, bara gambut berasap, dan anomali panas
+                        Pemilahan data antara kebakaran aktif berkobar, bara gambut berasap, dan perlindungan kerentanan keluarga
                     </p>
                 </div>
 
-                {/* Tabs Switcher */}
-                <div className="flex items-center gap-1.5 p-1 bg-[#EEEEEE]/80 rounded-xl self-start sm:self-auto">
-                    <button
-                        type="button"
-                        onClick={() => setActiveTab('provinces')}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                            activeTab === 'provinces'
-                                ? 'bg-white text-[#1F6F5F] shadow-xs font-bold'
-                                : 'text-[#262626]/70 hover:text-[#1F6F5F]'
-                        }`}
-                    >
-                        Provinsi & Kategori
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setActiveTab('clusters')}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                            activeTab === 'clusters'
-                                ? 'bg-white text-[#1F6F5F] shadow-xs font-bold'
-                                : 'text-[#262626]/70 hover:text-[#1F6F5F]'
-                        }`}
-                    >
-                        Daftar Titik Kritis
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setActiveTab('guide')}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                            activeTab === 'guide'
-                                ? 'bg-white text-[#1F6F5F] shadow-xs font-bold'
-                                : 'text-[#262626]/70 hover:text-[#1F6F5F]'
-                        }`}
-                    >
-                        Panduan Klasifikasi
-                    </button>
+                {/* Tabs Switcher & Quick Add Button */}
+                <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+                    <div className="flex items-center gap-1.5 p-1 bg-[#EEEEEE]/80 rounded-xl">
+                        <button
+                            type="button"
+                            onClick={() => setActiveTab('family')}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+                                activeTab === 'family'
+                                    ? 'bg-white text-[#1F6F5F] shadow-xs font-bold'
+                                    : 'text-[#262626]/70 hover:text-[#1F6F5F]'
+                            }`}
+                        >
+                            <span>Anggota Keluarga</span>
+                            {familyMembers && familyMembers.length > 0 && (
+                                <span
+                                    className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                                        activeTab === 'family'
+                                            ? 'bg-[#2FA084] text-white'
+                                            : 'bg-[#262626]/10 text-[#1F6F5F]'
+                                    }`}
+                                >
+                                    {familyMembers.length}
+                                </span>
+                            )}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setActiveTab('provinces')}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                                activeTab === 'provinces'
+                                    ? 'bg-white text-[#1F6F5F] shadow-xs font-bold'
+                                    : 'text-[#262626]/70 hover:text-[#1F6F5F]'
+                            }`}
+                        >
+                            Provinsi & Kategori
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setActiveTab('clusters')}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                                activeTab === 'clusters'
+                                    ? 'bg-white text-[#1F6F5F] shadow-xs font-bold'
+                                    : 'text-[#262626]/70 hover:text-[#1F6F5F]'
+                            }`}
+                        >
+                            Daftar Titik Kritis
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setActiveTab('guide')}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                                activeTab === 'guide'
+                                    ? 'bg-white text-[#1F6F5F] shadow-xs font-bold'
+                                    : 'text-[#262626]/70 hover:text-[#1F6F5F]'
+                            }`}
+                        >
+                            Panduan Klasifikasi
+                        </button>
+                    </div>
+
+                    {isHeadOfFamily && onOpenAddMember && (
+                        <button
+                            type="button"
+                            onClick={onOpenAddMember}
+                            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#2FA084] text-white hover:bg-[#1F6F5F] text-xs font-bold shadow-xs transition-all cursor-pointer"
+                        >
+                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M12 4v16m8-8H4" />
+                            </svg>
+                            <span>+ Tambah Anggota</span>
+                        </button>
+                    )}
                 </div>
             </div>
 
             {/* 2. Content Tabs */}
             <div className="p-5">
-                {isLoading ? (
+                {activeTab === 'family' ? (
+                    <FamilyMemberTable
+                        members={familyMembers ?? []}
+                        isHeadOfFamily={Boolean(isHeadOfFamily)}
+                        onOpenAddModal={onOpenAddMember ?? (() => {})}
+                    />
+                ) : isLoading ? (
                     <div className="space-y-3">
                         {[1, 2, 3, 4].map((i) => (
                             <div key={i} className="h-12 bg-[#EEEEEE] animate-pulse rounded-xl" />

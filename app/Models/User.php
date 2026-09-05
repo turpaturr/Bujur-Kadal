@@ -42,7 +42,11 @@ class User extends Authenticatable
     protected $fillable = [
         'family_id',
         'nik',
+        'nik_masked',
         'name',
+        'birth_date',
+        'gender',
+        'occupation',
         'whatsapp_number',
         'pin',
         'role',
@@ -82,11 +86,15 @@ class User extends Authenticatable
     }
 
     /**
-     * Automatically hash NIK when setting the attribute.
+     * Automatically hash NIK and set nik_masked when setting the attribute.
      */
     protected function setNikAttribute($value): void
     {
-        $this->attributes['nik'] = self::hashNik((string) $value);
+        $trimmed = trim((string) $value);
+        if (strlen($trimmed) === 16 && ctype_digit($trimmed)) {
+            $this->attributes['nik_masked'] = substr($trimmed, 0, 4).'••••••••'.substr($trimmed, -4);
+        }
+        $this->attributes['nik'] = self::hashNik($trimmed);
     }
 
     /**
@@ -125,6 +133,7 @@ class User extends Authenticatable
         return [
             'role' => UserRole::class,
             'pin' => 'hashed',
+            'birth_date' => 'date',
             'home_latitude' => 'float',
             'home_longitude' => 'float',
         ];

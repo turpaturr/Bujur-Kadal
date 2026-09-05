@@ -5,4 +5,5 @@ export { default as StatCards } from './StatCards';
 export { default as Footer } from './Footer';
 export { default as WildfirePanel } from './WildfirePanel';
 export { default as UserSafetyBanner } from './UserSafetyBanner';
-
+export { default as FamilyMemberModal } from './FamilyMemberModal';
+export { default as FamilyMemberTable, type FamilyMemberItem } from './FamilyMemberTable';
