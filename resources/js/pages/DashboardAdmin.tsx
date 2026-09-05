@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Head } from '@inertiajs/react';
 import {
     AdminMapSection,
@@ -10,6 +10,7 @@ import {
     TriageView,
 } from '@/pages/Components/DashboardAdmin';
 import type { AdminMenuType } from '@/pages/Components/DashboardAdmin/AdminSidebar';
+import type { HotspotCategory, ConfidenceLevel } from '@/hooks/useWildfireData';
 import {
     useWildfireData,
     PROVINCE_CONFIG,
@@ -53,7 +54,66 @@ export default function DashboardAdmin({
 
     const wildfire = useWildfireData({ enabledSensors, dayRange: 1 });
     const { stats, hotspots, isLoading, refresh } = wildfire;
-    const visibleHotspots = hotspots;
+    const [activeCategoryFilter, setActiveCategoryFilter] = useState<'all' | HotspotCategory>('all');
+    const [selectedProvinces, setSelectedProvinces] = useState<string[]>([]);
+    const [selectedConfidenceLevels, setSelectedConfidenceLevels] = useState<ConfidenceLevel[]>([
+        'high',
+        'nominal',
+        'low',
+    ]);
+
+    const visibleHotspots = useMemo(() => {
+        return hotspots.filter((hotspot) => {
+            // 1. Kategori (Kebakaran Aktif / Asap Gambut / Panas Berlebih)
+            if (activeCategoryFilter !== 'all' && hotspot.category !== activeCategoryFilter) {
+                return false;
+            }
+
+            // 2. Filter Tingkat Bahaya (Tinggi / Sedang / Rendah) dari Legenda
+            if (!selectedConfidenceLevels.includes(hotspot.confidenceLevel)) {
+                return false;
+            }
+
+            // 3. Filter Multi-Select Wilayah Provinsi
+            if (selectedProvinces.length > 0) {
+                const hotspotProv = (hotspot.province || '').toUpperCase();
+                const matched = selectedProvinces.some((p) => {
+                    const upper = p.toUpperCase();
+                    return hotspotProv.includes(upper) || upper.includes(hotspotProv);
+                });
+                if (!matched) {
+                    return false;
+                }
+            }
+
+            return true;
+        });
+    }, [hotspots, activeCategoryFilter, selectedConfidenceLevels, selectedProvinces]);
+
+    const handleCategoryCardClick = (category: HotspotCategory) => {
+        setActiveCategoryFilter((prev) => (prev === category ? 'all' : category));
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const handleToggleProvince = (provinceName: string) => {
+        setSelectedProvinces((prev) =>
+            prev.includes(provinceName) ? prev.filter((p) => p !== provinceName) : [...prev, provinceName],
+        );
+    };
+
+    const handleToggleConfidenceLevel = (level: ConfidenceLevel) => {
+        setSelectedConfidenceLevels((prev) =>
+            prev.includes(level) ? prev.filter((l) => l !== level) : [...prev, level],
+        );
+    };
+
+    const handleResetFilters = () => {
+        setSelectedProvinces([]);
+        setSelectedConfidenceLevels(['high', 'nominal', 'low']);
+        setActiveCategoryFilter('all');
+        setMapCenter([0.9619, 114.5548]);
+        setMapZoom(6);
+    };
 
     const handleSelectProvinceByName = (provinceName: string) => {
         const found = PROVINCE_CONFIG.find((p) => p.name === provinceName);
@@ -95,11 +155,11 @@ export default function DashboardAdmin({
         if (activeMenu === 'citizens') {
             return <CitizensListView registeredUsers={registeredUsers} />;
         }
-        
+
         if (activeMenu === 'triage') {
             return <TriageView registeredUsers={registeredUsers} hotspots={visibleHotspots} />;
         }
-        
+
         if (activeMenu === 'facilities') {
             return (
                 <div className="flex items-center justify-center h-64 bg-white rounded-xl border border-[#EEEEEE]">
@@ -114,6 +174,7 @@ export default function DashboardAdmin({
                 <StatCards
                     stats={stats}
                     isLoading={isLoading}
+                    onCategoryClick={handleCategoryCardClick}
                 />
 
                 <AdminMapSection
@@ -126,6 +187,11 @@ export default function DashboardAdmin({
                     registeredUsers={registeredUsers}
                     selectedUserLocation={selectedUserLocation}
                     onSelectUserLocation={handleSelectUserLocation}
+                    selectedProvinces={selectedProvinces}
+                    onToggleProvince={handleToggleProvince}
+                    selectedConfidenceLevels={selectedConfidenceLevels}
+                    onToggleConfidenceLevel={handleToggleConfidenceLevel}
+                    onResetFilters={handleResetFilters}
                 />
 
                 <section>
@@ -144,18 +210,18 @@ export default function DashboardAdmin({
     return (
         <>
             <Head title="Admin Dashboard - BorneoCare" />
-            
+
             <div className="flex h-screen overflow-hidden bg-[#FAFAFA] font-sans text-[#262626] antialiased">
-                <AdminSidebar 
-                    activeMenu={activeMenu} 
+                <AdminSidebar
+                    activeMenu={activeMenu}
                     onMenuChange={setActiveMenu}
                     isMobileOpen={isMobileSidebarOpen}
                     onCloseMobile={() => setIsMobileSidebarOpen(false)}
                 />
-                
+
                 <div className="flex-1 flex flex-col overflow-hidden">
-                    <AdminTopBar 
-                        onOpenMobile={() => setIsMobileSidebarOpen(true)} 
+                    <AdminTopBar
+                        onOpenMobile={() => setIsMobileSidebarOpen(true)}
                         title={
                             activeMenu === 'citizens'
                                 ? 'Data Warga Terdaftar'
