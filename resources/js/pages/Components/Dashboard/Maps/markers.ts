@@ -229,22 +229,33 @@ export interface ClinicData {
     phone?: string;
 }
 
-/** Membuat CircleMarker untuk Fasilitas Kesehatan / Klinik Kalimantan */
-export function createClinicMarker(clinic: ClinicData): L.CircleMarker {
-    const marker = L.circleMarker([clinic.lat, clinic.lng], {
-        radius: 5,
-        color: '#ffffff',
-        fillColor: '#059669',
-        fillOpacity: 0.9,
-        weight: 1.5,
-        opacity: 1,
+/** Membuat Marker Berikon Rumah Sakit untuk Fasilitas Kesehatan / Klinik Kalimantan */
+export function createClinicMarker(clinic: ClinicData): L.Marker {
+    const hospitalIcon = L.divIcon({
+        className: 'custom-clinic-hospital-marker',
+        html: `
+            <div style="position: relative; width: 18px; height: 18px; background: #ffffff; border: 1.5px solid #059669; border-radius: 4px; box-shadow: 0 1.5px 4px rgba(0,0,0,0.25); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.15s ease;" title="${clinic.name.replace(/"/g, '&quot;')}">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="#059669" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M8.5 2h7v6.5H22v7h-6.5V22h-7v-6.5H2v-7h6.5V2z"/>
+                </svg>
+            </div>
+        `,
+        iconSize: [18, 18],
+        iconAnchor: [9, 9],
+        popupAnchor: [0, -11],
+    });
+
+    const marker = L.marker([clinic.lat, clinic.lng], {
+        icon: hospitalIcon,
+        zIndexOffset: 600,
     });
 
     const popupHtml = `
         <div style="font-family: 'Figtree', sans-serif; min-width: 220px; padding: 2px;">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
-                <span style="background: #ecfdf5; color: #047857; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 9999px; text-transform: uppercase; border: 1px solid #a7f3d0;">
-                    Fasilitas Kesehatan
+                <span style="background: #ecfdf5; color: #047857; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 9999px; text-transform: uppercase; border: 1px solid #a7f3d0; display: inline-flex; align-items: center; gap: 3px;">
+                    <svg width="9" height="9" viewBox="0 0 24 24" fill="#047857"><path d="M8.5 2h7v6.5H22v7h-6.5V22h-7v-6.5H2v-7h6.5V2z"/></svg>
+                    Faskes / Rumah Sakit
                 </span>
                 <span style="font-size: 10px; font-weight: 600; color: #059669;">Buka / Siaga</span>
             </div>
@@ -270,16 +281,26 @@ export function createClinicMarker(clinic: ClinicData): L.CircleMarker {
     `;
 
     marker.bindPopup(popupHtml, {
-        maxWidth: 260,
+        maxWidth: 270,
         minWidth: 220,
         className: 'clinic-popup-custom',
+        autoPan: true,
+        autoPanPaddingTopLeft: L.point(40, 85),
+        autoPanPaddingBottomRight: L.point(40, 45),
+        keepInView: true,
     });
 
-    marker.bindTooltip(clinic.name, {
-        direction: 'top',
-        offset: [0, -4],
-        opacity: 0.9,
-    });
+    marker.bindTooltip(
+        `<div style="font-family: 'Figtree', sans-serif; font-size: 11px; font-weight: 700; color: #065F46;">
+            🏥 ${clinic.name}
+            <div style="font-size: 9.5px; font-weight: 500; color: #059669; margin-top: 1px;">Siaga Oksigen & Faskes ISPA</div>
+        </div>`,
+        {
+            direction: 'top',
+            offset: [0, -11],
+            opacity: 0.95,
+        },
+    );
 
     return marker;
 }

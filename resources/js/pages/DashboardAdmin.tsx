@@ -20,6 +20,7 @@ import {
 } from '@/hooks/useWildfireData';
 
 import type { RegisteredUserLocation } from '@/pages/Components/Dashboard/Maps';
+import HouseholdDetailModal from './Components/DashboardAdmin/HouseholdDetailModal';
 
 interface AdminStats {
     totalUsers: number;

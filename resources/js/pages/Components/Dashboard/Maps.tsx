@@ -54,9 +54,9 @@ export function Maps({
     registeredUsers = [],
     selectedUserLocation = null,
     onSelectUserLocation,
-    showRegisteredUsers = true,
+    showRegisteredUsers,
     onToggleRegisteredUsers,
-    showClinics = true,
+    showClinics,
     onToggleClinics,
 }: MapsProps) {
     const mapContainerRef = useRef<HTMLDivElement | null>(null);
@@ -421,7 +421,7 @@ export function Maps({
         if (onToggleRegisteredUsers) {
             onToggleRegisteredUsers();
         } else {
-            setLocalShowRegisteredUsers(!localShowRegisteredUsers);
+            setLocalShowRegisteredUsers((prev) => !prev);
         }
     };
 
