@@ -4,6 +4,8 @@ use App\Http\Controllers\Auth\AdminLoginController;
 use App\Http\Controllers\Auth\AdminRegisterController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FamilyMemberController;
 use App\Http\Controllers\WildfireController;
 use Illuminate\Support\Facades\Route;
 
@@ -36,8 +38,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::inertia('/dashboard', 'Dashboard')->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
+
+    // Family Member Management (Kepala Keluarga)
+    Route::post('/family/members', [FamilyMemberController::class, 'store'])->name('family.members.store');
+    Route::delete('/family/members/{member}', [FamilyMemberController::class, 'destroy'])->name('family.members.destroy');
 
     Route::get('/api/wildfire/hotspots', [WildfireController::class, 'hotspots'])
         ->name('wildfire.hotspots');

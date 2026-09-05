@@ -43,6 +43,10 @@ interface ProvinceFilterProps {
     onSelect: (province: ProvinceItem | null) => void;
     countsByProvince?: Record<string, number>;
     totalCount?: number;
+    hasUserHome?: boolean;
+    isHomeSelected?: boolean;
+    onSelectHome?: () => void;
+    userSafetyStatus?: 'safe' | 'warning' | 'danger';
 }
 
 export default function ProvinceFilter({
@@ -50,15 +54,43 @@ export default function ProvinceFilter({
     onSelect,
     countsByProvince = {},
     totalCount,
+    hasUserHome = false,
+    isHomeSelected = false,
+    onSelectHome,
+    userSafetyStatus = 'safe',
 }: ProvinceFilterProps) {
     return (
         <div className="flex flex-wrap items-center gap-2">
+            {/* Tombol Lokasi Rumah Pengguna */}
+            {hasUserHome && onSelectHome && (
+                <button
+                    type="button"
+                    onClick={onSelectHome}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                        isHomeSelected
+                            ? 'bg-[#1F6F5F] text-white shadow-xs font-bold ring-2 ring-[#2FA084]/40'
+                            : 'bg-white text-[#1F6F5F] hover:bg-[#EEEEEE] border border-[#EEEEEE]'
+                    }`}
+                >
+                    <span
+                        className={`w-2 h-2 rounded-full ${
+                            userSafetyStatus === 'danger'
+                                ? 'bg-rose-500 animate-ping'
+                                : userSafetyStatus === 'warning'
+                                  ? 'bg-amber-500 animate-pulse'
+                                  : 'bg-[#2FA084]'
+                        }`}
+                    />
+                    <span>📍 Rumah Saya</span>
+                </button>
+            )}
+
             {/* Tombol Seluruh Borneo */}
             <button
                 type="button"
                 onClick={() => onSelect(null)}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                    selectedProvince === null
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    selectedProvince === null && !isHomeSelected
                         ? 'bg-[#2FA084] text-white shadow-xs font-bold'
                         : 'bg-[#EEEEEE] text-[#1F6F5F] hover:bg-[#2FA084]/15'
                 }`}

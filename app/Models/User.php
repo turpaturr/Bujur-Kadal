@@ -17,12 +17,10 @@ use Illuminate\Support\Carbon;
 /**
  * @property int $id
  * @property int|null $family_id
- * @property string|null $nik
+ * @property string $nik
  * @property string $name
- * @property string|null $email
- * @property string|null $password
- * @property string|null $whatsapp_number
- * @property string|null $pin
+ * @property string $whatsapp_number
+ * @property string $pin
  * @property UserRole $role
  * @property string|null $home_address
  * @property float|null $home_latitude
@@ -44,9 +42,11 @@ class User extends Authenticatable
     protected $fillable = [
         'family_id',
         'nik',
+        'nik_masked',
         'name',
-        'email',
-        'password',
+        'birth_date',
+        'gender',
+        'occupation',
         'whatsapp_number',
         'pin',
         'role',
@@ -86,11 +86,15 @@ class User extends Authenticatable
     }
 
     /**
-     * Automatically hash NIK when setting the attribute.
+     * Automatically hash NIK and set nik_masked when setting the attribute.
      */
     protected function setNikAttribute($value): void
     {
-        $this->attributes['nik'] = ($value !== null && $value !== '') ? self::hashNik((string) $value) : null;
+        $trimmed = trim((string) $value);
+        if (strlen($trimmed) === 16 && ctype_digit($trimmed)) {
+            $this->attributes['nik_masked'] = substr($trimmed, 0, 4).'••••••••'.substr($trimmed, -4);
+        }
+        $this->attributes['nik'] = self::hashNik($trimmed);
     }
 
     /**
@@ -99,7 +103,6 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $hidden = [
-        'password',
         'pin',
         'remember_token',
     ];
@@ -109,7 +112,7 @@ class User extends Authenticatable
      */
     public function getAuthPassword(): string
     {
-        return (string) ($this->password ?? $this->pin);
+        return (string) $this->pin;
     }
 
     /**
@@ -117,23 +120,7 @@ class User extends Authenticatable
      */
     public function getAuthPasswordName(): string
     {
-        return $this->password !== null ? 'password' : 'pin';
-    }
-
-    /**
-     * Determine if the user has an Administrator role.
-     */
-    public function isAdmin(): bool
-    {
-        return $this->role === UserRole::Admin;
-    }
-
-    /**
-     * Determine if the user is a regular user (warga / citizen).
-     */
-    public function isUser(): bool
-    {
-        return $this->role !== UserRole::Admin;
+        return 'pin';
     }
 
     /**
@@ -145,8 +132,8 @@ class User extends Authenticatable
     {
         return [
             'role' => UserRole::class,
-            'password' => 'hashed',
             'pin' => 'hashed',
+            'birth_date' => 'date',
             'home_latitude' => 'float',
             'home_longitude' => 'float',
         ];

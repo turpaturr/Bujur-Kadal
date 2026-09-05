@@ -27,7 +27,7 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'family_id' => null,
+            'family_id' => Family::factory(),
             'nik' => fake()->unique()->numerify('################'), // 16 digit NIK
             'name' => fake()->name(),
             'whatsapp_number' => fake()->numerify('628##########'),

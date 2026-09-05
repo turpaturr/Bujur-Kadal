@@ -1,270 +1,405 @@
 import { useState } from 'react';
-import type { ProvinceDetail, WildfireData } from '@/hooks/useWildfireData';
-
-interface IconProps {
-    className?: string;
-}
-
-function PanelIcon({ className }: IconProps) {
-    return (
-        <svg
-            aria-hidden="true"
-            focusable="false"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className={className}
-        >
-            <path d="M12 3a7 7 0 0 0-7 7c0 4.5 3.5 7.5 7 11 3.5-3.5 7-6.5 7-11a7 7 0 0 0-7-7Z" />
-            <path d="M12 8v5m-2.5 0h5" />
-        </svg>
-    );
-}
-
-const Flame = PanelIcon;
-const Wind = PanelIcon;
-const Sun = PanelIcon;
-const ShieldCheck = PanelIcon;
-const HeartPulse = PanelIcon;
-const Home = PanelIcon;
-const Droplets = PanelIcon;
-const PhoneCall = PanelIcon;
-const Activity = PanelIcon;
+import {
+    HOTSPOT_CATEGORIES,
+    type HotspotCategory,
+    type ProvinceDetail,
+    type SensorSource,
+    type WildfireData,
+    type WildfireHotspot,
+} from '@/hooks/useWildfireData';
+import FamilyMemberTable, { type FamilyMemberItem } from './FamilyMemberTable';
 
 interface WildfirePanelProps {
     wildfire: WildfireData;
+    enabledSensors: SensorSource[];
+    onToggleSensor: (sensor: SensorSource) => void;
     onSelectProvince?: (provinceName: string) => void;
-    className?: string;
+    onSelectHotspot?: (hotspot: WildfireHotspot) => void;
+    familyMembers?: FamilyMemberItem[];
+    isHeadOfFamily?: boolean;
+    onOpenAddMember?: () => void;
 }
+
+const SENSOR_INFO: Record<SensorSource, { name: string; tag: string }> = {
+    VIIRS_SNPP: { name: 'VIIRS Suomi-NPP', tag: 'Resolusi 375m' },
+    VIIRS_NOAA20: { name: 'VIIRS NOAA-20', tag: 'Resolusi 375m' },
+    MODIS_NRT: { name: 'MODIS Terra/Aqua', tag: 'Resolusi 1km' },
+};
 
 export default function WildfirePanel({
     wildfire,
+    enabledSensors,
+    onToggleSensor,
     onSelectProvince,
-    className = '',
+    onSelectHotspot,
+    familyMembers,
+    isHeadOfFamily,
+    onOpenAddMember,
 }: WildfirePanelProps) {
-    const { stats, isLoading, error, refresh } = wildfire;
-    const [activeTab, setActiveTab] = useState<'provinces' | 'safety'>('provinces');
+    const { stats, hotspots, isLoading, error, lastUpdated, refresh } = wildfire;
+    const [activeTab, setActiveTab] = useState<'family' | 'provinces' | 'clusters' | 'guide'>(
+        familyMembers && familyMembers.length > 0 ? 'family' : 'provinces'
+    );
+
+    // Top 8 titik api dengan FRP tertinggi
+    const topHotspots = [...hotspots].sort((a, b) => b.frp - a.frp).slice(0, 10);
 
     return (
-        <div className={`bg-white rounded-2xl border border-[#EEEEEE] shadow-xs flex flex-col overflow-hidden ${className}`}>
-            {/* Header Panel */}
-            <div className="p-4 border-b border-[#EEEEEE] flex items-center justify-between gap-2">
+        <div className="bg-white rounded-2xl border border-[#EEEEEE] shadow-xs overflow-hidden">
+            {/* 1. Header Panel */}
+            <div className="p-5 border-b border-[#EEEEEE] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h2 className="font-display text-base font-bold text-[#1F6F5F] tracking-tight">
-                        Informasi Wilayah & Tips
-                    </h2>
-                    <p className="text-[11px] text-[#262626]/60">
-                        Status per provinsi & anjuran keselamatan keluarga
+                    <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#2FA084] animate-pulse"></span>
+                        <h2 className="font-display text-lg sm:text-xl font-bold text-[#1F6F5F] tracking-tight">
+                            Matriks Analisis Karhutla & Gambut Kalimantan
+                        </h2>
+                    </div>
+                    <p className="text-xs text-[#262626]/70 mt-0.5">
+                        Pemilahan data antara kebakaran aktif berkobar, bara gambut berasap, dan perlindungan kerentanan keluarga
                     </p>
                 </div>
 
-                {/* Tab Switcher */}
-                <div className="flex items-center gap-1 p-0.5 bg-[#EEEEEE]/80 rounded-xl">
-                    <button
-                        type="button"
-                        onClick={() => setActiveTab('provinces')}
-                        className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
-                            activeTab === 'provinces'
-                                ? 'bg-white text-[#1F6F5F] shadow-2xs font-bold'
-                                : 'text-[#262626]/60 hover:text-[#1F6F5F]'
-                        }`}
-                    >
-                        Provinsi
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setActiveTab('safety')}
-                        className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
-                            activeTab === 'safety'
-                                ? 'bg-white text-[#1F6F5F] shadow-2xs font-bold'
-                                : 'text-[#262626]/60 hover:text-[#1F6F5F]'
-                        }`}
-                    >
-                        Tips Sehat
-                    </button>
+                {/* Tabs Switcher & Quick Add Button */}
+                <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+                    <div className="flex items-center gap-1.5 p-1 bg-[#EEEEEE]/80 rounded-xl">
+                        <button
+                            type="button"
+                            onClick={() => setActiveTab('family')}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+                                activeTab === 'family'
+                                    ? 'bg-white text-[#1F6F5F] shadow-xs font-bold'
+                                    : 'text-[#262626]/70 hover:text-[#1F6F5F]'
+                            }`}
+                        >
+                            <span>Anggota Keluarga</span>
+                            {familyMembers && familyMembers.length > 0 && (
+                                <span
+                                    className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                                        activeTab === 'family'
+                                            ? 'bg-[#2FA084] text-white'
+                                            : 'bg-[#262626]/10 text-[#1F6F5F]'
+                                    }`}
+                                >
+                                    {familyMembers.length}
+                                </span>
+                            )}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setActiveTab('provinces')}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                                activeTab === 'provinces'
+                                    ? 'bg-white text-[#1F6F5F] shadow-xs font-bold'
+                                    : 'text-[#262626]/70 hover:text-[#1F6F5F]'
+                            }`}
+                        >
+                            Provinsi & Kategori
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setActiveTab('clusters')}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                                activeTab === 'clusters'
+                                    ? 'bg-white text-[#1F6F5F] shadow-xs font-bold'
+                                    : 'text-[#262626]/70 hover:text-[#1F6F5F]'
+                            }`}
+                        >
+                            Daftar Titik Kritis
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setActiveTab('guide')}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                                activeTab === 'guide'
+                                    ? 'bg-white text-[#1F6F5F] shadow-xs font-bold'
+                                    : 'text-[#262626]/70 hover:text-[#1F6F5F]'
+                            }`}
+                        >
+                            Panduan Klasifikasi
+                        </button>
+                    </div>
+
+                    {isHeadOfFamily && onOpenAddMember && (
+                        <button
+                            type="button"
+                            onClick={onOpenAddMember}
+                            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#2FA084] text-white hover:bg-[#1F6F5F] text-xs font-bold shadow-xs transition-all cursor-pointer"
+                        >
+                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M12 4v16m8-8H4" />
+                            </svg>
+                            <span>+ Tambah Anggota</span>
+                        </button>
+                    )}
                 </div>
             </div>
 
-            {/* Content Body */}
-            <div className="p-4 flex-1 overflow-y-auto max-h-[460px] sm:max-h-[480px]">
-                {isLoading ? (
+            {/* 2. Content Tabs */}
+            <div className="p-5">
+                {activeTab === 'family' ? (
+                    <FamilyMemberTable
+                        members={familyMembers ?? []}
+                        isHeadOfFamily={Boolean(isHeadOfFamily)}
+                        onOpenAddModal={onOpenAddMember ?? (() => {})}
+                    />
+                ) : isLoading ? (
                     <div className="space-y-3">
-                        {[1, 2, 3, 4, 5].map((i) => (
-                            <div key={i} className="h-14 bg-[#EEEEEE]/70 animate-pulse rounded-xl" />
+                        {[1, 2, 3, 4].map((i) => (
+                            <div key={i} className="h-12 bg-[#EEEEEE] animate-pulse rounded-xl" />
                         ))}
                     </div>
                 ) : error ? (
                     <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs">
-                        <div className="font-bold mb-1">Gagal Memuat Data Satelit:</div>
-                        <div className="text-[11px] mb-3">{error}</div>
+                        <div className="font-bold mb-1">Gagal Mengambil Data Satelit:</div>
+                        <div>{error}</div>
                         <button
                             type="button"
                             onClick={refresh}
-                            className="px-3 py-1.5 rounded-lg bg-rose-600 text-white font-semibold text-xs hover:bg-rose-700 transition-colors"
+                            className="mt-3 px-3 py-1.5 rounded-lg bg-rose-600 text-white font-semibold text-xs hover:bg-rose-700"
                         >
                             Coba Lagi
                         </button>
                     </div>
                 ) : activeTab === 'provinces' ? (
-                    /* TAB 1: Peringkat 5 Provinsi Kalimantan */
-                    <div className="space-y-2.5">
-                        <div className="text-[11px] text-[#262626]/60 pb-1">
-                            Urutan wilayah dengan titik pantauan terbanyak:
+                    /* TAB 1: Matriks per Provinsi dengan Breakdown 3 Kategori */
+                    <div className="space-y-3">
+                        <div className="grid grid-cols-12 text-[11px] font-bold text-[#1F6F5F] uppercase tracking-wider px-3 pb-2 border-b border-[#EEEEEE]">
+                            <div className="col-span-3 sm:col-span-3">Provinsi</div>
+                            <div className="col-span-5 sm:col-span-4">Rasio Titik Api</div>
+                            <div className="col-span-4 sm:col-span-3 text-center">Rincian Tanda</div>
+                            <div className="col-span-12 sm:col-span-2 text-right mt-2 sm:mt-0">Fokus</div>
                         </div>
 
-                        {stats.provinceDetails.map((prov: ProvinceDetail, idx: number) => {
-                            const isFirst = idx === 0 && prov.count > 0;
-                            return (
-                                <div
-                                    key={prov.name}
-                                    className={`p-3 rounded-xl border transition-all ${
-                                        isFirst
-                                            ? 'bg-rose-50/40 border-rose-200/80 hover:border-rose-300'
-                                            : 'bg-white border-[#EEEEEE] hover:border-[#2FA084]/40 hover:bg-[#2FA084]/5'
-                                    }`}
-                                >
-                                    <div className="flex items-center justify-between gap-2 mb-1.5">
-                                        <div className="flex items-center gap-1.5">
-                                            <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                                                isFirst ? 'bg-rose-500 text-white' : 'bg-[#EEEEEE] text-[#1F6F5F]'
-                                            }`}>
-                                                {idx + 1}
-                                            </span>
-                                            <div>
-                                                <span className="font-bold text-xs text-[#262626]">
-                                                    {prov.name}
-                                                </span>
-                                            </div>
-                                        </div>
-
-                                        <button
-                                            type="button"
-                                            onClick={() => onSelectProvince?.(prov.name)}
-                                            className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white border border-[#EEEEEE] text-[#1F6F5F] hover:bg-[#2FA084] hover:text-white hover:border-[#2FA084] transition-colors shadow-2xs"
-                                        >
-                                            Sorot Peta
-                                        </button>
+                        {stats.provinceDetails.map((prov: ProvinceDetail) => (
+                            <div
+                                key={prov.name}
+                                className="grid grid-cols-12 items-center px-3 py-3 rounded-xl border border-transparent hover:border-[#2FA084]/30 hover:bg-[#2FA084]/5 transition-all"
+                            >
+                                <div className="col-span-3 sm:col-span-3">
+                                    <div className="font-bold text-sm text-[#262626]">
+                                        {prov.shortName}
                                     </div>
-
-                                    {/* Progress Bar & Titik */}
-                                    <div className="space-y-1">
-                                        <div className="flex items-center justify-between text-[11px]">
-                                            <span className="font-bold text-[#1F6F5F]">
-                                                {prov.count.toLocaleString('id-ID')} Titik
-                                            </span>
-                                            <span className="text-[10px] text-[#262626]/50">
-                                                {prov.percentage}% dari total
-                                            </span>
-                                        </div>
-                                        <div className="w-full h-1.5 rounded-full bg-[#EEEEEE] overflow-hidden">
-                                            <div
-                                                className={`h-full rounded-full transition-all duration-500 ${
-                                                    isFirst ? 'bg-rose-500' : 'bg-[#2FA084]'
-                                                }`}
-                                                style={{ width: `${Math.max(4, prov.percentage)}%` }}
-                                            />
-                                        </div>
+                                    <div className="text-[11px] text-[#262626]/60 truncate hidden sm:block">
+                                        {prov.name}
                                     </div>
+                                </div>
 
-                                    {/* Rincian Ringkas Tanda Bahaya */}
-                                    <div className="mt-2 pt-2 border-t border-[#EEEEEE]/70 flex items-center gap-1.5 text-[10px]">
-                                        <span className="text-[#262626]/60">Rincian:</span>
-                                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 font-bold border border-rose-200">
-                                            <Flame className="w-2.5 h-2.5 text-rose-600" />
-                                            <span>{prov.activeFireCount} Api</span>
+                                <div className="col-span-5 sm:col-span-4 pr-3">
+                                    <div className="flex items-center justify-between text-xs mb-1">
+                                        <span className="font-bold text-[#1F6F5F]">
+                                            {prov.count.toLocaleString('id-ID')} titik
                                         </span>
-                                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-orange-50 text-orange-700 font-bold border border-orange-200">
-                                            <Wind className="w-2.5 h-2.5 text-orange-600" />
-                                            <span>{prov.smokePeatCount} Gambut</span>
+                                        <span className="text-[11px] text-[#262626]/60">
+                                            {prov.percentage}%
                                         </span>
-                                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 font-semibold border border-amber-200">
-                                            <Sun className="w-2.5 h-2.5 text-amber-600" />
-                                            <span>{prov.heatAnomalyCount} Panas</span>
+                                    </div>
+                                    <div className="w-full h-2 rounded-full bg-[#EEEEEE] overflow-hidden">
+                                        <div
+                                            className="h-full rounded-full bg-[#2FA084] transition-all duration-700"
+                                            style={{ width: `${prov.percentage}%` }}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Rincian 3 Tanda per Provinsi */}
+                                <div className="col-span-4 sm:col-span-3">
+                                    <div className="flex items-center justify-center gap-2 text-[11px]">
+                                        <span className="inline-flex items-center gap-1 font-bold text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200" title="Kebakaran Aktif">
+                                            🔥 {prov.activeFireCount}
+                                        </span>
+                                        <span className="inline-flex items-center gap-1 font-bold text-orange-700 bg-orange-50 px-1.5 py-0.5 rounded border border-orange-200" title="Asap & Gambut">
+                                            💨 {prov.smokePeatCount}
+                                        </span>
+                                        <span className="inline-flex items-center gap-1 font-semibold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 hidden md:inline-flex" title="Panas Berlebih">
+                                            ☀️ {prov.heatAnomalyCount}
                                         </span>
                                     </div>
                                 </div>
-                            );
-                        })}
+
+                                <div className="col-span-12 sm:col-span-2 text-right mt-2 sm:mt-0">
+                                    <button
+                                        type="button"
+                                        onClick={() => onSelectProvince?.(prov.name)}
+                                        className="w-full sm:w-auto px-3 py-1 rounded-lg text-xs font-semibold bg-[#EEEEEE] hover:bg-[#2FA084] hover:text-white text-[#1F6F5F] transition-colors"
+                                    >
+                                        Buka Peta
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : activeTab === 'clusters' ? (
+                    /* TAB 2: Daftar Titik Pantauan Kritis */
+                    <div className="space-y-2">
+                        <div className="text-xs text-[#262626]/70 mb-2">
+                            Titik-titik anomali termal dengan radiasi (FRP) dan suhu tertinggi, dipilah berdasarkan tingkat potensi kebakaran.
+                        </div>
+
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left text-xs border-collapse">
+                                <thead>
+                                    <tr className="border-b border-[#EEEEEE] text-[11px] font-bold text-[#1F6F5F] uppercase tracking-wider">
+                                        <th className="py-2 px-2">Potensi Kebakaran</th>
+                                        <th className="py-2 px-2 text-right">Suhu Permukaan</th>
+                                        <th className="py-2 px-2">Koordinat</th>
+                                        <th className="py-2 px-2">Provinsi</th>
+                                        <th className="py-2 px-2 text-right">Radiasi (FRP)</th>
+                                        <th className="py-2 px-2">Fase</th>
+                                        <th className="py-2 px-2 text-right">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-[#EEEEEE]">
+                                    {topHotspots.map((h) => {
+                                        const cat = HOTSPOT_CATEGORIES[h.category];
+                                        const tempC = (h.brightness - 273.15).toFixed(1);
+                                        return (
+                                            <tr key={h.id} className="hover:bg-[#2FA084]/5 transition-colors">
+                                                <td className="py-2.5 px-2">
+                                                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-bold text-[11px] border ${cat.badgeBg} ${cat.badgeText} ${cat.badgeBorder}`}>
+                                                        <span>{cat.icon}</span>
+                                                        <span>{cat.title}</span>
+                                                    </span>
+                                                </td>
+                                                <td className="py-2.5 px-2 text-right font-mono font-bold text-[#1F6F5F]">
+                                                    {tempC}°C
+                                                </td>
+                                                <td className="py-2.5 px-2 font-mono text-[#262626]">
+                                                    {h.latitude.toFixed(4)}°, {h.longitude.toFixed(4)}°
+                                                </td>
+                                                <td className="py-2.5 px-2 text-[#1F6F5F] font-semibold">
+                                                    {h.province ?? 'Kalimantan'}
+                                                </td>
+                                                <td className="py-2.5 px-2 text-right font-bold text-amber-600">
+                                                    {h.frp.toFixed(1)} MW
+                                                </td>
+                                                <td className="py-2.5 px-2">
+                                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                                        h.daynight === 'N'
+                                                            ? 'bg-indigo-50 text-indigo-700'
+                                                            : 'bg-amber-50 text-amber-700'
+                                                    }`}>
+                                                        {h.daynight === 'N' ? '🌙 Malam' : '☀️ Siang'}
+                                                    </span>
+                                                </td>
+                                                <td className="py-2.5 px-2 text-right">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => onSelectHotspot?.(h)}
+                                                        className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-[#2FA084] text-white hover:bg-[#1F6F5F] transition-colors shadow-2xs cursor-pointer"
+                                                    >
+                                                        Fokus di Peta
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 ) : (
-                    /* TAB 2: Tips Sehat & Panduan Warga/Keluarga */
-                    <div className="space-y-3">
-                        <div className="p-3 rounded-xl bg-[#2FA084]/10 border border-[#2FA084]/20">
-                            <h4 className="font-bold text-xs text-[#1F6F5F] flex items-center gap-1.5 mb-1">
-                                <ShieldCheck className="w-4 h-4 text-[#1F6F5F]" />
-                                <span>Prioritas Keselamatan Keluarga</span>
-                            </h4>
-                            <p className="text-[11px] text-[#262626]/80 leading-relaxed">
-                                Asap dari bara lahan gambut mengandung partikel mikro halus (PM2.5) yang berbahaya bagi pernapasan anak-anak dan orang tua.
-                            </p>
+                    /* TAB 3: Panduan Klasifikasi Tingkat Potensi */
+                    <div className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            {/* Box 1: Potensi Tinggi */}
+                            <div className="p-4 rounded-xl border border-rose-200 bg-rose-50/50 space-y-2">
+                                <div className="flex items-center gap-2">
+                                    <span className="w-3.5 h-3.5 rounded-full bg-[#B91C1C] shrink-0"></span>
+                                    <div>
+                                        <h4 className="font-bold text-rose-900 text-sm">Potensi Kebakaran Tinggi</h4>
+                                        <span className="text-[10px] text-rose-700 uppercase font-semibold">Suhu &ge; 70&deg;C atau FRP &ge; 12 MW</span>
+                                    </div>
+                                </div>
+                                <p className="text-xs text-[#262626]/80 leading-relaxed">
+                                    Titik anomali termal bersuhu ekstrem dan radiasi masif. Mengindikasikan potensi kebakaran tajuk atau kobaran api nyata terbuka. Menjadi prioritas pemadaman regu darat dan water bombing.
+                                </p>
+                            </div>
+
+                            {/* Box 2: Potensi Sedang */}
+                            <div className="p-4 rounded-xl border border-yellow-200 bg-yellow-50/50 space-y-2">
+                                <div className="flex items-center gap-2">
+                                    <span className="w-3.5 h-3.5 rounded-full bg-[#E5A910] shrink-0"></span>
+                                    <div>
+                                        <h4 className="font-bold text-yellow-900 text-sm">Potensi Kebakaran Sedang</h4>
+                                        <span className="text-[10px] text-yellow-800 uppercase font-semibold">Suhu 60&deg;C &ndash; 69.9&deg;C / FRP 5 &ndash; 11.9 MW</span>
+                                    </div>
+                                </div>
+                                <p className="text-xs text-[#262626]/80 leading-relaxed">
+                                    Suhu tanah panas sedang di atas batas normal. Berpotensi berasal dari bara di lapisan tanah gambut (*smoldering*) atau sisa pembakaran yang memicu kabut asap pekat.
+                                </p>
+                            </div>
+
+                            {/* Box 3: Potensi Rendah */}
+                            <div className="p-4 rounded-xl border border-emerald-200 bg-emerald-50/50 space-y-2">
+                                <div className="flex items-center gap-2">
+                                    <span className="w-3.5 h-3.5 rounded-full bg-[#15803D] shrink-0"></span>
+                                    <div>
+                                        <h4 className="font-bold text-emerald-900 text-sm">Potensi Kebakaran Rendah</h4>
+                                        <span className="text-[10px] text-emerald-800 uppercase font-semibold">Suhu &lt; 60&deg;C dan FRP &lt; 5 MW</span>
+                                    </div>
+                                </div>
+                                <p className="text-xs text-[#262626]/80 leading-relaxed">
+                                    Suhu permukaan hangat normal atau anomali termal rendah terkendali. Merupakan pantulan panas permukaan tanah/lahan kering alami dengan risiko kebakaran rendah.
+                                </p>
+                            </div>
                         </div>
 
-                        <div className="space-y-2 text-xs">
-                            <div className="p-2.5 rounded-xl border border-[#EEEEEE] bg-white flex items-start gap-2.5">
-                                <div className="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
-                                    <Activity className="w-3.5 h-3.5" />
-                                </div>
-                                <div>
-                                    <div className="font-bold text-[#262626] text-[11px]">Pakai Masker di Luar</div>
-                                    <div className="text-[11px] text-[#262626]/70 leading-snug">
-                                        Gunakan masker (N95 atau masker medis) jika tercium bau asap sangit atau jarak pandang mulai berkurang.
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="p-2.5 rounded-xl border border-[#EEEEEE] bg-white flex items-start gap-2.5">
-                                <div className="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 mt-0.5">
-                                    <Home className="w-3.5 h-3.5" />
-                                </div>
-                                <div>
-                                    <div className="font-bold text-[#262626] text-[11px]">Tutup Jendela & Ventilasi</div>
-                                    <div className="text-[11px] text-[#262626]/70 leading-snug">
-                                        Kabut asap biasanya paling pekat pada pagi dan sore hari. Rapatkan pintu dan jendela rumah.
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="p-2.5 rounded-xl border border-[#EEEEEE] bg-white flex items-start gap-2.5">
-                                <div className="w-6 h-6 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shrink-0 mt-0.5">
-                                    <HeartPulse className="w-3.5 h-3.5" />
-                                </div>
-                                <div>
-                                    <div className="font-bold text-[#262626] text-[11px]">Lindungi Anak-anak & Lansia</div>
-                                    <div className="text-[11px] text-[#262626]/70 leading-snug">
-                                        Hindari aktivitas olahraga atau bermain di luar ruangan saat indeks kabut asap meningkat.
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="p-2.5 rounded-xl border border-[#EEEEEE] bg-white flex items-start gap-2.5">
-                                <div className="w-6 h-6 rounded-lg bg-cyan-50 text-cyan-600 flex items-center justify-center shrink-0 mt-0.5">
-                                    <Droplets className="w-3.5 h-3.5" />
-                                </div>
-                                <div>
-                                    <div className="font-bold text-[#262626] text-[11px]">Perbanyak Minum Air Putih</div>
-                                    <div className="text-[11px] text-[#262626]/70 leading-snug">
-                                        Menjaga kelembapan saluran napas dan membantu tubuh membersihkan partikel debu halus.
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="p-2.5 rounded-xl border border-rose-200 bg-rose-50/50 flex items-start gap-2.5">
-                                <div className="w-6 h-6 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center shrink-0 mt-0.5">
-                                    <PhoneCall className="w-3.5 h-3.5" />
-                                </div>
-                                <div>
-                                    <div className="font-bold text-rose-800 text-[11px]">Lapor Titik Api Terdekat</div>
-                                    <div className="text-[11px] text-rose-900/80 leading-snug">
-                                        Bila melihat api mendekati pemukiman atau kebun warga, segera hubungi relawan pemadam kebakaran atau BPBD setempat.
-                                    </div>
-                                </div>
+                        {/* Konfigurasi Sensor */}
+                        <div className="p-4 rounded-xl bg-[#EEEEEE]/50 border border-[#EEEEEE]">
+                            <h4 className="font-bold text-xs uppercase tracking-wider text-[#1F6F5F] mb-2">
+                                Instrumen Satelit Aktif
+                            </h4>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                {(['VIIRS_SNPP', 'VIIRS_NOAA20', 'MODIS_NRT'] as SensorSource[]).map((sensor) => {
+                                    const isEnabled = enabledSensors.includes(sensor);
+                                    const count = stats.bySensor[sensor] ?? 0;
+                                    return (
+                                        <label
+                                            key={sensor}
+                                            className="flex items-center justify-between p-3 rounded-lg bg-white border border-[#EEEEEE] cursor-pointer hover:border-[#2FA084]/40 transition-colors"
+                                        >
+                                            <div>
+                                                <div className="font-bold text-xs text-[#262626]">
+                                                    {SENSOR_INFO[sensor].name}
+                                                </div>
+                                                <div className="text-[10px] text-[#262626]/60">
+                                                    {count.toLocaleString('id-ID')} titik terdeteksi
+                                                </div>
+                                            </div>
+                                            <input
+                                                type="checkbox"
+                                                checked={isEnabled}
+                                                onChange={() => onToggleSensor(sensor)}
+                                                className="rounded text-[#2FA084] focus:ring-[#2FA084]"
+                                            />
+                                        </label>
+                                    );
+                                })}
                             </div>
                         </div>
                     </div>
                 )}
+            </div>
+
+            {/* 3. Footer Panel */}
+            <div className="px-5 py-3 bg-[#EEEEEE]/40 border-t border-[#EEEEEE] flex flex-wrap items-center justify-between gap-2 text-xs text-[#262626]/70">
+                <div className="flex items-center gap-2">
+                    <span>Sumber Satelit: NASA FIRMS Near Real-Time (VIIRS & MODIS)</span>
+                    <span>·</span>
+                    <span>Diperbarui: {lastUpdated ? lastUpdated.toLocaleTimeString('id-ID') : '-'}</span>
+                </div>
+                <button
+                    type="button"
+                    onClick={refresh}
+                    disabled={isLoading}
+                    className="inline-flex items-center gap-1.5 font-bold text-[#1F6F5F] hover:text-[#2FA084] transition-colors disabled:opacity-50"
+                >
+                    <svg className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    <span>Sinkron Data Satelit</span>
+                </button>
             </div>
         </div>
     );

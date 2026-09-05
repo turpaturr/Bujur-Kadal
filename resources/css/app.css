@@ -50,3 +50,47 @@
     scrollbar-width: none;
 }
 
+/* Kustomisasi Tampilan Leaflet Popup agar Rapi & Tidak Melebihi Batas */
+.wildfire-popup-custom .leaflet-popup-content-wrapper {
+    border-radius: 16px;
+    box-shadow: 0 12px 36px -4px rgba(0, 0, 0, 0.22), 0 4px 12px -2px rgba(0, 0, 0, 0.08);
+    border: 1px solid #E5E7EB;
+    padding: 0;
+    overflow: hidden;
+}
+
+.wildfire-popup-custom .leaflet-popup-content {
+    margin: 10px 12px 8px 12px;
+}
+
+.wildfire-popup-custom .leaflet-popup-close-button {
+    top: 8px !important;
+    right: 8px !important;
+    width: 20px !important;
+    height: 20px !important;
+    color: #9CA3AF !important;
+    font-size: 16px !important;
+    line-height: 18px !important;
+    border-radius: 9999px !important;
+    background: rgba(243, 244, 246, 0.8) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.15s ease !important;
+}
+
+.wildfire-popup-custom .leaflet-popup-close-button:hover {
+    color: #111827 !important;
+    background: #E5E7EB !important;
+}
+
+.wildfire-popup-custom .leaflet-popup-tip {
+    background: #FFFFFF;
+}
+
+.user-home-popup-custom .leaflet-popup-content-wrapper {
+    border-radius: 16px;
+    box-shadow: 0 12px 36px -4px rgba(0, 0, 0, 0.22);
+    border: 1px solid #E5E7EB;
+}
+

@@ -23,13 +23,16 @@ class UserSeeder extends Seeder
             'no_kk' => '6472010101010001',
         ]);
 
-        // 1. Akun Kepala Keluarga (Rentan - Riwayat Asma & Ada Balita)
+        // 1. Akun Kepala Keluarga
         // NIK: 6472010101900001 | PIN: 123456
         $userBudi = User::updateOrCreate(
             ['nik' => '6472010101900001'],
             [
                 'family_id' => $familySamarinda->id,
                 'name' => 'Budi Pratama (Kepala Keluarga)',
+                'birth_date' => '1990-01-01',
+                'gender' => 'laki-laki',
+                'occupation' => 'Wiraswasta / Pegawai Swasta',
                 'whatsapp_number' => '81234567890',
                 'pin' => Hash::make('123456'),
                 'role' => UserRole::KepalaKeluarga,
@@ -43,17 +46,21 @@ class UserSeeder extends Seeder
             ['user_id' => $userBudi->id],
             [
                 'is_vulnerable' => true,
-                'comorbidity_notes' => 'Riwayat Asma Kronis & Terdapat Balita 3 Tahun (Prioritas Evakuasi Oksigen)',
+                'vulnerability_category' => 'penyakit_bawaan',
+                'comorbidity_notes' => 'Riwayat Asma Kronis & Alergi Asap Debu Pekat',
             ]
         );
 
-        // 2. Akun Anggota Keluarga (Non-Rentan / Sehat)
+        // 2. Akun Anggota Keluarga - Istri (Ibu Hamil)
         // NIK: 6472011504950002 | PIN: 123456
         $userSiti = User::updateOrCreate(
             ['nik' => '6472011504950002'],
             [
                 'family_id' => $familySamarinda->id,
-                'name' => 'Siti Rahma (Anggota Keluarga)',
+                'name' => 'Siti Rahma (Istri)',
+                'birth_date' => '1995-04-15',
+                'gender' => 'perempuan',
+                'occupation' => 'Ibu Rumah Tangga / Guru',
                 'whatsapp_number' => '81298765432',
                 'pin' => Hash::make('123456'),
                 'role' => UserRole::Anggota,
@@ -66,8 +73,65 @@ class UserSeeder extends Seeder
         HealthProfile::updateOrCreate(
             ['user_id' => $userSiti->id],
             [
-                'is_vulnerable' => false,
-                'comorbidity_notes' => null,
+                'is_vulnerable' => true,
+                'vulnerability_category' => 'ibu_hamil',
+                'comorbidity_notes' => 'Hamil Trimester 2, Memerlukan Kualitas Udara Bersih Bebas PM2.5',
+            ]
+        );
+
+        // 3. Akun Anggota Keluarga - Anak Balita (Sangat Rentan)
+        // NIK: 6472012108230007 | PIN: 123456
+        $userRayyan = User::updateOrCreate(
+            ['nik' => '6472012108230007'],
+            [
+                'family_id' => $familySamarinda->id,
+                'name' => 'Rayyan Al-Fatih (Anak Balita)',
+                'birth_date' => '2023-08-21',
+                'gender' => 'laki-laki',
+                'occupation' => 'Belum Bekerja (Balita)',
+                'whatsapp_number' => '81234567890',
+                'pin' => Hash::make('123456'),
+                'role' => UserRole::Anggota,
+                'home_address' => 'Jl. Pangeran Antasari No. 12, Samarinda Ulu, Kota Samarinda, Kalimantan Timur',
+                'home_latitude' => -0.49482300,
+                'home_longitude' => 117.13579100,
+            ]
+        );
+
+        HealthProfile::updateOrCreate(
+            ['user_id' => $userRayyan->id],
+            [
+                'is_vulnerable' => true,
+                'vulnerability_category' => 'balita',
+                'comorbidity_notes' => 'Balita Usia 3 Tahun, Paru-paru Sensitif Asap Karhutla',
+            ]
+        );
+
+        // 4. Akun Anggota Keluarga - Nenek (Lansia Rentan)
+        // NIK: 6472015012560008 | PIN: 123456
+        $userAminah = User::updateOrCreate(
+            ['nik' => '6472015012560008'],
+            [
+                'family_id' => $familySamarinda->id,
+                'name' => 'Nenek Aminah (Lansia)',
+                'birth_date' => '1956-12-10',
+                'gender' => 'perempuan',
+                'occupation' => 'Pensiunan',
+                'whatsapp_number' => '81234567890',
+                'pin' => Hash::make('123456'),
+                'role' => UserRole::Anggota,
+                'home_address' => 'Jl. Pangeran Antasari No. 12, Samarinda Ulu, Kota Samarinda, Kalimantan Timur',
+                'home_latitude' => -0.49482300,
+                'home_longitude' => 117.13579100,
+            ]
+        );
+
+        HealthProfile::updateOrCreate(
+            ['user_id' => $userAminah->id],
+            [
+                'is_vulnerable' => true,
+                'vulnerability_category' => 'lansia',
+                'comorbidity_notes' => 'Lansia 69 Tahun, Riwayat Hipertensi dan Gangguan Saluran Pernapasan',
             ]
         );
 
@@ -84,10 +148,10 @@ class UserSeeder extends Seeder
             ['nik' => '6271012005980003'],
             [
                 'family_id' => $familyPalangka1->id,
-                'name' => 'Ahmad Fauzi (Relawan / Pendatang)',
+                'name' => 'Ahmad Fauzi (Anggota Keluarga)',
                 'whatsapp_number' => '82155667788',
                 'pin' => Hash::make('123456'),
-                'role' => UserRole::Pendatang,
+                'role' => UserRole::Anggota,
                 'home_address' => 'Posko Relawan Siaga Karhutla, Jl. Tjilik Riwut Km 2, Palangka Raya, Kalimantan Tengah',
                 'home_latitude' => -2.21610000,
                 'home_longitude' => 113.91660000,

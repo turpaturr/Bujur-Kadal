@@ -33,7 +33,7 @@ test('step 1 rejects invalid nik structure or wrong digit length', function () {
         ->assertJsonValidationErrors(['no_kk', 'nik']);
 });
 
-test('full 5-step registration creates family, user, health profile and logs in', function () {
+test('kepala keluarga registration creates family, user, and logs in', function () {
     $payload = [
         'no_kk' => '6472010101010002',
         'nik' => '6472012010920003',
@@ -41,9 +41,6 @@ test('full 5-step registration creates family, user, health profile and logs in'
         'home_address' => 'Jl. Pangeran Antasari No. 45, Samarinda Ulu',
         'home_latitude' => -0.49482300,
         'home_longitude' => 117.13579100,
-        'role' => UserRole::KepalaKeluarga->value,
-        'is_vulnerable' => true,
-        'comorbidity_notes' => 'Riwayat Asma Kronis sejak 2018',
         'whatsapp_number' => '081234567890',
         'pin' => '889900',
     ];
@@ -56,7 +53,7 @@ test('full 5-step registration creates family, user, health profile and logs in'
     $family = Family::where('no_kk', '6472010101010002')->first();
     expect($family)->not->toBeNull();
 
-    // Assert User created and associated
+    // Assert User created and associated as Kepala Keluarga
     $user = User::where('nik', '6472012010920003')->first();
     expect($user)->not->toBeNull()
         ->and($user->family_id)->toBe($family->id)
@@ -64,11 +61,10 @@ test('full 5-step registration creates family, user, health profile and logs in'
         ->and($user->role)->toBe(UserRole::KepalaKeluarga)
         ->and(Hash::check('889900', $user->pin))->toBeTrue();
 
-    // Assert Health Profile created
+    // Assert default Health Profile created
     $profile = HealthProfile::where('user_id', $user->id)->first();
     expect($profile)->not->toBeNull()
-        ->and($profile->is_vulnerable)->toBeTrue()
-        ->and($profile->comorbidity_notes)->toBe('Riwayat Asma Kronis sejak 2018');
+        ->and($profile->is_vulnerable)->toBeFalse();
 
     // Assert user is authenticated
     expect(Auth::id())->toBe($user->id);
@@ -84,8 +80,6 @@ test('registration rejects duplicate nik', function () {
         'home_address' => 'Jl. Mulawarman',
         'home_latitude' => -0.501,
         'home_longitude' => 117.140,
-        'role' => UserRole::Anggota->value,
-        'is_vulnerable' => false,
         'whatsapp_number' => '081122334455',
         'pin' => '123456',
     ]);
@@ -109,6 +103,16 @@ test('rapid login with nik and 6-digit pin succeeds', function () {
     expect(Auth::id())->toBe($user->id);
 });
 
+test('login fails when nik is not registered in any family', function () {
+    $response = $this->from(route('login'))->post(route('login.store'), [
+        'nik' => '6472019909909999',
+        'pin' => '123456',
+    ]);
+
+    $response->assertSessionHasErrors(['nik']);
+    expect(Auth::check())->toBeFalse();
+});
+
 test('login fails with incorrect pin', function () {
     User::factory()->create([
         'nik' => '6472011005880006',
@@ -120,7 +124,7 @@ test('login fails with incorrect pin', function () {
         'pin' => '111111',
     ]);
 
-    $response->assertSessionHasErrors(['nik']);
+    $response->assertSessionHasErrors(['pin']);
     expect(Auth::check())->toBeFalse();
 });
 

@@ -2,9 +2,11 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -43,8 +45,8 @@ class LoginRequest extends FormRequest
         return [
             'nik.required' => 'NIK wajib diisi untuk login.',
             'nik.size' => 'NIK harus 16 digit angka.',
-            'pin.required' => 'PIN 6-digit wajib diisi.',
-            'pin.size' => 'PIN harus 6 digit angka.',
+            'pin.required' => 'PIN 6-digit keluarga wajib diisi.',
+            'pin.size' => 'PIN keluarga harus 6 digit angka.',
         ];
     }
 
@@ -57,18 +59,31 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        $credentials = [
-            'nik' => (string) $this->input('nik'),
-            'password' => (string) $this->input('pin'),
-        ];
+        $rawNik = (string) $this->input('nik');
+        $rawPin = (string) $this->input('pin');
+        $hashedNik = User::hashNik($rawNik);
 
-        if (! Auth::attempt($credentials, $this->boolean('remember'))) {
+        $user = User::with('family')->where('nik', $hashedNik)->first();
+
+        // 1. Validasi keberadaan NIK pada basis data keluarga terdaftar
+        if (! $user || ! $user->family_id) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'nik' => __('NIK atau PIN darurat yang Anda masukkan tidak sesuai.'),
+                'nik' => __('NIK Anda belum terdaftar dalam Kartu Keluarga (KK) manapun di sistem.'),
             ]);
         }
+
+        // 2. Validasi PIN keluarga
+        if (! Hash::check($rawPin, (string) $user->pin)) {
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'pin' => __('PIN keluarga yang Anda masukkan tidak sesuai.'),
+            ]);
+        }
+
+        Auth::login($user, $this->boolean('remember'));
 
         RateLimiter::clear($this->throttleKey());
     }
