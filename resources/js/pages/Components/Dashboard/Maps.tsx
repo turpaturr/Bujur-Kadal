@@ -22,6 +22,9 @@ import {
     type RegisteredFamilyMember,
 } from './Maps/index';
 import { KALIMANTAN_CLINICS } from '@/data/kalimantanClinics';
+import { fetchFastestRoute, type RouteResult } from '@/services/routingService';
+import { RouteNavigationHud } from './Maps/RouteNavigationHud';
+import type { ClinicData } from './Maps/markers';
 
 // Re-export untuk backward-compatibility konsumen
 export {
@@ -75,6 +78,34 @@ export function Maps({
     const [localShowClinics, setLocalShowClinics] = useState<boolean>(true);
     const shouldShowClinics =
         showClinics !== undefined ? showClinics : localShowClinics;
+
+    // State & Ref Mode Navigasi Rute Faskes Tercepat (In-App Routing)
+    const [activeRouteClinic, setActiveRouteClinic] = useState<ClinicData | null>(null);
+    const [routeData, setRouteData] = useState<RouteResult | null>(null);
+    const [isRouteLoading, setIsRouteLoading] = useState<boolean>(false);
+    const routeLayerRef = useRef<L.Polyline | null>(null);
+    const routeOutlineLayerRef = useRef<L.Polyline | null>(null);
+
+    // Titik awal (origin): kediaman user yang sedang login, atau lokasi warga terpilih di admin
+    const effectiveOrigin = useMemo(() => {
+        if (
+            userLocation &&
+            !isNaN(Number(userLocation.latitude)) &&
+            !isNaN(Number(userLocation.longitude)) &&
+            (Number(userLocation.latitude) !== 0 || Number(userLocation.longitude) !== 0)
+        ) {
+            return { lat: Number(userLocation.latitude), lng: Number(userLocation.longitude) };
+        }
+        if (
+            selectedUserLocation &&
+            !isNaN(Number(selectedUserLocation.latitude)) &&
+            !isNaN(Number(selectedUserLocation.longitude)) &&
+            (Number(selectedUserLocation.latitude) !== 0 || Number(selectedUserLocation.longitude) !== 0)
+        ) {
+            return { lat: Number(selectedUserLocation.latitude), lng: Number(selectedUserLocation.longitude) };
+        }
+        return null;
+    }, [userLocation, selectedUserLocation]);
 
     const handleToggleClinics = () => {
         if (onToggleClinics) {
@@ -182,6 +213,12 @@ export function Maps({
         return () => {
             clearTimeout(resizeTimeout);
             if (mapInstanceRef.current) {
+                if (routeOutlineLayerRef.current && mapInstanceRef.current.hasLayer(routeOutlineLayerRef.current)) {
+                    mapInstanceRef.current.removeLayer(routeOutlineLayerRef.current);
+                }
+                if (routeLayerRef.current && mapInstanceRef.current.hasLayer(routeLayerRef.current)) {
+                    mapInstanceRef.current.removeLayer(routeLayerRef.current);
+                }
                 mapInstanceRef.current.remove();
                 mapInstanceRef.current = null;
                 hotspotLayerRef.current = null;
@@ -396,6 +433,80 @@ export function Maps({
         }
     }, [selectedUserLocation]);
 
+    // Fungsi Memulai Mode Navigasi Rute Langsung di Peta
+    const handleStartRoute = async (clinic: ClinicData) => {
+        if (!effectiveOrigin) return;
+        setActiveRouteClinic(clinic);
+        setIsRouteLoading(true);
+
+        try {
+            const res = await fetchFastestRoute(effectiveOrigin, {
+                lat: clinic.lat,
+                lng: clinic.lng,
+            });
+            setRouteData(res);
+
+            const map = mapInstanceRef.current;
+            if (map && res.coordinates.length > 0) {
+                // Bersihkan garis rute terdahulu jika ada
+                if (routeOutlineLayerRef.current && map.hasLayer(routeOutlineLayerRef.current)) {
+                    map.removeLayer(routeOutlineLayerRef.current);
+                }
+                if (routeLayerRef.current && map.hasLayer(routeLayerRef.current)) {
+                    map.removeLayer(routeLayerRef.current);
+                }
+
+                // 1. Layer Outline Putih (efek kontras jalan ala Google Maps)
+                const outline = L.polyline(res.coordinates, {
+                    color: '#ffffff',
+                    weight: 8,
+                    opacity: 0.95,
+                    lineCap: 'round',
+                    lineJoin: 'round',
+                }).addTo(map);
+                routeOutlineLayerRef.current = outline;
+
+                // 2. Layer Garis Navigasi Biru Nyata
+                const poly = L.polyline(res.coordinates, {
+                    color: '#2563EB',
+                    weight: 5,
+                    opacity: 1,
+                    lineCap: 'round',
+                    lineJoin: 'round',
+                }).addTo(map);
+                routeLayerRef.current = poly;
+
+                // Otomatis arahkan dan zoom kamera pas ke jalur rute dengan padding
+                map.fitBounds(poly.getBounds(), {
+                    padding: [60, 60],
+                    maxZoom: 16,
+                    animate: true,
+                });
+            }
+        } catch (err) {
+            console.error('Gagal memuat rute navigasi:', err);
+        } finally {
+            setIsRouteLoading(false);
+        }
+    };
+
+    // Fungsi Menutup Mode Navigasi Rute & Mengembalikan Peta Normal
+    const handleCloseRoute = () => {
+        const map = mapInstanceRef.current;
+        if (map) {
+            if (routeOutlineLayerRef.current && map.hasLayer(routeOutlineLayerRef.current)) {
+                map.removeLayer(routeOutlineLayerRef.current);
+                routeOutlineLayerRef.current = null;
+            }
+            if (routeLayerRef.current && map.hasLayer(routeLayerRef.current)) {
+                map.removeLayer(routeLayerRef.current);
+                routeLayerRef.current = null;
+            }
+        }
+        setActiveRouteClinic(null);
+        setRouteData(null);
+    };
+
     // 10. Render Seluruh Fasilitas Kesehatan / Klinik Kalimantan (1.848 Faskes)
     useEffect(() => {
         const layer = clinicsLayerRef.current;
@@ -407,24 +518,16 @@ export function Maps({
             return;
         }
 
-        const originCoord =
-            userLocation &&
-            !isNaN(Number(userLocation.latitude)) &&
-            !isNaN(Number(userLocation.longitude)) &&
-            (Number(userLocation.latitude) !== 0 || Number(userLocation.longitude) !== 0)
-                ? { lat: Number(userLocation.latitude), lng: Number(userLocation.longitude) }
-                : selectedUserLocation &&
-                  !isNaN(Number(selectedUserLocation.latitude)) &&
-                  !isNaN(Number(selectedUserLocation.longitude)) &&
-                  (Number(selectedUserLocation.latitude) !== 0 || Number(selectedUserLocation.longitude) !== 0)
-                  ? { lat: Number(selectedUserLocation.latitude), lng: Number(selectedUserLocation.longitude) }
-                  : null;
+        // Jika mode navigasi rute aktif, sembunyikan seluruh faskes lain dan HANYA tampilkan faskes yang sedang dituju!
+        const clinicsToRender = activeRouteClinic
+            ? [activeRouteClinic]
+            : KALIMANTAN_CLINICS;
 
-        for (const clinic of KALIMANTAN_CLINICS) {
-            const marker = createClinicMarker(clinic, originCoord);
+        for (const clinic of clinicsToRender) {
+            const marker = createClinicMarker(clinic, effectiveOrigin, handleStartRoute);
             layer.addLayer(marker);
         }
-    }, [shouldShowClinics, userLocation, selectedUserLocation]);
+    }, [shouldShowClinics, effectiveOrigin, activeRouteClinic]);
 
     const handleToggleRegisteredUsers = () => {
         if (onToggleRegisteredUsers) {
@@ -460,28 +563,41 @@ export function Maps({
                 )}
             />
 
-            {/* Bottom-Left Legend & Interactive Filters */}
-            <MapLegend
-                countsByLevel={countsByLevel}
-                selectedConfidenceLevels={selectedConfidenceLevels}
-                onToggleConfidenceLevel={onToggleConfidenceLevel}
-                selectedProvinces={selectedProvinces}
-                onToggleProvince={onToggleProvince}
-                countsByProvince={countsByProvince}
-                showUserHome={showUserHome}
-                userLocation={userLocation}
-                onToggleUserHome={onToggleUserHome}
-                registeredUsersCount={registeredUsers.length}
-                vulnerableHouseholdsCount={vulnerableHouseholdsCount}
-                shouldShowRegisteredUsers={shouldShowRegisteredUsers}
-                onToggleRegisteredUsers={
-                    registeredUsers.length > 0 ? handleToggleRegisteredUsers : undefined
-                }
-                onResetFilters={onResetFilters}
-                showClinics={shouldShowClinics}
-                onToggleClinics={handleToggleClinics}
-                clinicsCount={KALIMANTAN_CLINICS.length}
-            />
+            {/* Bottom-Left Legend & Interactive Filters (Disembunyikan sementara saat mode navigasi aktif) */}
+            {!activeRouteClinic && (
+                <MapLegend
+                    countsByLevel={countsByLevel}
+                    selectedConfidenceLevels={selectedConfidenceLevels}
+                    onToggleConfidenceLevel={onToggleConfidenceLevel}
+                    selectedProvinces={selectedProvinces}
+                    onToggleProvince={onToggleProvince}
+                    countsByProvince={countsByProvince}
+                    showUserHome={showUserHome}
+                    userLocation={userLocation}
+                    onToggleUserHome={onToggleUserHome}
+                    registeredUsersCount={registeredUsers.length}
+                    vulnerableHouseholdsCount={vulnerableHouseholdsCount}
+                    shouldShowRegisteredUsers={shouldShowRegisteredUsers}
+                    onToggleRegisteredUsers={
+                        registeredUsers.length > 0 ? handleToggleRegisteredUsers : undefined
+                    }
+                    onResetFilters={onResetFilters}
+                    showClinics={shouldShowClinics}
+                    onToggleClinics={handleToggleClinics}
+                    clinicsCount={KALIMANTAN_CLINICS.length}
+                />
+            )}
+
+            {/* Floating Navigation Card saat Mode Navigasi Rute Aktif */}
+            {activeRouteClinic && (
+                <RouteNavigationHud
+                    clinic={activeRouteClinic}
+                    routeData={routeData}
+                    isLoading={isRouteLoading}
+                    onCloseRoute={handleCloseRoute}
+                    origin={effectiveOrigin}
+                />
+            )}
         </div>
     );
 }

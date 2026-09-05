@@ -80,15 +80,15 @@ export function createUserHomeLayers(
         status === 'danger'
             ? '#B91C1C'
             : status === 'warning'
-              ? '#E5A910'
-              : '#15803D';
+                ? '#E5A910'
+                : '#15803D';
 
     const statusLabel =
         status === 'danger'
             ? 'BAHAYA KARHUTLA'
             : status === 'warning'
-              ? 'STATUS WASPADA'
-              : 'LINGKUNGAN AMAN';
+                ? 'STATUS WASPADA'
+                : 'LINGKUNGAN AMAN';
 
     // 1. Outer Radius: 25 km Buffer Lingkungan
     const circle25km = L.circle([lat, lng], {
@@ -155,8 +155,8 @@ export function createRegisteredUserMarker(
     const isVulnerable = household.is_vulnerable;
     const icon = isVulnerable
         ? L.divIcon({
-              className: 'custom-registered-user-marker',
-              html: `
+            className: 'custom-registered-user-marker',
+            html: `
                 <div style="position: relative; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
                     <div style="position: absolute; width: 34px; height: 34px; border-radius: 50%; background: #7C3AED; opacity: 0.35; animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
                     <div style="position: relative; width: 28px; height: 28px; border-radius: 50%; background: #6D28D9; border: 2px solid #ffffff; box-shadow: 0 3px 8px rgba(109,40,217,0.4); display: flex; align-items: center; justify-content: center; color: #ffffff;">
@@ -167,13 +167,13 @@ export function createRegisteredUserMarker(
                     </div>
                 </div>
               `,
-              iconSize: [34, 34],
-              iconAnchor: [17, 17],
-              popupAnchor: [0, -20],
-          })
+            iconSize: [34, 34],
+            iconAnchor: [17, 17],
+            popupAnchor: [0, -20],
+        })
         : L.divIcon({
-              className: 'custom-registered-user-marker',
-              html: `
+            className: 'custom-registered-user-marker',
+            html: `
                 <div style="position: relative; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
                     <div style="position: relative; width: 26px; height: 26px; border-radius: 50%; background: #0D9488; border: 2px solid #ffffff; box-shadow: 0 2px 6px rgba(13,148,136,0.35); display: flex; align-items: center; justify-content: center; color: #ffffff;">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -183,10 +183,10 @@ export function createRegisteredUserMarker(
                     </div>
                 </div>
               `,
-              iconSize: [30, 30],
-              iconAnchor: [15, 15],
-              popupAnchor: [0, -18],
-          });
+            iconSize: [30, 30],
+            iconAnchor: [15, 15],
+            popupAnchor: [0, -18],
+        });
 
     const marker = L.marker([Number(household.latitude), Number(household.longitude)], {
         icon,
@@ -237,6 +237,7 @@ export interface ClinicData {
 export function createClinicMarker(
     clinic: ClinicData,
     origin?: { lat: number; lng: number } | null,
+    onSelectRoute?: (clinic: ClinicData) => void,
 ): L.Marker {
     const hospitalIcon = L.divIcon({
         className: 'custom-clinic-hospital-marker',
@@ -279,7 +280,7 @@ export function createClinicMarker(
     }
 
     const popupHtml = `
-        <div style="font-family: 'Figtree', sans-serif; min-width: 230px; padding: 2px;">
+        <div style="font-family: 'Figtree', sans-serif; min-width: 235px; padding: 2px;">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; gap: 4px;">
                 <span style="background: #ecfdf5; color: #047857; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 9999px; text-transform: uppercase; border: 1px solid #a7f3d0; display: inline-flex; align-items: center; gap: 3px; white-space: nowrap;">
                     <svg width="9" height="9" viewBox="0 0 24 24" fill="#047857"><path d="M8.5 2h7v6.5H22v7h-6.5V22h-7v-6.5H2v-7h6.5V2z"/></svg>
@@ -300,9 +301,15 @@ export function createClinicMarker(
                     Pelayanan pertolongan gangguan pernapasan asap
                 </div>
             </div>
-            <div style="margin-top: 8px;">
-                <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" style="display: block; text-align: center; background: #1F6F5F; color: #ffffff; text-decoration: none; font-size: 11px; font-weight: 700; padding: 6px 8px; border-radius: 8px; box-shadow: 0 2px 4px rgba(31,111,95,0.25);">
-                    ${hasOrigin ? 'Rute dari Kediaman ke Faskes &rarr;' : 'Rute Navigasi Google Maps &rarr;'}
+            <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 5px;">
+                ${onSelectRoute ? `
+                    <button id="btn-route-${clinic.id}" type="button" style="display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; background: #1F6F5F; color: #ffffff; border: none; font-size: 11px; font-weight: 700; padding: 7px 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(31,111,95,0.25); cursor: pointer;">
+                        <span>🚗 Pandu Rute di Peta Ini</span>
+                        <span>&rarr;</span>
+                    </button>
+                ` : ''}
+                <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" style="display: block; text-align: center; color: #047857; text-decoration: none; font-size: 10px; font-weight: 600; padding: 4px 6px; border-radius: 6px; background: #ecfdf5; border: 1px solid #a7f3d0;">
+                    Buka di Google Maps App &nearr;
                 </a>
             </div>
         </div>
@@ -310,13 +317,26 @@ export function createClinicMarker(
 
     marker.bindPopup(popupHtml, {
         maxWidth: 280,
-        minWidth: 230,
+        minWidth: 235,
         className: 'clinic-popup-custom',
         autoPan: true,
         autoPanPaddingTopLeft: L.point(40, 85),
         autoPanPaddingBottomRight: L.point(40, 45),
         keepInView: true,
     });
+
+    if (onSelectRoute) {
+        marker.on('popupopen', () => {
+            const btn = document.getElementById(`btn-route-${clinic.id}`);
+            if (btn) {
+                btn.onclick = (e) => {
+                    e.preventDefault();
+                    marker.closePopup();
+                    onSelectRoute(clinic);
+                };
+            }
+        });
+    }
 
     marker.bindTooltip(
         `<div style="font-family: 'Figtree', sans-serif; font-size: 11px; font-weight: 700; color: #065F46;">

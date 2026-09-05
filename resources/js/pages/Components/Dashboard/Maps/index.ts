@@ -4,4 +4,5 @@ export * from './popups';
 export * from './markers';
 export * from './MapHud';
 export * from './MapLegend';
+export * from './RouteNavigationHud';
 
