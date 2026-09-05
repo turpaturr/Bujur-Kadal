@@ -54,7 +54,7 @@ export function MapHud({
                                 : 'text-[#262626]/70 hover:text-[#1F6F5F]',
                         )}
                     >
-                        Satelit NASA
+                        Citra Satelit
                     </button>
                 </div>
 

@@ -3,9 +3,13 @@ import { Users, ShieldAlert, HeartPulse } from '@/pages/Components/Dashboard/Ico
 
 interface CitizensListViewProps {
     registeredUsers: RegisteredUserLocation[];
+    onSelectHousehold?: (household: RegisteredUserLocation) => void;
 }
 
-export default function CitizensListView({ registeredUsers }: CitizensListViewProps) {
+export default function CitizensListView({
+    registeredUsers,
+    onSelectHousehold,
+}: CitizensListViewProps) {
     return (
         <div className="space-y-6">
             <div>
@@ -21,12 +25,13 @@ export default function CitizensListView({ registeredUsers }: CitizensListViewPr
                                 <th scope="col" className="px-6 py-4">Keluarga / Kepala Keluarga</th>
                                 <th scope="col" className="px-6 py-4">Alamat & Kontak</th>
                                 <th scope="col" className="px-6 py-4">Anggota & Kerentanan</th>
+                                <th scope="col" className="px-6 py-4 text-right">Aksi</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[#EEEEEE]">
                             {registeredUsers.length === 0 ? (
                                 <tr>
-                                    <td colSpan={3} className="px-6 py-8 text-center text-gray-500">
+                                    <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
                                         Belum ada warga yang terdaftar
                                     </td>
                                 </tr>
@@ -36,12 +41,12 @@ export default function CitizensListView({ registeredUsers }: CitizensListViewPr
                                         <td className="px-6 py-4 align-top">
                                             <div className="font-bold text-gray-900">{user.name}</div>
                                             <div className="text-xs text-gray-500 mt-1">
-                                                ID Keluarga: {user.family_id ?? 'Personal'}
+                                                {user.no_kk ? `No. KK: ${user.no_kk}` : `ID: #${user.id}`}
                                             </div>
                                             {user.is_vulnerable && (
-                                                <span className="inline-flex items-center gap-1 mt-2 rounded-full bg-purple-100 px-2 py-0.5 text-[10px] font-bold text-purple-800">
+                                                <span className="inline-flex items-center gap-1 mt-2 rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-bold text-rose-800">
                                                     <ShieldAlert className="w-3 h-3" />
-                                                    Prioritas Rentan
+                                                    Prioritas Rentan ({user.vulnerable_count} Jiwa)
                                                 </span>
                                             )}
                                         </td>
@@ -84,6 +89,17 @@ export default function CitizensListView({ registeredUsers }: CitizensListViewPr
                                                         </li>
                                                     ))}
                                                 </ul>
+                                            )}
+                                        </td>
+                                        <td className="px-6 py-4 align-top text-right whitespace-nowrap">
+                                            {onSelectHousehold && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => onSelectHousehold(user)}
+                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#1F6F5F] hover:bg-[#2FA084] text-white text-xs font-bold shadow-2xs transition-colors cursor-pointer"
+                                                >
+                                                    <span>Lihat Pop-up Detail</span>
+                                                </button>
                                             )}
                                         </td>
                                     </tr>

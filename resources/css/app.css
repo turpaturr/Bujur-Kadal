@@ -94,3 +94,69 @@
     border: 1px solid #E5E7EB;
 }
 
+/* Kustomisasi Pop-up Detail Kediaman Warga Terdaftar (Admin) */
+.registered-user-popup-custom .leaflet-popup-content-wrapper {
+    border-radius: 18px;
+    box-shadow: 0 20px 45px -4px rgba(0, 0, 0, 0.25), 0 8px 16px -2px rgba(0, 0, 0, 0.1);
+    border: 1.5px solid #E2E8F0;
+    padding: 0;
+    overflow: hidden;
+    background: #FFFFFF;
+}
+
+.registered-user-popup-custom .leaflet-popup-content {
+    margin: 12px 14px 10px 14px;
+    line-height: 1.4;
+}
+
+.registered-user-popup-custom .leaflet-popup-close-button {
+    top: 8px !important;
+    right: 8px !important;
+    width: 22px !important;
+    height: 22px !important;
+    color: #64748B !important;
+    font-size: 16px !important;
+    line-height: 20px !important;
+    border-radius: 9999px !important;
+    background: #F1F5F9 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.2s ease !important;
+}
+
+.registered-user-popup-custom .leaflet-popup-close-button:hover {
+    color: #0F172A !important;
+    background: #E2E8F0 !important;
+}
+
+.registered-user-popup-custom .leaflet-popup-tip {
+    background: #FFFFFF;
+}
+
+/* Reset Leaflet DivIcon default border/background */
+.custom-clinic-hospital-marker,
+.custom-registered-user-marker,
+.custom-user-home-marker {
+    background: transparent !important;
+    border: none !important;
+}
+
+/* Kustomisasi Pop-up Fasilitas Kesehatan & Klinik ISPA */
+.clinic-popup-custom .leaflet-popup-content-wrapper {
+    border-radius: 16px;
+    box-shadow: 0 12px 36px -4px rgba(5, 150, 105, 0.22), 0 4px 12px -2px rgba(0, 0, 0, 0.08);
+    border: 1px solid #A7F3D0;
+    padding: 0;
+    overflow: hidden;
+    background: #FFFFFF;
+}
+
+.clinic-popup-custom .leaflet-popup-content {
+    margin: 10px 12px 8px 12px;
+}
+
+.clinic-popup-custom .leaflet-popup-tip {
+    background: #FFFFFF;
+}
+

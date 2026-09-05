@@ -2,7 +2,7 @@ import { Link } from '@inertiajs/react';
 import { 
     MapPin, 
     List, 
-    ShieldAlert, 
+    HeartPulse, 
     Building, 
     LogOut, 
     X 
@@ -15,6 +15,7 @@ interface AdminSidebarProps {
     onMenuChange: (menu: AdminMenuType) => void;
     isMobileOpen: boolean;
     onCloseMobile: () => void;
+    pendingReservationsCount?: number;
 }
 
 export default function AdminSidebar({
@@ -22,11 +23,12 @@ export default function AdminSidebar({
     onMenuChange,
     isMobileOpen,
     onCloseMobile,
+    pendingReservationsCount = 0,
 }: AdminSidebarProps) {
     const navItems = [
         { id: 'maps', label: 'Monitoring Spasial', icon: MapPin },
         { id: 'citizens', label: 'Daftar Warga & Keluarga', icon: List },
-        { id: 'triage', label: 'Triase ISPA & Evakuasi', icon: ShieldAlert },
+        { id: 'triage', label: 'Reservasi Checkup Faskes', icon: HeartPulse, badge: pendingReservationsCount },
         { id: 'facilities', label: 'Manajemen Faskes', icon: Building },
     ] as const;
 
@@ -61,6 +63,7 @@ export default function AdminSidebar({
                         {navItems.map((item) => {
                             const Icon = item.icon;
                             const isActive = activeMenu === item.id;
+                            const hasBadge = 'badge' in item && Boolean(item.badge && item.badge > 0);
                             
                             return (
                                 <li key={item.id}>
@@ -69,14 +72,23 @@ export default function AdminSidebar({
                                             onMenuChange(item.id);
                                             onCloseMobile();
                                         }}
-                                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+                                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
                                             isActive 
                                                 ? 'bg-[#1F6F5F] text-white' 
                                                 : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                                         }`}
                                     >
-                                        <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-gray-400'}`} />
-                                        {item.label}
+                                        <div className="flex items-center gap-3">
+                                            <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-gray-400'}`} />
+                                            <span>{item.label}</span>
+                                        </div>
+                                        {hasBadge && (
+                                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                                isActive ? 'bg-white text-[#1F6F5F]' : 'bg-amber-500 text-white animate-pulse'
+                                            }`}>
+                                                {item.badge}
+                                            </span>
+                                        )}
                                     </button>
                                 </li>
                             );

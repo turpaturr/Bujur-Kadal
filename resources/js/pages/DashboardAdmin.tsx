@@ -1,5 +1,6 @@
-import { useState, useMemo } from 'react';
-import { Head } from '@inertiajs/react';
+import { useState, useMemo, useEffect } from 'react';
+import { Head, router } from '@inertiajs/react';
+import { getEcho } from '@/echo';
 import {
     AdminMapSection,
     StatCards,
@@ -9,6 +10,8 @@ import {
     CitizensListView,
     TriageView,
     FacilitiesView,
+    CheckupReservationsView,
+    type AdminReservationItem,
 } from '@/pages/Components/DashboardAdmin';
 import type { AdminMenuType } from '@/pages/Components/DashboardAdmin/AdminSidebar';
 import type { HotspotCategory, ConfidenceLevel } from '@/hooks/useWildfireData';
@@ -20,6 +23,7 @@ import {
 } from '@/hooks/useWildfireData';
 
 import type { RegisteredUserLocation } from '@/pages/Components/Dashboard/Maps';
+import HouseholdDetailModal from './Components/DashboardAdmin/HouseholdDetailModal';
 
 interface AdminStats {
     totalUsers: number;
@@ -33,11 +37,15 @@ interface AdminStats {
 interface DashboardAdminProps {
     adminStats?: AdminStats;
     registeredUsers?: RegisteredUserLocation[];
+    reservations?: AdminReservationItem[];
+    pendingReservationsCount?: number;
 }
 
 export default function DashboardAdmin({
     adminStats,
     registeredUsers = [],
+    reservations = [],
+    pendingReservationsCount = 0,
 }: DashboardAdminProps) {
     const [activeMenu, setActiveMenu] = useState<AdminMenuType>('maps');
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -47,6 +55,55 @@ export default function DashboardAdmin({
     const [mapZoom, setMapZoom] = useState<number>(6);
     const [selectedHotspot, setSelectedHotspot] = useState<WildfireHotspot | null>(null);
     const [selectedUserLocation, setSelectedUserLocation] = useState<RegisteredUserLocation | null>(null);
+    const [isHouseholdModalOpen, setIsHouseholdModalOpen] = useState<boolean>(false);
+
+    // State Real-Time Reservasi Admin
+    const [localReservations, setLocalReservations] = useState<AdminReservationItem[]>(reservations);
+    const [localPendingCount, setLocalPendingCount] = useState<number>(pendingReservationsCount);
+
+    useEffect(() => {
+        setLocalReservations(reservations);
+        setLocalPendingCount(pendingReservationsCount);
+    }, [reservations, pendingReservationsCount]);
+
+    // Reverb WebSocket Listener & Polling Fallback
+    useEffect(() => {
+        const echo = getEcho();
+        let channel: any = null;
+
+        if (echo) {
+            channel = echo.channel('admin-reservations');
+            channel.listen('.reservation.created', (data: { reservation: AdminReservationItem }) => {
+                if (data?.reservation) {
+                    setLocalReservations((prev) => [data.reservation, ...prev.filter((r) => r.id !== data.reservation.id)]);
+                    setLocalPendingCount((prev) => prev + 1);
+                }
+            });
+            channel.listen('.reservation.updated', (data: { reservation: { id: number; status: string; admin_notes?: string } }) => {
+                if (data?.reservation) {
+                    setLocalReservations((prev) =>
+                        prev.map((r) =>
+                            r.id === data.reservation.id
+                                ? { ...r, status: data.reservation.status, admin_notes: data.reservation.admin_notes ?? r.admin_notes }
+                                : r,
+                        ),
+                    );
+                    router.reload({ only: ['pendingReservationsCount', 'reservations'] });
+                }
+            });
+        }
+
+        const interval = setInterval(() => {
+            router.reload({ only: ['reservations', 'pendingReservationsCount'] });
+        }, 8000);
+
+        return () => {
+            clearInterval(interval);
+            if (channel && echo) {
+                echo.leaveChannel('admin-reservations');
+            }
+        };
+    }, []);
 
     const [enabledSensors, setEnabledSensors] = useState<SensorSource[]>([
         'VIIRS_SNPP',
@@ -138,10 +195,8 @@ export default function DashboardAdmin({
     const handleSelectUserLocation = (household: RegisteredUserLocation | null) => {
         setSelectedUserLocation(household);
         if (household) {
+            setIsHouseholdModalOpen(true);
             setSelectedHotspot(null);
-            setMapCenter([household.latitude, household.longitude]);
-            setMapZoom(13);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     };
 
@@ -154,11 +209,20 @@ export default function DashboardAdmin({
     // Helper rendering content based on active menu
     const renderContent = () => {
         if (activeMenu === 'citizens') {
-            return <CitizensListView registeredUsers={registeredUsers} />;
+            return (
+                <CitizensListView
+                    registeredUsers={registeredUsers}
+                    onSelectHousehold={handleSelectUserLocation}
+                />
+            );
         }
 
         if (activeMenu === 'triage') {
-            return <TriageView registeredUsers={registeredUsers} hotspots={visibleHotspots} />;
+            return (
+                <CheckupReservationsView
+                    reservations={localReservations}
+                />
+            );
         }
 
         if (activeMenu === 'facilities') {
@@ -214,6 +278,7 @@ export default function DashboardAdmin({
                     onMenuChange={setActiveMenu}
                     isMobileOpen={isMobileSidebarOpen}
                     onCloseMobile={() => setIsMobileSidebarOpen(false)}
+                    pendingReservationsCount={localPendingCount}
                 />
 
                 <div className="flex-1 flex flex-col overflow-hidden">
@@ -223,7 +288,7 @@ export default function DashboardAdmin({
                             activeMenu === 'citizens'
                                 ? 'Data Warga Terdaftar'
                                 : activeMenu === 'triage'
-                                  ? 'Antrean Triase Spasial Karhutla'
+                                  ? 'Reservasi Medical Checkup & Faskes'
                                   : activeMenu === 'facilities'
                                     ? 'Fasilitas Kesehatan'
                                     : 'Peta Sebaran Spasial & Titik Api'
@@ -235,6 +300,18 @@ export default function DashboardAdmin({
                     </main>
                 </div>
             </div>
+
+            {/* Pop-up Detail Kediaman & Status Kerentanan Keluarga */}
+            <HouseholdDetailModal
+                isOpen={isHouseholdModalOpen}
+                onClose={() => setIsHouseholdModalOpen(false)}
+                household={selectedUserLocation}
+                onFocusMap={(h) => {
+                    setMapCenter([h.latitude, h.longitude]);
+                    setMapZoom(13);
+                    setActiveMenu('maps');
+                }}
+            />
         </>
     );
 }

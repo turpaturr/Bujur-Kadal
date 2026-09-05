@@ -81,6 +81,30 @@ export default function AdminMapSection({
                             </button>
                         </div>
                     )}
+
+                    {/* Rumah Warga Terpilih */}
+                    {selectedUserLocation && (
+                        <div className="flex items-center gap-2 rounded-lg border border-purple-200 bg-purple-50 px-3 py-1 text-xs text-purple-900">
+                            <span>
+                                🏠 <strong>{selectedUserLocation.name}</strong> ({selectedUserLocation.total_members} Jiwa)
+                            </span>
+                            <button
+                                type="button"
+                                onClick={() => onSelectUserLocation?.(selectedUserLocation)}
+                                className="font-bold text-purple-700 hover:underline cursor-pointer"
+                            >
+                                Buka Pop-up Detail
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => onSelectUserLocation?.(null)}
+                                className="text-gray-400 hover:text-gray-700 ml-1 cursor-pointer font-bold"
+                                title="Batal Pilih"
+                            >
+                                ✕
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
 
