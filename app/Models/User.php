@@ -17,10 +17,12 @@ use Illuminate\Support\Carbon;
 /**
  * @property int $id
  * @property int|null $family_id
- * @property string $nik
+ * @property string|null $nik
  * @property string $name
- * @property string $whatsapp_number
- * @property string $pin
+ * @property string|null $email
+ * @property string|null $password
+ * @property string|null $whatsapp_number
+ * @property string|null $pin
  * @property UserRole $role
  * @property string|null $home_address
  * @property float|null $home_latitude
@@ -43,6 +45,8 @@ class User extends Authenticatable
         'family_id',
         'nik',
         'name',
+        'email',
+        'password',
         'whatsapp_number',
         'pin',
         'role',
@@ -86,7 +90,7 @@ class User extends Authenticatable
      */
     protected function setNikAttribute($value): void
     {
-        $this->attributes['nik'] = self::hashNik((string) $value);
+        $this->attributes['nik'] = ($value !== null && $value !== '') ? self::hashNik((string) $value) : null;
     }
 
     /**
@@ -95,6 +99,7 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $hidden = [
+        'password',
         'pin',
         'remember_token',
     ];
@@ -104,7 +109,7 @@ class User extends Authenticatable
      */
     public function getAuthPassword(): string
     {
-        return (string) $this->pin;
+        return (string) ($this->password ?? $this->pin);
     }
 
     /**
@@ -112,7 +117,23 @@ class User extends Authenticatable
      */
     public function getAuthPasswordName(): string
     {
-        return 'pin';
+        return $this->password !== null ? 'password' : 'pin';
+    }
+
+    /**
+     * Determine if the user has an Administrator role.
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === UserRole::Admin;
+    }
+
+    /**
+     * Determine if the user is a regular user (warga / citizen).
+     */
+    public function isUser(): bool
+    {
+        return $this->role !== UserRole::Admin;
     }
 
     /**
@@ -124,6 +145,7 @@ class User extends Authenticatable
     {
         return [
             'role' => UserRole::class,
+            'password' => 'hashed',
             'pin' => 'hashed',
             'home_latitude' => 'float',
             'home_longitude' => 'float',
