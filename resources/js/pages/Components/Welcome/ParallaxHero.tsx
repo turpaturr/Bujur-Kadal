@@ -53,7 +53,7 @@ export default function ParallaxHero({ aqi = 187, onExploreClick }: ParallaxHero
             <div
                 className="absolute inset-0 w-full h-[125%] -top-[12%] bg-cover bg-center pointer-events-none will-change-transform"
                 style={{
-                    backgroundImage: `url('https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d4/Dipterocarp_Forest_at_Danum_Valley_%2813997709808%29.jpg/330px-Dipterocarp_Forest_at_Danum_Valley_%2813997709808%29.jpg?utm_source=id.wikipedia.org&utm_campaign=parser&utm_content=thumbnail')`,
+                    backgroundImage: `url('https://img.jakpost.net/c/2016/09/27/2016_09_27_12817_1474936735._large.jpg')`,
                     transform: `translate3d(0, ${scrollY * 0.35}px, 0) scale(${1 + scrollY * 0.00025})`,
                 }}
             />
@@ -102,7 +102,7 @@ export default function ParallaxHero({ aqi = 187, onExploreClick }: ParallaxHero
                         href="#gallery-section"
                         className="inline-flex items-center justify-center rounded-full px-7 py-3.5 text-xs sm:text-sm font-semibold uppercase tracking-wider border border-white/40 text-white hover:bg-white/15 backdrop-blur-sm transition-all duration-300"
                     >
-                        Jelajah Stasiun Rimba
+                        Jelajah Provinsi
                     </a>
                 </div>
             </div>
