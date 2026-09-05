@@ -4,3 +4,5 @@ export { default as ProvinceFilter, BORNEO_PROVINCES, type ProvinceItem } from '
 export { default as StatCards } from './StatCards';
 export { default as Footer } from './Footer';
 export { default as WildfirePanel } from './WildfirePanel';
+export { default as UserSafetyBanner } from './UserSafetyBanner';
+

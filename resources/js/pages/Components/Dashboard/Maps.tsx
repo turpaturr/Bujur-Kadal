@@ -11,6 +11,7 @@ import type {
     ConfidenceLevel,
     WildfireHotspot,
 } from '@/hooks/useWildfireData';
+import type { UserLocation, UserSafetyAnalysis } from '@/utils/geoSafety';
 
 // Setup icon default Leaflet untuk bundler Vite
 const DefaultIcon = L.icon({
@@ -112,6 +113,9 @@ export interface MapsProps {
     wildfireHotspots?: WildfireHotspot[];
     selectedHotspot?: WildfireHotspot | null;
     onHotspotSelect?: (hotspot: WildfireHotspot | null) => void;
+    userLocation?: UserLocation | null;
+    userSafety?: UserSafetyAnalysis | null;
+    onFocusHome?: () => void;
 }
 
 export function Maps({
@@ -121,10 +125,14 @@ export function Maps({
     apiKey = NASA_API_KEY,
     wildfireHotspots = [],
     selectedHotspot = null,
+    userLocation = null,
+    userSafety = null,
+    onFocusHome,
 }: MapsProps) {
     const mapContainerRef = useRef<HTMLDivElement | null>(null);
     const mapInstanceRef = useRef<L.Map | null>(null);
     const hotspotLayerRef = useRef<L.LayerGroup | null>(null);
+    const userLayerRef = useRef<L.LayerGroup | null>(null);
     const [activeBasemap, setActiveBasemap] = useState<'osm' | 'nasa'>('osm');
     const [filterConfidence, setFilterConfidence] = useState<'all' | 'high'>('all');
     const osmLayerRef = useRef<L.TileLayer | null>(null);
@@ -191,6 +199,11 @@ export function Maps({
         hotspotLayer.addTo(map);
         hotspotLayerRef.current = hotspotLayer;
 
+        // Layer group posisi & radius rumah warga
+        const userLayer = L.layerGroup();
+        userLayer.addTo(map);
+        userLayerRef.current = userLayer;
+
         const resizeTimeout = setTimeout(() => {
             map.invalidateSize();
         }, 150);
@@ -201,6 +214,7 @@ export function Maps({
                 mapInstanceRef.current.remove();
                 mapInstanceRef.current = null;
                 hotspotLayerRef.current = null;
+                userLayerRef.current = null;
             }
         };
     }, []);
@@ -294,6 +308,136 @@ export function Maps({
         });
     }, [selectedHotspot]);
 
+    // 6. Render Lokasi Rumah Warga & Radius Pantauan Bahaya (10 km & 25 km)
+    useEffect(() => {
+        const layer = userLayerRef.current;
+        if (!layer) {
+            return;
+        }
+
+        layer.clearLayers();
+
+        if (
+            !userLocation ||
+            userLocation.latitude === null ||
+            userLocation.latitude === undefined ||
+            userLocation.longitude === null ||
+            userLocation.longitude === undefined ||
+            isNaN(Number(userLocation.latitude)) ||
+            isNaN(Number(userLocation.longitude))
+        ) {
+            return;
+        }
+
+        const lat = Number(userLocation.latitude);
+        const lng = Number(userLocation.longitude);
+
+        const status = userSafety?.status ?? 'safe';
+        const statusColor =
+            status === 'danger'
+                ? '#ef4444'
+                : status === 'warning'
+                  ? '#f97316'
+                  : '#2FA084';
+
+        const statusLabel =
+            status === 'danger'
+                ? '🔴 BAHAYA KARHUTLA'
+                : status === 'warning'
+                  ? '🟠 STATUS WASPADA'
+                  : '🟢 LINGKUNGAN AMAN';
+
+        // 1. Outer Radius: 25 km Buffer Lingkungan
+        const circle25km = L.circle([lat, lng], {
+            radius: 25000,
+            color: statusColor,
+            fillColor: statusColor,
+            fillOpacity: status === 'danger' ? 0.12 : 0.06,
+            weight: 2,
+            dashArray: '6, 8',
+        });
+        circle25km.bindTooltip('Radius Pantauan Karhutla (25 km dari Rumah)', {
+            sticky: true,
+        });
+        layer.addLayer(circle25km);
+
+        // 2. Inner Radius: 10 km Zona Bahaya Kritis
+        const circle10km = L.circle([lat, lng], {
+            radius: 10000,
+            color: status === 'danger' ? '#ef4444' : '#f97316',
+            fillColor: status === 'danger' ? '#ef4444' : '#f97316',
+            fillOpacity: status === 'danger' ? 0.16 : 0.03,
+            weight: status === 'danger' ? 2.5 : 1,
+            dashArray: '4, 4',
+        });
+        circle10km.bindTooltip('Zona Bahaya Kritis (< 10 km dari Rumah)', {
+            sticky: true,
+        });
+        layer.addLayer(circle10km);
+
+        // 3. Marker Rumah Warga (Custom Animated DivIcon)
+        const homeIcon = L.divIcon({
+            className: 'custom-user-home-marker',
+            html: `
+                <div style="position: relative; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                    <div style="position: absolute; width: 38px; height: 38px; border-radius: 50%; background: ${statusColor}; opacity: 0.35; animation: ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
+                    <div style="position: relative; width: 32px; height: 32px; border-radius: 50%; background: ${statusColor}; border: 2.5px solid #ffffff; box-shadow: 0 4px 14px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 15px;">
+                        🏠
+                    </div>
+                    <div style="position: absolute; top: 34px; left: 50%; transform: translateX(-50%); white-space: nowrap; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(4px); padding: 2px 8px; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); border: 1px solid #EEEEEE; font-family: 'Figtree', sans-serif; font-size: 10px; font-weight: 800; color: #1F6F5F;">
+                        Kediaman Anda
+                    </div>
+                </div>
+            `,
+            iconSize: [38, 38],
+            iconAnchor: [19, 19],
+            popupAnchor: [0, -22],
+        });
+
+        const homeMarker = L.marker([lat, lng], {
+            icon: homeIcon,
+            zIndexOffset: 2000,
+        });
+
+        const popupContent = `
+            <div style="font-family: 'Figtree', sans-serif; font-size: 12px; min-width: 230px; line-height: 1.4; color: #262626;">
+                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #EEEEEE; padding-bottom: 6px; margin-bottom: 8px;">
+                    <div style="display: flex; align-items: center; gap: 5px; font-weight: 800; color: #1F6F5F; font-size: 13px;">
+                        <span>🏠 Lokasi Tempat Tinggal</span>
+                    </div>
+                    <span style="font-size: 10px; font-weight: 700; background: ${statusColor}18; color: ${statusColor}; padding: 2px 6px; border-radius: 4px;">
+                        ${statusLabel}
+                    </span>
+                </div>
+                <div style="margin-bottom: 4px; font-weight: 700; color: #1F6F5F;">
+                    ${userLocation.name ?? 'Warga Terdaftar'}
+                </div>
+                ${userLocation.address ? `<div style="font-size: 11px; color: #666; margin-bottom: 8px;">${userLocation.address}</div>` : ''}
+                <table style="width: 100%; border-collapse: collapse; font-size: 11px; border-top: 1px solid #EEEEEE; padding-top: 6px;">
+                    <tr>
+                        <td style="color: #666; padding: 2px 0;">Koordinat:</td>
+                        <td style="font-weight: 600; text-align: right; font-family: monospace;">${lat.toFixed(4)}°, ${lng.toFixed(4)}°</td>
+                    </tr>
+                    <tr>
+                        <td style="color: #666; padding: 2px 0;">Titik Api dlm 25 km:</td>
+                        <td style="font-weight: 700; text-align: right; color: ${statusColor};">${userSafety?.hotspotsWithin25Km ?? 0} Titik</td>
+                    </tr>
+                    <tr>
+                        <td style="color: #666; padding: 2px 0;">Titik Api Terdekat:</td>
+                        <td style="font-weight: 700; text-align: right; color: #1F6F5F;">${userSafety?.nearestHotspot ? `${userSafety.nearestHotspot.distanceKm} km (${userSafety.nearestHotspot.direction})` : 'Aman (>50 km)'}</td>
+                    </tr>
+                </table>
+            </div>
+        `;
+
+        homeMarker.bindPopup(popupContent, {
+            maxWidth: 280,
+            className: 'user-home-popup-custom',
+        });
+
+        layer.addLayer(homeMarker);
+    }, [userLocation, userSafety]);
+
     const renderedCount =
         filterConfidence === 'high'
             ? wildfireHotspots.filter((h) => h.confidenceLevel === 'high').length
@@ -309,14 +453,14 @@ export function Maps({
             {/* Map Container */}
             <div ref={mapContainerRef} className="w-full h-full bg-[#aad3df]" />
 
-            {/* Top Left Floating HUD: Basemap Switcher & Confidence Filter */}
+            {/* Top Left Floating HUD: Basemap Switcher, Confidence Filter, & Home Focus */}
             <div className="absolute top-3 left-3 z-[1000] flex flex-wrap items-center gap-2">
                 {/* Basemap Switcher */}
                 <div className="bg-white/90 backdrop-blur-md p-1 rounded-xl border border-[#EEEEEE] shadow-xs flex items-center gap-1">
                     <button
                         type="button"
                         onClick={() => setActiveBasemap('osm')}
-                        className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all ${
+                        className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                             activeBasemap === 'osm'
                                 ? 'bg-[#2FA084] text-white shadow-xs font-bold'
                                 : 'text-[#1F6F5F] hover:bg-[#EEEEEE]'
@@ -327,7 +471,7 @@ export function Maps({
                     <button
                         type="button"
                         onClick={() => setActiveBasemap('nasa')}
-                        className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all ${
+                        className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                             activeBasemap === 'nasa'
                                 ? 'bg-[#2FA084] text-white shadow-xs font-bold'
                                 : 'text-[#1F6F5F] hover:bg-[#EEEEEE]'
@@ -342,7 +486,7 @@ export function Maps({
                     <button
                         type="button"
                         onClick={() => setFilterConfidence('all')}
-                        className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all ${
+                        className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                             filterConfidence === 'all'
                                 ? 'bg-[#1F6F5F] text-white font-bold'
                                 : 'text-[#1F6F5F] hover:bg-[#EEEEEE]'
@@ -353,7 +497,7 @@ export function Maps({
                     <button
                         type="button"
                         onClick={() => setFilterConfidence('high')}
-                        className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all ${
+                        className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                             filterConfidence === 'high'
                                 ? 'bg-red-600 text-white font-bold'
                                 : 'text-red-700 hover:bg-red-50'
@@ -362,6 +506,27 @@ export function Maps({
                         🔴 Akurasi Tinggi
                     </button>
                 </div>
+
+                {/* Tombol Fokus Rumah Saya */}
+                {userLocation && onFocusHome && (
+                    <button
+                        type="button"
+                        onClick={onFocusHome}
+                        className="bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-xl border border-[#EEEEEE] shadow-xs flex items-center gap-1.5 text-xs font-bold text-[#1F6F5F] hover:bg-white transition-all cursor-pointer"
+                        title="Pusatkan peta ke rumah Anda"
+                    >
+                        <span>🏠 Rumah</span>
+                        <span
+                            className={`w-2 h-2 rounded-full ${
+                                userSafety?.status === 'danger'
+                                    ? 'bg-rose-500 animate-ping'
+                                    : userSafety?.status === 'warning'
+                                      ? 'bg-amber-500 animate-pulse'
+                                      : 'bg-[#2FA084]'
+                            }`}
+                        />
+                    </button>
+                )}
             </div>
 
             {/* Top Right Floating HUD: Live Count Pill */}
@@ -378,9 +543,9 @@ export function Maps({
             </div>
 
             {/* Bottom Left Floating Legend */}
-            <div className="absolute bottom-3 left-3 z-[1000] bg-white/95 backdrop-blur-md p-3 rounded-xl border border-[#EEEEEE] shadow-xs max-w-[210px] text-xs">
+            <div className="absolute bottom-3 left-3 z-[1000] bg-white/95 backdrop-blur-md p-3 rounded-xl border border-[#EEEEEE] shadow-xs max-w-[220px] text-xs">
                 <div className="font-bold text-[#1F6F5F] mb-1.5 flex items-center justify-between text-[11px] uppercase tracking-wider">
-                    <span>Legenda Api</span>
+                    <span>Legenda Peta</span>
                     <span className="text-[10px] text-[#262626]/50">VIIRS/MODIS</span>
                 </div>
                 <div className="space-y-1">
@@ -396,9 +561,15 @@ export function Maps({
                         <span className="w-2.5 h-2.5 rounded-full bg-yellow-400 shrink-0"></span>
                         <span className="text-[#262626]/80 text-[11px]">Rendah</span>
                     </div>
+                    {userLocation && (
+                        <div className="flex items-center gap-2 pt-1 border-t border-[#EEEEEE]">
+                            <span className="w-2.5 h-2.5 rounded-full bg-[#2FA084] ring-2 ring-white shadow-2xs shrink-0"></span>
+                            <span className="text-[#262626]/80 text-[11px] font-semibold">Rumah Warga &amp; 25km Radius</span>
+                        </div>
+                    )}
                 </div>
                 <div className="mt-2 pt-1.5 border-t border-[#EEEEEE] text-[10px] text-[#262626]/60">
-                    Radius lingkaran ∝ Radiasi Api (FRP MW)
+                    Radius lingkaran api ∝ FRP (MW)
                 </div>
             </div>
         </div>
@@ -406,4 +577,5 @@ export function Maps({
 }
 
 export default Maps;
+
 
