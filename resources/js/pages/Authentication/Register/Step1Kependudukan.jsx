@@ -52,7 +52,19 @@ export default function Step1Kependudukan({ data, setData, errors, clearErrors }
 
     return (
         <div className="space-y-4 font-sans">
-            {/* Input Nama Lengkap */}
+            {/* Informasi Khusus Kepala Keluarga */}
+            <div className="p-3 rounded-2xl bg-surface/80 border border-surface text-xs text-primary-dark flex items-center space-x-2.5">
+                <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                </div>
+                <span className="text-[11px] leading-tight font-medium">
+                    <strong>Pendaftaran Kepala Keluarga:</strong> Satu Kartu Keluarga (KK) didaftarkan oleh Kepala Keluarga. Anggota keluarga lainnya nantinya ditambahkan langsung dari Dashboard.
+                </span>
+            </div>
+
+            {/* Input Nama Lengkap Kepala Keluarga */}
             <div>
                 <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-neutral-400">
@@ -65,7 +77,7 @@ export default function Step1Kependudukan({ data, setData, errors, clearErrors }
                         type="text"
                         value={data.name}
                         onChange={(e) => setData('name', e.target.value)}
-                        placeholder="Full Name (Nama Lengkap)"
+                        placeholder="Nama Lengkap Kepala Keluarga"
                         className="w-full pl-11 pr-4 py-3 rounded-xl bg-surface text-neutral-800 placeholder-neutral-400 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-all border border-transparent focus:border-primary"
                     />
                 </div>
@@ -92,7 +104,7 @@ export default function Step1Kependudukan({ data, setData, errors, clearErrors }
                             setData('no_kk', val);
                             setDukcapilResult(null);
                         }}
-                        placeholder="16 Digit No. KK (Kartu Keluarga)"
+                        placeholder="16 Digit Nomor KK (Kartu Keluarga)"
                         className="w-full pl-11 pr-16 py-3 rounded-xl bg-surface text-neutral-800 placeholder-neutral-400 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-all border border-transparent focus:border-primary tracking-wide"
                     />
                     <span className="absolute inset-y-0 right-0 pr-4 flex items-center text-[10px] text-neutral-400 font-mono">
@@ -104,7 +116,7 @@ export default function Step1Kependudukan({ data, setData, errors, clearErrors }
                 )}
             </div>
 
-            {/* Input NIK */}
+            {/* Input NIK Kepala Keluarga */}
             <div>
                 <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-neutral-400">
@@ -122,7 +134,7 @@ export default function Step1Kependudukan({ data, setData, errors, clearErrors }
                             setData('nik', val);
                             setDukcapilResult(null);
                         }}
-                        placeholder="16 Digit NIK (KTP)"
+                        placeholder="16 Digit NIK Kepala Keluarga (KTP)"
                         className="w-full pl-11 pr-16 py-3 rounded-xl bg-surface text-neutral-800 placeholder-neutral-400 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-all border border-transparent focus:border-primary tracking-wide"
                     />
                     <span className="absolute inset-y-0 right-0 pr-4 flex items-center text-[10px] text-neutral-400 font-mono">

@@ -35,7 +35,7 @@ export default function Step4Kredensial({ data, setData, errors }) {
                 )}
             </div>
 
-            {/* Input PIN 6-Digit */}
+            {/* Input PIN 6-Digit Keluarga */}
             <div>
                 <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-neutral-400">
@@ -53,7 +53,7 @@ export default function Step4Kredensial({ data, setData, errors }) {
                             const val = e.target.value.replace(/[^0-9]/g, '');
                             setData('pin', val);
                         }}
-                        placeholder="PIN 6-Digit Darurat (Angka)"
+                        placeholder="Buat PIN 6-Digit Keluarga (Angka)"
                         className="w-full pl-11 pr-24 py-3 rounded-xl bg-surface text-neutral-800 placeholder-neutral-400 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-all border border-transparent focus:border-primary font-mono tracking-widest"
                     />
                     <button
@@ -64,31 +64,39 @@ export default function Step4Kredensial({ data, setData, errors }) {
                         {showPin ? 'Hide' : 'Show'}
                     </button>
                 </div>
-                {errors.pin && (
+                {errors.pin ? (
                     <p className="mt-1 text-[11px] text-rose-500 font-medium">{errors.pin}</p>
+                ) : (
+                    <p className="mt-1.5 text-[11px] text-neutral-500 leading-tight">
+                        <strong className="text-primary font-semibold">Catatan:</strong> PIN 6-digit ini diset oleh Kepala Keluarga dan berlaku bersama untuk seluruh anggota keluarga saat login menggunakan NIK masing-masing.
+                    </p>
                 )}
             </div>
 
             {/* Mini Summary Card */}
             <div className="p-3.5 rounded-2xl bg-surface/80 border border-surface text-[11px] space-y-1.5">
                 <div className="font-bold text-primary-dark flex justify-between items-center border-b border-surface pb-1.5">
-                    <span>Ringkasan Data Warga</span>
+                    <span>Ringkasan Registrasi Kepala Keluarga</span>
                     <span className="text-[10px] text-primary font-semibold">Siap Disimpan</span>
                 </div>
                 <div className="flex justify-between text-neutral-600">
-                    <span className="text-neutral-400">Nama & NIK:</span>
+                    <span className="text-neutral-400">No. Kartu Keluarga:</span>
+                    <span className="font-mono font-medium text-neutral-800">{data.no_kk || '-'}</span>
+                </div>
+                <div className="flex justify-between text-neutral-600">
+                    <span className="text-neutral-400">Kepala Keluarga & NIK:</span>
                     <span className="font-medium text-neutral-800">{data.name || '-'} ({data.nik || '-'})</span>
                 </div>
                 <div className="flex justify-between text-neutral-600">
-                    <span className="text-neutral-400">Koordinat:</span>
+                    <span className="text-neutral-400">Koordinat Rumah:</span>
                     <span className="font-mono font-semibold text-primary">
                         {data.home_latitude ? `${data.home_latitude}, ${data.home_longitude}` : '-'}
                     </span>
                 </div>
                 <div className="flex justify-between text-neutral-600">
-                    <span className="text-neutral-400">Prioritas Evakuasi:</span>
-                    <span className={`font-semibold ${data.is_vulnerable ? 'text-rose-600' : 'text-neutral-700'}`}>
-                        {data.is_vulnerable ? 'Prioritas Oksigen (Rentan)' : 'Normal'}
+                    <span className="text-neutral-400">Peran Akun:</span>
+                    <span className="font-semibold text-[#1F6F5F]">
+                        Kepala Keluarga (Koordinator)
                     </span>
                 </div>
             </div>

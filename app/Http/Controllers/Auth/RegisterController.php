@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\Auth\Step1RegisterRequest;
@@ -56,24 +57,24 @@ class RegisterController extends Controller
                 'no_kk' => $validated['no_kk'],
             ]);
 
-            // Create User associated with family
+            // Create User associated with family as Kepala Keluarga
             $user = User::create([
                 'family_id' => $family->id,
                 'nik' => $validated['nik'],
                 'name' => $validated['name'],
                 'whatsapp_number' => $validated['whatsapp_number'],
                 'pin' => $validated['pin'], // User model cast 'pin' => 'hashed' automatically hashes
-                'role' => $validated['role'],
+                'role' => UserRole::KepalaKeluarga,
                 'home_address' => $validated['home_address'],
                 'home_latitude' => $validated['home_latitude'],
                 'home_longitude' => $validated['home_longitude'],
             ]);
 
-            // Create User Health Profile
+            // Create default User Health Profile (dapat diperbarui nanti jika diperlukan)
             HealthProfile::create([
                 'user_id' => $user->id,
-                'is_vulnerable' => (bool) $validated['is_vulnerable'],
-                'comorbidity_notes' => $validated['comorbidity_notes'] ?? null,
+                'is_vulnerable' => false,
+                'comorbidity_notes' => null,
             ]);
 
             return $user;

@@ -84,10 +84,10 @@ class UserSeeder extends Seeder
             ['nik' => '6271012005980003'],
             [
                 'family_id' => $familyPalangka1->id,
-                'name' => 'Ahmad Fauzi (Relawan / Pendatang)',
+                'name' => 'Ahmad Fauzi (Anggota Keluarga)',
                 'whatsapp_number' => '82155667788',
                 'pin' => Hash::make('123456'),
-                'role' => UserRole::Pendatang,
+                'role' => UserRole::Anggota,
                 'home_address' => 'Posko Relawan Siaga Karhutla, Jl. Tjilik Riwut Km 2, Palangka Raya, Kalimantan Tengah',
                 'home_latitude' => -2.21610000,
                 'home_longitude' => 113.91660000,

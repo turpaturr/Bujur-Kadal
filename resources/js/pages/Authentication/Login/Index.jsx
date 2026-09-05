@@ -78,7 +78,7 @@ export default function LoginIndex() {
                                         className="text-left px-2.5 py-1.5 rounded-xl bg-white border border-[#CCECEE] hover:border-[#14967F] text-[11px] transition-all group shadow-2xs cursor-pointer"
                                     >
                                         <p className="font-bold text-[#095D7E] group-hover:text-[#14967F]">Budi Pratama</p>
-                                        <p className="text-[10px] text-rose-500 font-medium">Kepala Keluarga (Rentan)</p>
+                                        <p className="text-[10px] text-primary font-medium">Kepala Keluarga (Samarinda)</p>
                                     </button>
                                     <button
                                         type="button"
@@ -92,21 +92,21 @@ export default function LoginIndex() {
                                         className="text-left px-2.5 py-1.5 rounded-xl bg-white border border-[#CCECEE] hover:border-[#14967F] text-[11px] transition-all group shadow-2xs cursor-pointer"
                                     >
                                         <p className="font-bold text-[#095D7E] group-hover:text-[#14967F]">Siti Rahma</p>
-                                        <p className="text-[10px] text-emerald-600 font-medium">Anggota (Non-Rentan)</p>
+                                        <p className="text-[10px] text-emerald-600 font-medium">Anggota Keluarga (Samarinda)</p>
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => {
                                             setData((prev) => ({
                                                 ...prev,
-                                                nik: '6271012005980003',
+                                                nik: '6171011010910005',
                                                 pin: '123456',
                                             }));
                                         }}
                                         className="text-left px-2.5 py-1.5 rounded-xl bg-white border border-[#CCECEE] hover:border-[#14967F] text-[11px] transition-all group shadow-2xs cursor-pointer"
                                     >
-                                        <p className="font-bold text-[#095D7E] group-hover:text-[#14967F]">Ahmad Fauzi</p>
-                                        <p className="text-[10px] text-sky-600 font-medium">Relawan / Pendatang</p>
+                                        <p className="font-bold text-[#095D7E] group-hover:text-[#14967F]">Dewi Lestari</p>
+                                        <p className="text-[10px] text-primary font-medium">Kepala Keluarga (Pontianak)</p>
                                     </button>
                                     <button
                                         type="button"
@@ -120,7 +120,7 @@ export default function LoginIndex() {
                                         className="text-left px-2.5 py-1.5 rounded-xl bg-white border border-[#CCECEE] hover:border-[#14967F] text-[11px] transition-all group shadow-2xs cursor-pointer"
                                     >
                                         <p className="font-bold text-[#095D7E] group-hover:text-[#14967F]">Haji Syahrani</p>
-                                        <p className="text-[10px] text-amber-600 font-medium">Lansia (Sangat Rentan)</p>
+                                        <p className="text-[10px] text-amber-600 font-medium">Kepala Keluarga (Palangka Raya)</p>
                                     </button>
                                 </div>
                             </div>
@@ -169,7 +169,7 @@ export default function LoginIndex() {
                                             inputMode="numeric"
                                             value={data.pin}
                                             onChange={(e) => setData('pin', e.target.value.replace(/[^0-9]/g, ''))}
-                                            placeholder="PIN 6-Digit Darurat"
+                                            placeholder="PIN 6-Digit Keluarga"
                                             className="w-full pl-11 pr-20 py-3.5 rounded-xl bg-surface text-neutral-800 placeholder-neutral-400 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-all border border-transparent focus:border-primary font-mono tracking-widest text-center"
                                         />
                                         <button
