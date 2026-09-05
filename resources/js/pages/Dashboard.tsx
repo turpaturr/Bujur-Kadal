@@ -8,7 +8,6 @@ import {
     WildfirePanel,
     FamilyMemberModal,
     BookCheckupModal,
-    UserReservationInboxModal,
     CitizenSidebar,
     type FamilyMemberItem,
     type UserReservationItem,
@@ -39,8 +38,6 @@ interface PageProps {
         } | null;
     };
     familyMembers?: FamilyMemberItem[];
-    isHeadOfFamily?: boolean;
-    hasCompletedFamilyDocs?: boolean;
     userReservations?: UserReservationItem[];
     unreadReservationsCount?: number;
     [key: string]: unknown;
@@ -50,21 +47,16 @@ export default function Dashboard() {
     const {
         auth,
         familyMembers,
-        isHeadOfFamily,
-        hasCompletedFamilyDocs,
         userReservations = [],
         unreadReservationsCount = 0,
     } = usePage<PageProps>().props;
-    const [isAddMemberOpen, setIsAddMemberOpen] = useState<boolean>(false);
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-    const [editingMember, setEditingMember] = useState<FamilyMemberItem | null>(null);
 
     // State Reservasi Medical Checkup & Inbox User
     const [localReservations, setLocalReservations] = useState<UserReservationItem[]>(userReservations);
     const [localUnreadCount, setLocalUnreadCount] = useState<number>(unreadReservationsCount);
     const [isBookModalOpen, setIsBookModalOpen] = useState<boolean>(false);
     const [selectedCheckupClinic, setSelectedCheckupClinic] = useState<ClinicData | null>(null);
-    const [isInboxModalOpen, setIsInboxModalOpen] = useState<boolean>(false);
 
     useEffect(() => {
         setLocalReservations(userReservations);
@@ -117,33 +109,12 @@ export default function Dashboard() {
     }, [auth?.user?.id]);
 
     const handleOpenInbox = () => {
-        setIsInboxModalOpen(true);
-        if (localUnreadCount > 0) {
-            setLocalUnreadCount(0);
-            router.post(
-                '/checkup-reservations/mark-as-read',
-                {},
-                {
-                    preserveScroll: true,
-                    preserveState: true,
-                },
-            );
-        }
+        router.visit('/reservations');
     };
 
     const handleBookCheckup = (clinic: ClinicData) => {
         setSelectedCheckupClinic(clinic);
         setIsBookModalOpen(true);
-    };
-
-    const handleOpenAddMember = () => {
-        setEditingMember(null);
-        setIsAddMemberOpen(true);
-    };
-
-    const handleOpenEditMember = (member: FamilyMemberItem) => {
-        setEditingMember(member);
-        setIsAddMemberOpen(true);
     };
 
     // 1. Ekstrak lokasi kediaman user jika tersedia dari database registrasi
@@ -402,7 +373,7 @@ export default function Dashboard() {
             <Head title="Dashboard Karhutla & Gambut - BorneoCare" />
 
             <div className="flex h-screen overflow-hidden bg-[#FAFAFA] font-sans text-[#262626] antialiased">
-                <CitizenSidebar 
+                <CitizenSidebar
                     isMobileOpen={isMobileSidebarOpen}
                     onCloseMobile={() => setIsMobileSidebarOpen(false)}
                     userName={auth?.user?.name ?? 'Warga'}
@@ -634,31 +605,10 @@ export default function Dashboard() {
                             />
                         </section>
 
-                        {/* Wildfire Tracker Panel (Anggota Keluarga, Provinsi, Top Clusters FRP, Panduan Klasifikasi) */}
-                        <section id="family-table-section">
-                            <WildfirePanel
-                                wildfire={wildfire}
-                                enabledSensors={enabledSensors}
-                                onToggleSensor={handleToggleSensor}
-                                onSelectProvince={handleToggleProvince}
-                                onSelectHotspot={handleSelectHotspot}
-                                familyMembers={familyMembers ?? []}
-                                isHeadOfFamily={Boolean(isHeadOfFamily)}
-                                onOpenAddMember={handleOpenAddMember}
-                                onOpenEditMember={handleOpenEditMember}
-                            />
-                        </section>
                     </main>
                 </div>
 
-                {/* 4. Modal Tambah Anggota Keluarga */}
-                <FamilyMemberModal
-                    isOpen={isAddMemberOpen}
-                    onClose={() => setIsAddMemberOpen(false)}
-                    editingMember={editingMember}
-                />
-
-                {/* 5. Modal Reservasi Medical Checkup Faskes */}
+                {/* Modal Reservasi Medical Checkup Faskes */}
                 <BookCheckupModal
                     isOpen={isBookModalOpen}
                     onClose={() => setIsBookModalOpen(false)}
@@ -667,12 +617,6 @@ export default function Dashboard() {
                     defaultPatientName={auth?.user?.name ?? ''}
                 />
 
-                {/* 6. Modal Inbox Status Reservasi Checkup */}
-                <UserReservationInboxModal
-                    isOpen={isInboxModalOpen}
-                    onClose={() => setIsInboxModalOpen(false)}
-                    reservations={localReservations}
-                />
             </div>
         </>
     );

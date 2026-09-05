@@ -90,8 +90,13 @@ class DashboardAdminController extends Controller
             ];
         }
 
-        $reservations = CheckupReservation::with(['user.family', 'user.healthProfile'])
-            ->orderByRaw("CASE WHEN status = 'pending' THEN 1 WHEN status = 'approved' THEN 2 ELSE 3 END")
+        $query = CheckupReservation::with(['user.family', 'user.healthProfile']);
+
+        if ($request->user()->role === UserRole::Faskes) {
+            $query->where('clinic_name', $request->user()->name);
+        }
+
+        $reservations = $query->orderByRaw("CASE WHEN status = 'pending' THEN 1 WHEN status = 'approved' THEN 2 ELSE 3 END")
             ->orderBy('checkup_date', 'asc')
             ->orderBy('checkup_time', 'asc')
             ->get()
@@ -126,7 +131,19 @@ class DashboardAdminController extends Controller
                 ];
             });
 
-        $pendingReservationsCount = CheckupReservation::pending()->count();
+        $pendingQuery = CheckupReservation::pending();
+        if ($request->user()->role === UserRole::Faskes) {
+            $pendingQuery->where('clinic_name', $request->user()->name);
+        }
+        $pendingReservationsCount = $pendingQuery->count();
+
+        if ($request->user()->role === UserRole::Faskes) {
+            return Inertia::render('DashboardFaskes', [
+                'faskesName' => $request->user()->name,
+                'reservations' => $reservations,
+                'pendingReservationsCount' => $pendingReservationsCount,
+            ]);
+        }
 
         return Inertia::render('DashboardAdmin', [
             'adminStats' => $adminStats,

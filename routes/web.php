@@ -41,6 +41,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/family', [DashboardController::class, 'family'])->name('family');
+    Route::get('/reservations', [DashboardController::class, 'reservations'])->name('reservations');
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 
     Route::post('/family/members', [FamilyMemberController::class, 'store'])->name('family.members.store');

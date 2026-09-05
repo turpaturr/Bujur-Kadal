@@ -140,11 +140,11 @@ class User extends Authenticatable
     }
 
     /**
-     * Determine if the user has an Administrator role.
+     * Determine if the user is an administrator or faskes.
      */
     public function isAdmin(): bool
     {
-        return $this->role === UserRole::Admin;
+        return $this->role === UserRole::Admin || $this->role === UserRole::Faskes;
     }
 
     /**
@@ -152,7 +152,7 @@ class User extends Authenticatable
      */
     public function isUser(): bool
     {
-        return $this->role !== UserRole::Admin;
+        return $this->role !== UserRole::Admin && $this->role !== UserRole::Faskes;
     }
 
     /**

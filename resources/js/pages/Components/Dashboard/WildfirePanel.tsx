@@ -19,6 +19,7 @@ interface WildfirePanelProps {
     isHeadOfFamily?: boolean;
     onOpenAddMember?: () => void;
     onOpenEditMember?: (member: any) => void;
+    showFamilyTab?: boolean;
 }
 
 const SENSOR_INFO: Record<SensorSource, { name: string; tag: string }> = {
@@ -37,10 +38,11 @@ export default function WildfirePanel({
     isHeadOfFamily,
     onOpenAddMember,
     onOpenEditMember,
+    showFamilyTab = true,
 }: WildfirePanelProps) {
     const { stats, hotspots, isLoading, error, lastUpdated, refresh } = wildfire;
     const [activeTab, setActiveTab] = useState<'family' | 'provinces' | 'clusters' | 'guide'>(
-        familyMembers && familyMembers.length > 0 ? 'family' : 'provinces'
+        showFamilyTab && familyMembers && familyMembers.length > 0 ? 'family' : 'provinces'
     );
 
     // Top 8 titik api dengan FRP tertinggi
@@ -65,7 +67,7 @@ export default function WildfirePanel({
                 {/* Tabs Switcher & Quick Add Button */}
                 <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
                     <div className="flex items-center gap-1.5 p-1 bg-[#EEEEEE]/80 rounded-xl">
-                        <button
+                        {showFamilyTab && <button
                             type="button"
                             onClick={() => setActiveTab('family')}
                             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
@@ -86,7 +88,7 @@ export default function WildfirePanel({
                                     {familyMembers.length}
                                 </span>
                             )}
-                        </button>
+                        </button>}
                         <button
                             type="button"
                             onClick={() => setActiveTab('provinces')}
