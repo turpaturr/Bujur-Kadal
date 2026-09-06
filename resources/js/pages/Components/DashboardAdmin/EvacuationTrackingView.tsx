@@ -183,9 +183,6 @@ export default function EvacuationTrackingView({
                 {/* Clean White Resi Header Bar */}
                 <div className="p-5 sm:p-6 border-b border-[#EEEEEE] flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white">
                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-emerald-50 text-[#1F6F5F] border border-emerald-200/80 flex items-center justify-center text-2xl shrink-0 shadow-2xs">
-                            🚑
-                        </div>
                         <div>
                             <div className="flex flex-wrap items-center gap-2">
                                 <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#1F6F5F]">
@@ -199,8 +196,8 @@ export default function EvacuationTrackingView({
                                             : 'bg-amber-50 text-amber-700 border-amber-200 animate-pulse'
                                 }`}>
                                     {activeMission.status === 'completed' ? '✓ Tiba di Shelter Oksigen' :
-                                     activeMission.status === 'in_transit' ? '⚡ Sedang Menuju Lokasi' :
-                                     '🕒 Menunggu Tim Penjemputan'}
+                                     activeMission.status === 'in_transit' ? 'Sedang Menuju Lokasi' :
+                                     'Menunggu Tim Penjemputan'}
                                 </span>
                             </div>
                             <h3 className="font-display text-lg sm:text-xl font-bold text-gray-900 mt-1">
@@ -358,7 +355,7 @@ export default function EvacuationTrackingView({
                                     className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs transition-colors cursor-pointer shrink-0 shadow-2xs"
                                     title="Klik untuk mempercepat simulasi demo ke langkah berikutnya"
                                 >
-                                    ⚡ Majukan Step Demo
+                                    Majukan Step Demo
                                 </button>
                             )}
                         </div>
