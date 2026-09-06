@@ -1,7 +1,6 @@
 import { Link } from '@inertiajs/react';
 import { 
     MapPin, 
-    Mailbox,
     List, 
     Building, 
     LogOut, 
@@ -9,14 +8,13 @@ import {
     Activity
 } from '@/pages/Components/Dashboard/Icons';
 
-export type AdminMenuType = 'maps' | 'reservations' | 'citizens' | 'facilities' | 'evacuations';
+export type AdminMenuType = 'maps' | 'citizens' | 'facilities' | 'evacuations';
 
 interface AdminSidebarProps {
     activeMenu: AdminMenuType;
     onMenuChange: (menu: AdminMenuType) => void;
     isMobileOpen: boolean;
     onCloseMobile: () => void;
-    pendingReservationsCount?: number;
     evacuationCount?: number;
     unreadEvacuationCount?: number;
 }
@@ -26,7 +24,6 @@ export default function AdminSidebar({
     onMenuChange,
     isMobileOpen,
     onCloseMobile,
-    pendingReservationsCount = 0,
     evacuationCount = 0,
     unreadEvacuationCount = 0,
 }: AdminSidebarProps) {
@@ -37,12 +34,6 @@ export default function AdminSidebar({
         badge?: number;
     }> = [
         { id: 'maps', label: 'Monitoring Spasial', icon: MapPin },
-        { 
-            id: 'reservations', 
-            label: 'Kotak Masuk Reservasi', 
-            icon: Mailbox, 
-            badge: pendingReservationsCount 
-        },
         { id: 'citizens', label: 'Daftar Warga & Keluarga', icon: List },
         { id: 'facilities', label: 'Manajemen Faskes', icon: Building },
     ];
@@ -50,7 +41,7 @@ export default function AdminSidebar({
     // Menu Monitoring Evakuasi muncul otomatis hanya bila ada misi evakuasi aktif
     // Angka notif (badge) akan hilang setelah menu dibuka setidaknya sekali
     if (Boolean(evacuationCount && evacuationCount > 0)) {
-        navItems.splice(2, 0, {
+        navItems.splice(1, 0, {
             id: 'evacuations',
             label: 'Monitoring Evakuasi',
             icon: Activity,

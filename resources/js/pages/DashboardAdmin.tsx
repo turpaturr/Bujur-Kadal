@@ -10,8 +10,6 @@ import {
     CitizensListView,
     TriageView,
     FacilitiesView,
-    CheckupReservationsView,
-    type AdminReservationItem,
     EvacuationTrackingView,
     type EvacuationMissionItem,
 } from '@/pages/Components/DashboardAdmin';
@@ -25,7 +23,6 @@ import {
 } from '@/hooks/useWildfireData';
 
 import type { RegisteredUserLocation } from '@/pages/Components/Dashboard/Maps';
-import { showAdminNewReservationAlert } from '@/utils/alerts';
 import HouseholdDetailModal from './Components/DashboardAdmin/HouseholdDetailModal';
 
 interface AdminStats {
@@ -40,16 +37,12 @@ interface AdminStats {
 interface DashboardAdminProps {
     adminStats?: AdminStats;
     registeredUsers?: RegisteredUserLocation[];
-    reservations?: AdminReservationItem[];
-    pendingReservationsCount?: number;
     evacuationMissions?: EvacuationMissionItem[];
 }
 
 export default function DashboardAdmin({
     adminStats,
     registeredUsers = [],
-    reservations = [],
-    pendingReservationsCount = 0,
     evacuationMissions = [],
 }: DashboardAdminProps) {
     const [activeMenu, setActiveMenu] = useState<AdminMenuType>('maps');
@@ -62,9 +55,7 @@ export default function DashboardAdmin({
     const [selectedUserLocation, setSelectedUserLocation] = useState<RegisteredUserLocation | null>(null);
     const [isHouseholdModalOpen, setIsHouseholdModalOpen] = useState<boolean>(false);
 
-    // State Real-Time Reservasi Admin & Misi Evakuasi
-    const [localReservations, setLocalReservations] = useState<AdminReservationItem[]>(reservations);
-    const [localPendingCount, setLocalPendingCount] = useState<number>(pendingReservationsCount);
+    // State Real-Time Misi Evakuasi
     const [localEvacuations, setLocalEvacuations] = useState<EvacuationMissionItem[]>(evacuationMissions);
 
     // Tracking apakah admin sudah pernah membuka tab evakuasi (agar badge notif hilang setelah dibuka)
@@ -87,40 +78,15 @@ export default function DashboardAdmin({
     const unreadEvacuationCount = hasViewedEvacuations ? 0 : localEvacuations.length;
 
     useEffect(() => {
-        setLocalReservations(reservations);
-        setLocalPendingCount(pendingReservationsCount);
         setLocalEvacuations(evacuationMissions);
-    }, [reservations, pendingReservationsCount, evacuationMissions]);
+    }, [evacuationMissions]);
 
-    // Reverb WebSocket Listener & Polling Fallback
+    // Reverb WebSocket Listener untuk Misi Evakuasi & Polling Fallback
     useEffect(() => {
         const echo = getEcho();
-        let resChannel: any = null;
         let evacChannel: any = null;
 
         if (echo) {
-            resChannel = echo.channel('admin-reservations');
-            resChannel.listen('.reservation.created', (data: { reservation: AdminReservationItem }) => {
-                if (data?.reservation) {
-                    setLocalReservations((prev) => [data.reservation, ...prev.filter((r) => r.id !== data.reservation.id)]);
-                    setLocalPendingCount((prev) => prev + 1);
-                    showAdminNewReservationAlert(data.reservation.patient_name, data.reservation.clinic_name);
-                }
-            });
-            resChannel.listen('.reservation.updated', (data: { reservation: { id: number; status: string; admin_notes?: string } }) => {
-                if (data?.reservation) {
-                    setLocalReservations((prev) =>
-                        prev.map((r) =>
-                            r.id === data.reservation.id
-                                ? { ...r, status: data.reservation.status, admin_notes: data.reservation.admin_notes ?? r.admin_notes }
-                                : r,
-                        ),
-                    );
-                    router.reload({ only: ['pendingReservationsCount', 'reservations'] });
-                }
-            });
-
-            // Evakuasi real-time listener (Laravel Reverb)
             evacChannel = echo.channel('admin-evacuations');
             evacChannel.listen('.evacuation.updated', (data: { mission: EvacuationMissionItem }) => {
                 if (data?.mission) {
@@ -136,14 +102,13 @@ export default function DashboardAdmin({
         }
 
         const interval = setInterval(() => {
-            router.reload({ only: ['reservations', 'pendingReservationsCount', 'evacuationMissions'] });
+            router.reload({ only: ['evacuationMissions'] });
         }, 8000);
 
         return () => {
             clearInterval(interval);
-            if (echo) {
-                if (resChannel) echo.leaveChannel('admin-reservations');
-                if (evacChannel) echo.leaveChannel('admin-evacuations');
+            if (echo && evacChannel) {
+                echo.leaveChannel('admin-evacuations');
             }
         };
     }, []);
@@ -267,14 +232,6 @@ export default function DashboardAdmin({
 
     // Helper rendering content based on active menu
     const renderContent = () => {
-        if (activeMenu === 'reservations') {
-            return (
-                <CheckupReservationsView
-                    reservations={localReservations}
-                />
-            );
-        }
-
         if (activeMenu === 'citizens') {
             return (
                 <CitizensListView
@@ -358,7 +315,6 @@ export default function DashboardAdmin({
                     }}
                     isMobileOpen={isMobileSidebarOpen}
                     onCloseMobile={() => setIsMobileSidebarOpen(false)}
-                    pendingReservationsCount={localPendingCount}
                     evacuationCount={localEvacuations.length}
                     unreadEvacuationCount={unreadEvacuationCount}
                 />
@@ -367,15 +323,13 @@ export default function DashboardAdmin({
                     <AdminTopBar
                         onOpenMobile={() => setIsMobileSidebarOpen(true)}
                         title={
-                            activeMenu === 'reservations'
-                                ? 'Kotak Masuk Reservasi Medical Checkup'
-                                : activeMenu === 'citizens'
-                                    ? 'Data Warga Terdaftar'
-                                    : activeMenu === 'facilities'
-                                        ? 'Fasilitas Kesehatan'
-                                        : activeMenu === 'evacuations'
-                                            ? 'Monitoring Evakuasi & Tracking Real-Time'
-                                            : 'Peta Sebaran Spasial & Titik Api'
+                            activeMenu === 'citizens'
+                                ? 'Data Warga Terdaftar'
+                                : activeMenu === 'facilities'
+                                    ? 'Fasilitas Kesehatan'
+                                    : activeMenu === 'evacuations'
+                                        ? 'Monitoring Evakuasi & Tracking Real-Time'
+                                        : 'Peta Sebaran Spasial & Titik Api'
                         }
                     />
 

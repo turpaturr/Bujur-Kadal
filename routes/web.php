@@ -43,14 +43,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/dashboard', [DashboardAdminController::class, 'index'])->name('dashboard');
         Route::post('/logout', [AdminLoginController::class, 'destroy'])->name('logout');
 
-        Route::prefix('checkup-reservations/{reservation}')
-            ->name('checkup-reservations.')
-            ->controller(DashboardAdminController::class)
-            ->group(function () {
-                Route::post('/approve', 'approveReservation')->name('approve');
-                Route::post('/reject', 'rejectReservation')->name('reject');
-            });
-
         // Manajemen Evakuasi Darurat
         Route::prefix('evacuations')
             ->name('evacuations.')
@@ -60,6 +52,17 @@ Route::prefix('admin')->name('admin.')->group(function () {
                 Route::post('/{mission}/progress', 'progressEvacuation')->name('progress');
             });
     });
+});
+
+// Rute Khusus Fasilitas Kesehatan (Faskes) untuk Konfirmasi Reservasi
+Route::prefix('faskes')->name('faskes.')->middleware(['auth'])->group(function () {
+    Route::prefix('reservations/{reservation}')
+        ->name('reservations.')
+        ->controller(DashboardAdminController::class)
+        ->group(function () {
+            Route::post('/approve', 'approveReservation')->name('approve');
+            Route::post('/reject', 'rejectReservation')->name('reject');
+        });
 });
 
 Route::middleware('auth')->group(function () {

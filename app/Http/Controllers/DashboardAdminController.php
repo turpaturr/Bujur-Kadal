@@ -93,54 +93,49 @@ class DashboardAdminController extends Controller
             ];
         }
 
-        $query = CheckupReservation::with(['user.family', 'user.healthProfile']);
-
         if ($request->user()->role === UserRole::Faskes) {
-            $query->where('clinic_name', $request->user()->name);
-        }
+            $query = CheckupReservation::with(['user.family', 'user.healthProfile'])
+                ->where('clinic_name', $request->user()->name);
 
-        $reservations = $query->orderByRaw("CASE WHEN status = 'pending' THEN 1 WHEN status = 'approved' THEN 2 ELSE 3 END")
-            ->orderBy('checkup_date', 'asc')
-            ->orderBy('checkup_time', 'asc')
-            ->get()
-            ->map(function ($r) {
-                $head = $r->user;
-                $cleanWa = preg_replace('/[^0-9]/', '', (string) ($head->whatsapp_number ?? ''));
-                if (str_starts_with($cleanWa, '0')) {
-                    $cleanWa = '62'.substr($cleanWa, 1);
-                }
+            $reservations = $query->orderByRaw("CASE WHEN status = 'pending' THEN 1 WHEN status = 'approved' THEN 2 ELSE 3 END")
+                ->orderBy('checkup_date', 'asc')
+                ->orderBy('checkup_time', 'asc')
+                ->get()
+                ->map(function ($r) {
+                    $head = $r->user;
+                    $cleanWa = preg_replace('/[^0-9]/', '', (string) ($head?->whatsapp_number ?? ''));
+                    if (str_starts_with($cleanWa, '0')) {
+                        $cleanWa = '62'.substr($cleanWa, 1);
+                    }
 
-                return [
-                    'id' => $r->id,
-                    'clinic_id' => $r->clinic_id,
-                    'clinic_name' => $r->clinic_name,
-                    'clinic_address' => $r->clinic_address,
-                    'patient_name' => $r->patient_name,
-                    'patient_role' => $r->patient_role,
-                    'checkup_date' => $r->checkup_date?->format('Y-m-d'),
-                    'checkup_time' => $r->checkup_time,
-                    'symptoms' => $r->symptoms,
-                    'status' => $r->status,
-                    'admin_notes' => $r->admin_notes,
-                    'created_at' => $r->created_at?->diffForHumans(),
-                    'user' => [
-                        'id' => $head->id,
-                        'name' => $head->name,
-                        'no_kk' => $head->family?->no_kk,
-                        'home_address' => $head->home_address,
-                        'whatsapp_number' => $head->whatsapp_number,
-                        'whatsapp_link' => $cleanWa ? "https://wa.me/{$cleanWa}" : null,
-                    ],
-                ];
-            });
+                    return [
+                        'id' => $r->id,
+                        'clinic_id' => $r->clinic_id,
+                        'clinic_name' => $r->clinic_name,
+                        'clinic_address' => $r->clinic_address,
+                        'patient_name' => $r->patient_name,
+                        'patient_role' => $r->patient_role,
+                        'checkup_date' => $r->checkup_date?->format('Y-m-d'),
+                        'checkup_time' => $r->checkup_time,
+                        'symptoms' => $r->symptoms,
+                        'status' => $r->status,
+                        'admin_notes' => $r->admin_notes,
+                        'created_at' => $r->created_at?->diffForHumans(),
+                        'user' => [
+                            'id' => $head?->id,
+                            'name' => $head?->name,
+                            'no_kk' => $head?->family?->no_kk,
+                            'home_address' => $head?->home_address,
+                            'whatsapp_number' => $head?->whatsapp_number,
+                            'whatsapp_link' => $cleanWa ? "https://wa.me/{$cleanWa}" : null,
+                        ],
+                    ];
+                });
 
-        $pendingQuery = CheckupReservation::pending();
-        if ($request->user()->role === UserRole::Faskes) {
-            $pendingQuery->where('clinic_name', $request->user()->name);
-        }
-        $pendingReservationsCount = $pendingQuery->count();
+            $pendingReservationsCount = CheckupReservation::pending()
+                ->where('clinic_name', $request->user()->name)
+                ->count();
 
-        if ($request->user()->role === UserRole::Faskes) {
             return Inertia::render('DashboardFaskes', [
                 'faskesName' => $request->user()->name,
                 'reservations' => $reservations,
@@ -174,8 +169,6 @@ class DashboardAdminController extends Controller
         return Inertia::render('DashboardAdmin', [
             'adminStats' => $adminStats,
             'registeredUsers' => $registeredUsers,
-            'reservations' => $reservations,
-            'pendingReservationsCount' => $pendingReservationsCount,
             'evacuationMissions' => $evacuationMissions,
         ]);
     }
@@ -252,6 +245,10 @@ class DashboardAdminController extends Controller
      */
     public function approveReservation(CheckupReservation $reservation, Request $request)
     {
+        if ($request->user()->role !== UserRole::Faskes) {
+            abort(403, 'Aksi ini hanya dapat diproses oleh akun Fasilitas Kesehatan (Faskes) yang berwenang.');
+        }
+
         $validated = $request->validate([
             'admin_notes' => ['nullable', 'string', 'max:500'],
         ]);
@@ -273,6 +270,10 @@ class DashboardAdminController extends Controller
      */
     public function rejectReservation(CheckupReservation $reservation, Request $request)
     {
+        if ($request->user()->role !== UserRole::Faskes) {
+            abort(403, 'Aksi ini hanya dapat diproses oleh akun Fasilitas Kesehatan (Faskes) yang berwenang.');
+        }
+
         $validated = $request->validate([
             'admin_notes' => ['required', 'string', 'max:500'],
         ]);
