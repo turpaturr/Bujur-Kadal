@@ -5,11 +5,14 @@ namespace App\Http\Controllers;
 use App\Enums\SosStatus;
 use App\Enums\UserRole;
 use App\Events\CheckupReservationStatusUpdated;
+use App\Events\EvacuationMissionUpdated;
 use App\Models\CheckupReservation;
+use App\Models\EvacuationMission;
 use App\Models\Family;
 use App\Models\SafeZone;
 use App\Models\SosRequest;
 use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -145,12 +148,103 @@ class DashboardAdminController extends Controller
             ]);
         }
 
+        $evacuationMissions = EvacuationMission::orderBy('id', 'desc')
+            ->get()
+            ->map(fn ($m) => [
+                'id' => $m->id,
+                'user_id' => $m->user_id,
+                'family_id' => $m->family_id,
+                'family_name' => $m->family_name,
+                'head_name' => $m->head_name,
+                'whatsapp_number' => $m->whatsapp_number,
+                'address' => $m->address,
+                'latitude' => (float) $m->latitude,
+                'longitude' => (float) $m->longitude,
+                'vulnerable_members_count' => $m->vulnerable_members_count,
+                'total_members_count' => $m->total_members_count,
+                'safe_zone_name' => $m->safe_zone_name,
+                'status' => $m->status,
+                'status_notes' => $m->status_notes,
+                'team_assigned_at' => $m->team_assigned_at?->format('H:i:s'),
+                'in_transit_at' => $m->in_transit_at?->format('H:i:s'),
+                'completed_at' => $m->completed_at?->format('H:i:s'),
+                'updated_at' => $m->updated_at?->diffForHumans() ?? 'Baru saja',
+            ]);
+
         return Inertia::render('DashboardAdmin', [
             'adminStats' => $adminStats,
             'registeredUsers' => $registeredUsers,
             'reservations' => $reservations,
             'pendingReservationsCount' => $pendingReservationsCount,
+            'evacuationMissions' => $evacuationMissions,
         ]);
+    }
+
+    /**
+     * Mengerahkan tim evakuasi penjemputan darurat untuk keluarga warga di zona bahaya.
+     */
+    public function storeEvacuation(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'user_id' => ['required', 'exists:users,id'],
+            'safe_zone_name' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $user = User::with(['family', 'healthProfile'])->findOrFail($validated['user_id']);
+
+        $familyUsers = $user->family_id
+            ? User::where('family_id', $user->family_id)->with('healthProfile')->get()
+            : collect([$user]);
+
+        $vulnerableCount = $familyUsers->filter(fn ($u) => (bool) ($u->healthProfile?->is_vulnerable ?? false))->count();
+        $totalMembers = $familyUsers->count();
+
+        $mission = EvacuationMission::create([
+            'user_id' => $user->id,
+            'family_id' => $user->family_id,
+            'family_name' => $user->family_id ? 'Keluarga '.$user->name : $user->name,
+            'head_name' => $user->name,
+            'whatsapp_number' => $user->whatsapp_number,
+            'address' => $user->home_address,
+            'latitude' => $user->home_latitude,
+            'longitude' => $user->home_longitude,
+            'vulnerable_members_count' => $vulnerableCount,
+            'total_members_count' => $totalMembers,
+            'safe_zone_name' => $validated['safe_zone_name'] ?? 'Posko Ruang Oksigen (Oxygen Shelter)',
+            'status' => 'waiting_team',
+            'status_notes' => 'Tim penjemputan darurat & ambulans evakuasi telah ditugaskan ke lokasi kediaman warga.',
+            'team_assigned_at' => now(),
+        ]);
+
+        broadcast(new EvacuationMissionUpdated($mission));
+
+        return back()->with('success', "Tim evakuasi penjemputan darurat berhasil dikerahkan untuk {$user->name}!");
+    }
+
+    /**
+     * Memperbarui progress tahapan misi evakuasi (demo real-time timeline stepper).
+     */
+    public function progressEvacuation(EvacuationMission $mission, Request $request): RedirectResponse
+    {
+        $step = $request->input('status');
+
+        if ($step === 'in_transit') {
+            $mission->update([
+                'status' => 'in_transit',
+                'in_transit_at' => now(),
+                'status_notes' => 'Armada evakuasi sedang melaju cepat di rute menuju rumah warga.',
+            ]);
+        } elseif ($step === 'completed') {
+            $mission->update([
+                'status' => 'completed',
+                'completed_at' => now(),
+                'status_notes' => 'Seluruh anggota keluarga telah dievakuasi & tiba dengan selamat di Posko Ruang Oksigen.',
+            ]);
+        }
+
+        broadcast(new EvacuationMissionUpdated($mission));
+
+        return back()->with('success', 'Status tahapan evakuasi berhasil diperbarui!');
     }
 
     /**

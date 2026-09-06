@@ -23,7 +23,7 @@ import {
     type ConfidenceLevel,
 } from '@/hooks/useWildfireData';
 import { analyzeUserSafety, type UserLocation } from '@/utils/geoSafety';
-import { showReservationNotificationAlert } from '@/utils/alerts';
+import { showReservationNotificationAlert, AppSwal } from '@/utils/alerts';
 import { AdminTopBar } from '@/pages/Components/DashboardAdmin';
 
 interface PageProps {
@@ -96,6 +96,26 @@ export default function Dashboard() {
                     }
                 },
             );
+
+            // Reverb real-time listener untuk update penjemputan evakuasi
+            const evacChannel = echo.channel(`user-evacuations.${userId}`);
+            evacChannel.listen('.evacuation.updated', (data: { mission: { status: string; safe_zone_name: string } }) => {
+                if (data?.mission) {
+                    const statusText =
+                        data.mission.status === 'waiting_team'
+                            ? 'Tim Penjemputan Darurat Sedang Menuju ke Kediaman Anda!'
+                            : data.mission.status === 'in_transit'
+                                ? 'Tim Telah Tiba di Lokasi & Proses Evakuasi Sedang Berjalan.'
+                                : 'Evakuasi Selesai. Anda & Keluarga Telah Tiba di Posko Ruang Oksigen.';
+
+                    AppSwal.fire({
+                        title: '🚨 Update Tim Evakuasi',
+                        text: `${statusText} (Tujuan: ${data.mission.safe_zone_name})`,
+                        icon: data.mission.status === 'completed' ? 'success' : 'info',
+                        confirmButtonColor: '#1F6F5F',
+                    });
+                }
+            });
         }
 
         const interval = setInterval(() => {
@@ -104,8 +124,9 @@ export default function Dashboard() {
 
         return () => {
             clearInterval(interval);
-            if (channel && echo) {
-                echo.leaveChannel(`user-reservations.${userId}`);
+            if (echo) {
+                if (channel) echo.leaveChannel(`user-reservations.${userId}`);
+                echo.leaveChannel(`user-evacuations.${userId}`);
             }
         };
     }, [auth?.user?.id]);

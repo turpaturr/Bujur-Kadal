@@ -1,5 +1,5 @@
 import type { RegisteredUserLocation } from '@/pages/Components/Dashboard/Maps';
-import { Users, ShieldAlert, HeartPulse } from '@/pages/Components/Dashboard/Icons';
+import { Users, ShieldAlert, HeartPulse, Activity } from '@/pages/Components/Dashboard/Icons';
 
 interface CitizensListViewProps {
     registeredUsers: RegisteredUserLocation[];
@@ -43,12 +43,28 @@ export default function CitizensListView({
                                             <div className="text-xs text-gray-500 mt-1">
                                                 {user.no_kk ? `No. KK: ${user.no_kk}` : `ID: #${user.id}`}
                                             </div>
-                                            {user.is_vulnerable && (
-                                                <span className="inline-flex items-center gap-1 mt-2 rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-bold text-rose-800">
-                                                    <ShieldAlert className="w-3 h-3" />
-                                                    Prioritas Rentan ({user.vulnerable_count} Jiwa)
-                                                </span>
-                                            )}
+                                            <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                                                {user.is_vulnerable && (
+                                                    <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-bold text-rose-800">
+                                                        <ShieldAlert className="w-3 h-3" />
+                                                        Prioritas Rentan ({user.vulnerable_count} Jiwa)
+                                                    </span>
+                                                )}
+                                                {user.evacuation_mission && (
+                                                    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-extrabold border ${
+                                                        user.evacuation_mission.status === 'waiting_team'
+                                                            ? 'bg-amber-50 text-amber-800 border-amber-300 animate-pulse'
+                                                            : user.evacuation_mission.status === 'in_transit'
+                                                                ? 'bg-blue-50 text-blue-800 border-blue-300 animate-pulse'
+                                                                : 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                                                    }`}>
+                                                        <Activity className="w-3 h-3" />
+                                                        {user.evacuation_mission.status === 'waiting_team' && 'Tim Menuju Lokasi'}
+                                                        {user.evacuation_mission.status === 'in_transit' && 'Proses Evakuasi'}
+                                                        {user.evacuation_mission.status === 'completed' && 'Tiba di Posko Oksigen'}
+                                                    </span>
+                                                )}
+                                            </div>
                                         </td>
                                         <td className="px-6 py-4 align-top">
                                             <div className="max-w-[200px] truncate" title={user.home_address ?? 'Alamat belum dilengkapi'}>

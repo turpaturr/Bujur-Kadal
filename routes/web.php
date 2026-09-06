@@ -50,6 +50,15 @@ Route::prefix('admin')->name('admin.')->group(function () {
                 Route::post('/approve', 'approveReservation')->name('approve');
                 Route::post('/reject', 'rejectReservation')->name('reject');
             });
+
+        // Manajemen Evakuasi Darurat
+        Route::prefix('evacuations')
+            ->name('evacuations.')
+            ->controller(DashboardAdminController::class)
+            ->group(function () {
+                Route::post('/', 'storeEvacuation')->name('store');
+                Route::post('/{mission}/progress', 'progressEvacuation')->name('progress');
+            });
     });
 });
 

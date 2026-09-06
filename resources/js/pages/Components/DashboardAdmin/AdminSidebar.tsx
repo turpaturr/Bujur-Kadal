@@ -5,10 +5,11 @@ import {
     List, 
     Building, 
     LogOut, 
-    X 
+    X,
+    Activity
 } from '@/pages/Components/Dashboard/Icons';
 
-export type AdminMenuType = 'maps' | 'reservations' | 'citizens' | 'facilities';
+export type AdminMenuType = 'maps' | 'reservations' | 'citizens' | 'facilities' | 'evacuations';
 
 interface AdminSidebarProps {
     activeMenu: AdminMenuType;
@@ -16,6 +17,8 @@ interface AdminSidebarProps {
     isMobileOpen: boolean;
     onCloseMobile: () => void;
     pendingReservationsCount?: number;
+    evacuationCount?: number;
+    unreadEvacuationCount?: number;
 }
 
 export default function AdminSidebar({
@@ -24,11 +27,13 @@ export default function AdminSidebar({
     isMobileOpen,
     onCloseMobile,
     pendingReservationsCount = 0,
+    evacuationCount = 0,
+    unreadEvacuationCount = 0,
 }: AdminSidebarProps) {
     const navItems: Array<{
         id: AdminMenuType;
         label: string;
-        icon: typeof MapPin | typeof Mailbox;
+        icon: any;
         badge?: number;
     }> = [
         { id: 'maps', label: 'Monitoring Spasial', icon: MapPin },
@@ -41,6 +46,17 @@ export default function AdminSidebar({
         { id: 'citizens', label: 'Daftar Warga & Keluarga', icon: List },
         { id: 'facilities', label: 'Manajemen Faskes', icon: Building },
     ];
+
+    // Menu Monitoring Evakuasi muncul otomatis hanya bila ada misi evakuasi aktif
+    // Angka notif (badge) akan hilang setelah menu dibuka setidaknya sekali
+    if (Boolean(evacuationCount && evacuationCount > 0)) {
+        navItems.splice(2, 0, {
+            id: 'evacuations',
+            label: 'Monitoring Evakuasi',
+            icon: Activity,
+            badge: unreadEvacuationCount && unreadEvacuationCount > 0 ? unreadEvacuationCount : undefined,
+        });
+    }
 
     const baseClasses = "fixed inset-y-0 left-0 z-50 w-64 transform bg-white border-r border-[#EEEEEE] transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0";
     const mobileClasses = isMobileOpen ? "translate-x-0" : "-translate-x-full";
@@ -94,7 +110,11 @@ export default function AdminSidebar({
                                         </div>
                                         {hasBadge && (
                                             <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                                                isActive ? 'bg-white text-[#1F6F5F]' : 'bg-amber-500 text-white animate-pulse'
+                                                isActive 
+                                                    ? 'bg-white text-[#1F6F5F]' 
+                                                    : item.id === 'evacuations'
+                                                        ? 'bg-rose-600 text-white animate-pulse'
+                                                        : 'bg-amber-500 text-white animate-pulse'
                                             }`}>
                                                 {item.badge}
                                             </span>

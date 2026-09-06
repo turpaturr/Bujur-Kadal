@@ -132,6 +132,21 @@ export function buildRegisteredUserPopupHtml(household: RegisteredUserLocation):
         </span>
         `;
 
+    const evacuationBadge = household.evacuation_mission
+        ? `
+        <div style="margin-top: 6px; padding: 4px 8px; border-radius: 6px; background: #FFF1F2; border: 1px solid #FECDD3; display: flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 800; color: #9F1239;">
+            <span style="width: 7px; height: 7px; border-radius: 50%; background: #E11D48; display: inline-block;"></span>
+            <span>STATUS: ${
+                household.evacuation_mission.status === 'waiting_team'
+                    ? 'TIM MENUJU LOKASI'
+                    : household.evacuation_mission.status === 'in_transit'
+                        ? 'PROSES EVAKUASI'
+                        : 'TIBA DI POSKO OKSIGEN'
+            }</span>
+        </div>
+        `
+        : '';
+
     const membersListHtml =
         household.members && household.members.length > 0
             ? `
@@ -210,6 +225,8 @@ export function buildRegisteredUserPopupHtml(household: RegisteredUserLocation):
                     <span>Total: <strong style="color: #0F172A;">${household.total_members} Jiwa</strong></span>
                 </div>
             </div>
+
+            ${evacuationBadge}
 
             <!-- Alamat & Koordinat -->
             <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 6px 9px; margin-bottom: 6px; font-size: 10.5px;">
