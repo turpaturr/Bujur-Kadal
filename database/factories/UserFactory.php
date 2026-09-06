@@ -27,12 +27,12 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'family_id' => null,
+            'family_id' => Family::factory(),
             'nik' => fake()->unique()->numerify('################'), // 16 digit NIK
             'name' => fake()->name(),
             'whatsapp_number' => fake()->numerify('628##########'),
             'pin' => static::$pin ??= Hash::make('123456'),
-            'role' => fake()->randomElement(UserRole::cases()),
+            'role' => fake()->randomElement([UserRole::KepalaKeluarga, UserRole::Anggota, UserRole::Pendatang]),
             'home_address' => fake()->address(),
             'home_latitude' => fake()->latitude(-4.5, 4.5), // Borneo latitude range approx
             'home_longitude' => fake()->longitude(108.5, 119.0), // Borneo longitude range approx
@@ -57,6 +57,22 @@ class UserFactory extends Factory
     {
         return $this->state(fn () => [
             'role' => UserRole::KepalaKeluarga,
+        ]);
+    }
+
+    /**
+     * Indicate that the user is an Administrator.
+     */
+    public function admin(): static
+    {
+        return $this->state(fn () => [
+            'family_id' => null,
+            'nik' => null,
+            'whatsapp_number' => null,
+            'pin' => null,
+            'email' => fake()->unique()->safeEmail(),
+            'password' => Hash::make('password'),
+            'role' => UserRole::Admin,
         ]);
     }
 }

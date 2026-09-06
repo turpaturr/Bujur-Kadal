@@ -29,6 +29,7 @@ class HealthProfile extends Model
     protected $fillable = [
         'user_id',
         'is_vulnerable',
+        'vulnerability_category',
         'comorbidity_notes',
     ];
 

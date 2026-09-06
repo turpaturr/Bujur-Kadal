@@ -2,14 +2,12 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import React, { useState } from 'react';
 import Step1Kependudukan from './Step1Kependudukan';
 import Step2Lokasi from './Step2Lokasi';
-import Step3RoleKesehatan from './Step3RoleKesehatan';
 import Step4Kredensial from './Step4Kredensial';
 
 const STEPS = [
-    { number: 1, title: 'Kependudukan', short: 'Data NIK & KK' },
-    { number: 2, title: 'Lokasi Rumah', short: 'Alamat & Peta' },
-    { number: 3, title: 'Status Kesehatan', short: 'Kerentanan ISPA' },
-    { number: 4, title: 'Kredensial', short: 'WhatsApp & PIN' },
+    { number: 1, title: 'Kependudukan', short: 'KK & NIK Kepala Keluarga' },
+    { number: 2, title: 'Lokasi Rumah', short: 'Alamat & Peta Spasial' },
+    { number: 3, title: 'PIN Keluarga', short: 'WhatsApp & PIN 6-Digit' },
 ];
 
 export default function RegisterIndex() {
@@ -19,12 +17,12 @@ export default function RegisterIndex() {
         no_kk: '',
         nik: '',
         name: '',
+        birth_date: '',
+        gender: 'laki-laki',
+        occupation: '',
         home_address: '',
         home_latitude: '',
         home_longitude: '',
-        role: 'kepala_keluarga',
-        is_vulnerable: false,
-        comorbidity_notes: '',
         whatsapp_number: '',
         pin: '',
     });
@@ -36,25 +34,20 @@ export default function RegisterIndex() {
                 return false;
             }
             if (!data.nik || data.nik.length !== 16) {
-                setError('nik', 'NIK harus 16 digit angka.');
+                setError('nik', 'NIK Kepala Keluarga harus 16 digit angka.');
                 return false;
             }
             if (!data.name || data.name.trim() === '') {
-                setError('name', 'Nama lengkap wajib diisi.');
+                setError('name', 'Nama lengkap Kepala Keluarga wajib diisi.');
                 return false;
             }
         } else if (currentStep === 2) {
             if (!data.home_address || data.home_address.trim() === '') {
-                setError('home_address', 'Alamat rumah wajib diisi atau dicari lewat MapTiler.');
+                setError('home_address', 'Alamat rumah wajib diisi atau dicari lewat peta.');
                 return false;
             }
             if (!data.home_latitude || !data.home_longitude) {
                 setError('home_latitude', 'Titik koordinat harus ditentukan untuk aktivasi Fire Tracker.');
-                return false;
-            }
-        } else if (currentStep === 3) {
-            if (!data.role) {
-                setError('role', 'Peran dalam keluarga wajib dipilih.');
                 return false;
             }
         }
@@ -79,16 +72,23 @@ export default function RegisterIndex() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        clearErrors();
+        if (!data.whatsapp_number || data.whatsapp_number.length < 8) {
+            setError('whatsapp_number', 'Nomor WhatsApp darurat keluarga wajib diisi.');
+            return;
+        }
+        if (!data.pin || data.pin.length !== 6) {
+            setError('pin', 'PIN 6-digit keluarga harus terdiri dari tepat 6 angka.');
+            return;
+        }
         post('/register', {
             onError: (err) => {
                 if (err.no_kk || err.nik || err.name) {
                     setCurrentStep(1);
                 } else if (err.home_address || err.home_latitude || err.home_longitude) {
                     setCurrentStep(2);
-                } else if (err.role || err.is_vulnerable || err.comorbidity_notes) {
-                    setCurrentStep(3);
                 } else if (err.whatsapp_number || err.pin) {
-                    setCurrentStep(4);
+                    setCurrentStep(3);
                 }
             },
         });
@@ -107,7 +107,7 @@ export default function RegisterIndex() {
 
                 {/* Main Split Card Container */}
                 <div className="relative z-10 w-full max-w-5xl bg-white rounded-[32px] shadow-[0_20px_50px_rgba(31,111,95,0.12)] overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[620px] border border-surface">
-                    
+
                     {/* LEFT PANEL: Gradient Banner (Primary -> Primary Dark) */}
                     <div className="lg:col-span-5 bg-gradient-to-br from-primary via-primary-dark to-[#175246] text-white p-8 sm:p-10 flex flex-col justify-between relative overflow-hidden">
                         {/* Decorative subtle patterns */}
@@ -133,7 +133,7 @@ export default function RegisterIndex() {
                                 Welcome Back!
                             </h2>
                             <p className="text-surface text-xs sm:text-sm leading-relaxed max-w-xs mx-auto mb-8 font-normal font-sans">
-                                Sudah terdaftar dalam sistem evakuasi BorneoCare? Masuk langsung menggunakan NIK dan PIN 6-digit Anda.
+                                Sudah terdaftar dalam sistem BorneoCare? Masuk langsung menggunakan NIK dan PIN Keluarga Anda.
                             </p>
                             <Link
                                 href="/login"
@@ -167,10 +167,10 @@ export default function RegisterIndex() {
                             {/* Heading */}
                             <div className="text-center mb-6">
                                 <h1 className="font-display text-2xl sm:text-3xl font-bold text-primary-dark tracking-tight">
-                                    Create Account
+                                    Daftar Akun Keluarga
                                 </h1>
                                 <p className="mt-1 text-xs text-neutral-500 font-sans">
-                                    Sistem Proteksi Warga & Jalur Evakuasi ISPA Karhutla
+                                    Khusus Kepala Keluarga & Integrasi Titik Evakuasi Spasial
                                 </p>
 
                                 {/* Stepper Dots */}
@@ -215,14 +215,6 @@ export default function RegisterIndex() {
                                     )}
 
                                     {currentStep === 3 && (
-                                        <Step3RoleKesehatan
-                                            data={data}
-                                            setData={setData}
-                                            errors={errors}
-                                        />
-                                    )}
-
-                                    {currentStep === 4 && (
                                         <Step4Kredensial
                                             data={data}
                                             setData={setData}

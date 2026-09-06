@@ -1,0 +1,150 @@
+import React from 'react';
+import { Maps } from '@/pages/Components/Dashboard';
+import type { RegisteredUserLocation } from '@/pages/Components/Dashboard/Maps';
+import type { HotspotCategory, WildfireHotspot, ConfidenceLevel } from '@/hooks/useWildfireData';
+import { Users, ShieldAlert } from '@/pages/Components/Dashboard/Icons';
+
+interface AdminMapSectionProps {
+    center: [number, number];
+    zoom: number;
+    selectedProvince: string | null;
+    selectedHotspot: WildfireHotspot | null;
+    onClearSelectedHotspot: () => void;
+    visibleHotspots: WildfireHotspot[];
+    registeredUsers?: RegisteredUserLocation[];
+    selectedUserLocation?: RegisteredUserLocation | null;
+    onSelectUserLocation?: (user: RegisteredUserLocation | null) => void;
+    selectedProvinces?: string[];
+    onToggleProvince?: (province: string) => void;
+    selectedConfidenceLevels?: ConfidenceLevel[];
+    onToggleConfidenceLevel?: (level: ConfidenceLevel) => void;
+    onResetFilters?: () => void;
+}
+
+export default function AdminMapSection({
+    center,
+    zoom,
+    selectedProvince,
+    selectedHotspot,
+    onClearSelectedHotspot,
+    visibleHotspots,
+    registeredUsers = [],
+    selectedUserLocation = null,
+    onSelectUserLocation,
+    selectedProvinces = [],
+    onToggleProvince,
+    selectedConfidenceLevels = ['high', 'nominal', 'low'],
+    onToggleConfidenceLevel,
+    onResetFilters,
+}: AdminMapSectionProps) {
+    const vulnerableCount = registeredUsers.filter((u) => u.is_vulnerable).length;
+
+    return (
+        <section className="overflow-hidden rounded-2xl border border-[#EEEEEE] bg-white p-3 shadow-xs sm:p-4">
+            <div className="mb-3 flex flex-col justify-between gap-3 px-1 lg:flex-row lg:items-center">
+                <div>
+                    <div className="flex items-center gap-2">
+                        <h2 className="font-display text-base font-bold text-[#1F6F5F] sm:text-lg">
+                            Peta Sebaran Titik Spasial &amp; Tempat Tinggal Warga
+                        </h2>
+                        {registeredUsers.length > 0 && (
+                            <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-[#1F6F5F]/10 px-2 py-0.5 text-[10px] font-bold text-[#1F6F5F]">
+                                <Users className="h-3 w-3" />
+                                {registeredUsers.length} KK Terdata
+                            </span>
+                        )}
+                    </div>
+                    <p className="text-[11px] text-[#262626]/60">
+                        {selectedProvince
+                            ? `Fokus: ${selectedProvince}`
+                            : 'Cakupan: Seluruh Pulau Kalimantan'}{' '}
+                        · Klik tanda titik api atau pin warga untuk melihat detail kerentanan dan mitigasi asap.
+                    </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                    {/* Titik Terpilih */}
+                    {selectedHotspot && (
+                        <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-1 text-xs text-amber-800">
+                            <span>
+                                Titik Api Terpilih:{' '}
+                                <strong>
+                                    {selectedHotspot.frp.toFixed(1)} MW
+                                </strong>
+                            </span>
+                            <button
+                                type="button"
+                                onClick={onClearSelectedHotspot}
+                                className="font-bold text-amber-900 hover:underline cursor-pointer"
+                            >
+                                Batal
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Rumah Warga Terpilih */}
+                    {selectedUserLocation && (
+                        <div className="flex items-center gap-2 rounded-lg border border-purple-200 bg-purple-50 px-3 py-1 text-xs text-purple-900">
+                            <span>
+                                🏠 <strong>{selectedUserLocation.name}</strong> ({selectedUserLocation.total_members} Jiwa)
+                            </span>
+                            <button
+                                type="button"
+                                onClick={() => onSelectUserLocation?.(selectedUserLocation)}
+                                className="font-bold text-purple-700 hover:underline cursor-pointer"
+                            >
+                                Buka Pop-up Detail
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => onSelectUserLocation?.(null)}
+                                className="text-gray-400 hover:text-gray-700 ml-1 cursor-pointer font-bold"
+                                title="Batal Pilih"
+                            >
+                                ✕
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Quick Status Sub-Bar Kerentanan Warga */}
+            {registeredUsers.length > 0 && (
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-[#FAFAFA] border border-[#EEEEEE] px-3 py-2 text-xs">
+                    <div className="flex items-center gap-3">
+                        <span className="flex items-center gap-1.5 text-[#1F6F5F] font-bold">
+                            <Users className="h-3.5 w-3.5" />
+                            <span>Total Warga Terdata: {registeredUsers.length} Tempat Tinggal</span>
+                        </span>
+                        <span className="text-neutral-300">|</span>
+                        <span className="flex items-center gap-1.5 text-purple-800 font-bold">
+                            <ShieldAlert className="h-3.5 w-3.5 text-purple-600" />
+                            <span>{vulnerableCount} Keluarga Prioritas Rentan (Balita / Lansia / Komorbid)</span>
+                        </span>
+                    </div>
+
+                    <div className="text-[11px] text-[#262626]/60">
+                        *Klik marker ungu di peta untuk nomor darurat WhatsApp &amp; profil kerentanan
+                    </div>
+                </div>
+            )}
+
+            <Maps
+                center={center}
+                zoom={zoom}
+                className="h-[500px] w-full sm:h-[560px]"
+                wildfireHotspots={visibleHotspots}
+                selectedHotspot={selectedHotspot}
+                registeredUsers={registeredUsers}
+                selectedUserLocation={selectedUserLocation}
+                onSelectUserLocation={onSelectUserLocation}
+                selectedProvinces={selectedProvinces}
+                onToggleProvince={onToggleProvince}
+                selectedConfidenceLevels={selectedConfidenceLevels}
+                onToggleConfidenceLevel={onToggleConfidenceLevel}
+                onResetFilters={onResetFilters}
+            />
+        </section>
+    );
+}
+

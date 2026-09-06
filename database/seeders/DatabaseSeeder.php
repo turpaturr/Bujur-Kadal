@@ -15,8 +15,9 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            SafeZoneSeeder::class,
             UserSeeder::class,
+            AdminSeeder::class,
+            DangerZoneFamilySeeder::class,
         ]);
     }
 }

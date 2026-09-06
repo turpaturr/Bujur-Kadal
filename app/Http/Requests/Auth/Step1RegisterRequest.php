@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\User;
 use App\Services\DukcapilService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
@@ -25,7 +26,17 @@ class Step1RegisterRequest extends FormRequest
     {
         return [
             'no_kk' => ['required', 'string', 'size:16', 'regex:/^[0-9]{16}$/'],
-            'nik' => ['required', 'string', 'size:16', 'regex:/^[0-9]{16}$/', 'unique:users,nik'],
+            'nik' => [
+                'required',
+                'string',
+                'size:16',
+                'regex:/^[0-9]{16}$/',
+                function (string $attribute, mixed $value, \Closure $fail) {
+                    if (User::where('nik', $value)->exists()) {
+                        $fail('NIK ini sudah terdaftar di sistem BorneoCare.');
+                    }
+                },
+            ],
         ];
     }
 

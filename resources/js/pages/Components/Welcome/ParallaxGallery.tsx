@@ -26,7 +26,7 @@ export const BORNEO_STATIONS: StationTripItem[] = [
         tag: 'Kalimantan Barat',
         aqi: 185,
         // Gambar autentik Sungai Kapuas & rimba basah Kalbar
-        image: 'https://images.unsplash.com/photo-1596401057633-54a8fe8ef647?auto=format&fit=crop&w=800&q=80',
+        image: 'https://upload.wikimedia.org/wikipedia/commons/1/1f/Equator_Pontianak_Monument.jpg?utm_source=id.wikipedia.org&utm_campaign=index&utm_content=original',
         heightClass: 'h-[360px] sm:h-[400px] md:h-[440px]',
     },
     {
@@ -38,7 +38,7 @@ export const BORNEO_STATIONS: StationTripItem[] = [
         tag: 'Kalimantan Tengah',
         aqi: 240,
         // Gambar autentik Hutan Rawa Gambut Sebangau Kalteng
-        image: 'https://images.unsplash.com/photo-1518457607834-6e8d80c183c5?auto=format&fit=crop&w=800&q=80',
+        image: 'https://upload.wikimedia.org/wikipedia/commons/7/7b/Tugu_Batang_Garing.JPG?utm_source=id.wikipedia.org&utm_campaign=index&utm_content=original',
         heightClass: 'h-[390px] sm:h-[430px] md:h-[470px]',
     },
     {
@@ -50,7 +50,7 @@ export const BORNEO_STATIONS: StationTripItem[] = [
         tag: 'Kalimantan Selatan',
         aqi: 162,
         // Gambar autentik Lanskap Sungai & Rimba Meratus Kalsel
-        image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=85',
+        image: 'https://upload.wikimedia.org/wikipedia/commons/a/a0/Tugu_Selamat_Datang_di_Kota_Banjarbaru.jpg?utm_source=id.wikipedia.org&utm_campaign=index&utm_content=original',
         heightClass: 'h-[410px] sm:h-[450px] md:h-[490px]',
         accent: true,
     },
@@ -63,7 +63,7 @@ export const BORNEO_STATIONS: StationTripItem[] = [
         tag: 'Kalimantan Timur',
         aqi: 88,
         // Gambar autentik Pesona Bahari Derawan & Hutan Lindung Kaltim
-        image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=80',
+        image: 'https://upload.wikimedia.org/wikipedia/commons/e/e3/Tugu_Khatulistiwa_Pontianak_2024_01.jpg?utm_source=min.wikipedia.org&utm_campaign=index&utm_content=original',
         heightClass: 'h-[390px] sm:h-[430px] md:h-[470px]',
     },
     {
@@ -75,7 +75,7 @@ export const BORNEO_STATIONS: StationTripItem[] = [
         tag: 'Kalimantan Utara',
         aqi: 42,
         // Gambar autentik Rimba Perawan & Air Terjun Kayan Mentarang Kaltara
-        image: 'https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?auto=format&fit=crop&w=800&q=80',
+        image: 'https://upload.wikimedia.org/wikipedia/commons/1/18/Tugu_Cinta_Damai.JPG?utm_source=id.wikipedia.org&utm_campaign=index&utm_content=original',
         heightClass: 'h-[360px] sm:h-[400px] md:h-[440px]',
     },
 ];
@@ -98,17 +98,17 @@ export default function ParallaxGallery({ onSelectStation }: ParallaxGalleryProp
             {/* Header Section in Fraunces font */}
             <div className="max-w-4xl mx-auto text-center mb-12 sm:mb-16">
                 <span className="text-xs uppercase tracking-[0.28em] font-semibold text-[#2FA084] block">
-                    PANTAUAN 5 PROVINSI PULAU BORNEO
+                    PROFIL 5 PROVINSI PULAU BORNEO
                 </span>
                 <h2 className="mt-3 font-heading font-serif text-3xl sm:text-5xl md:text-6xl text-[#1F6F5F] tracking-tight font-normal">
                     LIMA PROVINSI KALIMANTAN
                 </h2>
                 <p className="mt-4 text-sm sm:text-base text-[#1F6F5F]/80 max-w-xl mx-auto font-light leading-relaxed">
-                    Pantau kondisi kualitas udara (ISPU) dan indeks titik panas secara real-time di seluruh provinsi Pulau Kalimantan.
+                    Jelajahi profil dan kondisi wilayah di seluruh provinsi Pulau Kalimantan.
                 </p>
             </div>
 
-            {/* 5 Vertical Staggered Parallax Photo Cards with Proper Padding and Sizing */}
+            {/* 5 Vertical Staggered Parallax Photo Cards */}
             <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-center gap-4 lg:gap-5 overflow-x-auto pt-8 pb-10 no-scrollbar">
                 {BORNEO_STATIONS.map((station, index) => {
                     // Parallax velocity yang proporsional dan tidak menyebabkan elemen terpotong
@@ -117,7 +117,6 @@ export default function ParallaxGallery({ onSelectStation }: ParallaxGalleryProp
 
                     const isHovered = hoveredId === station.id;
                     const isCenter = station.accent;
-                    const cat = getCategory(station.aqi);
 
                     return (
                         <div
@@ -134,7 +133,7 @@ export default function ParallaxGallery({ onSelectStation }: ParallaxGalleryProp
                                 transform: `translate3d(0, ${translateY}px, 0) scale(${isHovered ? 1.025 : 1})`,
                             }}
                         >
-                            {/* Photographic Image with Contrast & Saturation Shift */}
+                            {/* Photographic Image */}
                             <img
                                 src={station.image}
                                 alt={station.title}
@@ -145,7 +144,7 @@ export default function ParallaxGallery({ onSelectStation }: ParallaxGalleryProp
                                 }`}
                             />
 
-                            {/* Gradient Overlay for Legibility */}
+                            {/* Gradient Overlay */}
                             <div
                                 className={`absolute inset-0 transition-opacity duration-500 ${
                                     isCenter
@@ -154,7 +153,7 @@ export default function ParallaxGallery({ onSelectStation }: ParallaxGalleryProp
                                 }`}
                             />
 
-                            {/* Top Badge: Tag & Number - Diberi padding aman agar tidak terpotong */}
+                            {/* Top Badge: Nama Provinsi & Nomor */}
                             <div className="absolute top-3.5 left-3.5 right-3.5 flex justify-between items-center z-10">
                                 <span
                                     className={`text-[10px] font-semibold tracking-wider uppercase px-3 py-1 rounded-full backdrop-blur-md shadow-xs ${
@@ -170,35 +169,14 @@ export default function ParallaxGallery({ onSelectStation }: ParallaxGalleryProp
                                 </span>
                             </div>
 
-                            {/* Floating ISPU Live Badge on Card */}
-                            <div className="absolute top-13 right-3.5 z-10">
-                                <div className="rounded-xl border border-white/30 bg-black/50 backdrop-blur-md px-2.5 py-1 text-right text-white shadow-md">
-                                    <div className="font-heading font-serif text-lg font-bold tabular-nums leading-none">
-                                        {station.aqi}
-                                    </div>
-                                    <div className={`text-[9px] font-semibold uppercase tracking-wider ${cat.text}`}>
-                                        {cat.label}
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Bottom Card Content */}
-                            <div className="absolute bottom-0 left-0 right-0 p-5 z-10 text-white transform transition-transform duration-500">
-                                <span className="text-[11px] text-[#6FCF97] font-medium tracking-wide flex items-center gap-1 uppercase">
-                                    <MapPinned className="h-3 w-3" />
-                                    {station.location}
-                                </span>
-                                <h3 className="font-heading font-serif text-xl sm:text-2xl font-bold leading-tight mt-1 text-white group-hover:text-[#6FCF97] transition-colors">
+                            {/* Bottom Card Content: Nama Provinsi & Kota */}
+                            <div className="absolute bottom-0 left-0 right-0 p-5 z-10 text-white">
+                                <h3 className="font-heading font-serif text-xl sm:text-2xl font-bold leading-tight text-white group-hover:text-[#6FCF97] transition-colors">
                                     {station.title}
                                 </h3>
-                                <p className="text-[11px] text-white/80 mt-0.5 font-light">
-                                    {station.station}
+                                <p className="text-[12px] text-white/80 mt-1 font-light">
+                                    {station.location}
                                 </p>
-
-                                <div className="mt-3 pt-3 border-t border-white/20 flex items-center justify-between text-xs text-white/85 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                    <span className="font-medium">Lihat Telemetri</span>
-                                    <ArrowRight className="h-4 w-4 transform group-hover:translate-x-1 transition-transform text-[#6FCF97]" />
-                                </div>
                             </div>
                         </div>
                     );

@@ -5,9 +5,9 @@ export type IconProps = React.SVGProps<SVGSVGElement>;
 export function Wind(props: IconProps) {
     return (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-            <path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2" />
-            <path d="M9.6 4.6A2 2 0 1 1 11 8H2" />
-            <path d="M12.6 19.4A2 2 0 1 0 14 16H2" />
+            <path d="M12.8 19.6A2 2 0 1 0 14 16H2" />
+            <path d="M17.5 8a2.5 2.5 0 1 1 2 4H2" />
+            <path d="M9.8 4.4A2 2 0 1 1 11 8H2" />
         </svg>
     );
 }
@@ -61,7 +61,7 @@ export function ShieldCheck(props: IconProps) {
 export function MapPinned(props: IconProps) {
     return (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-            <path d="M18 8c0 3.613-3.869 7.429-5.393 8.795a1 1 0 0 1-1.214 0C9.87 15.429 6 11.613 6 8a6 6 0 0 1 12 0" />
+            <path d="M18 8c0 3.613-3.869 7.429-5.393 8.795a1 1 0 0 1-1.214 0C9.87 15.429 6 11.613 6 8a6 6 0 0 1 12 0Z" />
             <circle cx="12" cy="8" r="2" />
             <path d="M8.714 14h-3.71a1 1 0 0 0-.948.683l-1.9 5.7A1 1 0 0 0 3.1 21.8l17.8-5.933a1 1 0 0 0 .5-1.428l-1.2-2.4a1 1 0 0 0-.9-.539h-4.014" />
         </svg>
@@ -150,13 +150,10 @@ export function Home(props: IconProps) {
 export function Radiation(props: IconProps) {
     return (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-            <circle cx="12" cy="12" r="2" />
-            <path d="M4.93 4.93A10 10 0 0 1 12 2v4a6 6 0 0 0-4.24 1.76z" />
-            <path d="M19.07 4.93A10 10 0 0 0 12 2v4a6 6 0 0 1 4.24 1.76z" />
-            <path d="M22 12a10 10 0 0 1-5 8.66l-2-3.46A6 6 0 0 0 18 12z" />
-            <path d="M12 22a10 10 0 0 1-8.66-5l3.46-2A6 6 0 0 0 12 18z" />
-            <path d="M2 12a10 10 0 0 1 5-8.66l2 3.46A6 6 0 0 0 6 12z" />
-            <path d="M12 22a10 10 0 0 0 8.66-5l-3.46-2A6 6 0 0 1 12 18z" />
+            <path d="M12 12m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+            <path d="M12 10V2a10 10 0 0 1 8.66 5l-6.93 4" />
+            <path d="M13.73 13 20.66 17a10 10 0 0 1 -8.66 5v-8" />
+            <path d="M10.27 13 3.34 17a10 10 0 0 1 0 -10l6.93 4" />
         </svg>
     );
 }
@@ -167,6 +164,16 @@ export function Info(props: IconProps) {
             <circle cx="12" cy="12" r="10" />
             <path d="M12 16v-4" />
             <path d="M12 8h.01" />
+        </svg>
+    );
+}
+
+export function Instagram(props: IconProps) {
+    return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+            <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+            <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
         </svg>
     );
 }

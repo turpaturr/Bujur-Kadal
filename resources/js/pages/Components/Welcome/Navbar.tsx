@@ -1,30 +1,52 @@
-import { useState } from "react";
+import { useState, type MouseEvent } from "react";
 import { Link, usePage } from "@inertiajs/react";
-import { Wind, Menu, X, ArrowRight } from "@/pages/Components/Welcome/Icons";
+import { Menu, X, ArrowRight } from "@/pages/Components/Welcome/Icons";
 
 export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { auth } = usePage<{ auth?: { user?: { name?: string } } }>().props;
 
+  const handleAnchorClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    const href = event.currentTarget.getAttribute('href');
+    if (!href?.startsWith('#')) return;
+
+    const target = document.querySelector<HTMLElement>(href);
+    if (!target) return;
+
+    event.preventDefault();
+    const headerOffset = 76;
+    const targetTop = target.getBoundingClientRect().top + window.scrollY - headerOffset;
+    const direction = targetTop >= window.scrollY ? 'down' : 'up';
+
+    target.classList.remove('nav-section-enter-down', 'nav-section-enter-up');
+    void target.offsetWidth;
+    target.classList.add(`nav-section-enter-${direction}`);
+
+    window.history.replaceState(null, '', href);
+    window.scrollTo({ top: Math.max(0, targetTop), behavior: 'smooth' });
+    setMenuOpen(false);
+
+    window.setTimeout(() => {
+      target.classList.remove(`nav-section-enter-${direction}`);
+    }, 700);
+  };
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-[#EEEEEE] bg-white/90 backdrop-blur-md transition-all duration-300">
       <div className="container mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-        <a href="#beranda" className="flex items-center gap-2.5 group">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#2FA084] shadow-xs text-white group-hover:bg-[#1F6F5F] transition-colors">
-            <Wind className="h-5 w-5" strokeWidth={2.2} />
-          </div>
+        <a href="#beranda" onClick={handleAnchorClick} className="flex items-center gap-2.5 group">
           <span className="font-heading font-serif text-xl font-bold tracking-tight text-[#1F6F5F]">
             Borneo<span className="text-[#2FA084]">Care</span>
           </span>
         </a>
 
         <nav className="hidden items-center gap-7 text-xs font-semibold uppercase tracking-wider md:flex">
-          <a href="#beranda" className="text-[#1F6F5F]/80 transition hover:text-[#2FA084]">Beranda</a>
-          <a href="#quote-section" className="text-[#1F6F5F]/80 transition hover:text-[#2FA084]">Esensi</a>
-          <a href="#gallery-section" className="text-[#1F6F5F]/80 transition hover:text-[#2FA084]">Stasiun Rimba</a>
-          <a href="#analisis" className="text-[#1F6F5F]/80 transition hover:text-[#2FA084]">Analisis</a>
-          <a href="#edukasi" className="text-[#1F6F5F]/80 transition hover:text-[#2FA084]">Edukasi</a>
-          <a href="#solusi" className="text-[#1F6F5F]/80 transition hover:text-[#2FA084]">Solusi</a>
+          <a href="#beranda" onClick={handleAnchorClick} className="text-[#1F6F5F]/80 transition hover:text-[#2FA084]">Beranda</a>
+          <a href="#quote-section" onClick={handleAnchorClick} className="text-[#1F6F5F]/80 transition hover:text-[#2FA084]">Esensi</a>
+          <a href="#gallery-section" onClick={handleAnchorClick} className="text-[#1F6F5F]/80 transition hover:text-[#2FA084]">Provinsi</a>
+          <a href="#analisis" onClick={handleAnchorClick} className="text-[#1F6F5F]/80 transition hover:text-[#2FA084]">Analisis</a>
+          <a href="#edukasi" onClick={handleAnchorClick} className="text-[#1F6F5F]/80 transition hover:text-[#2FA084]">Edukasi</a>
+          <a href="#solusi" onClick={handleAnchorClick} className="text-[#1F6F5F]/80 transition hover:text-[#2FA084]">Solusi</a>
         </nav>
 
         <div className="flex items-center gap-3">
@@ -33,7 +55,7 @@ export function Navbar() {
               href="/dashboard"
               className="hidden md:inline-flex items-center gap-1.5 rounded-full px-5 py-2 text-xs font-semibold bg-[#2FA084] hover:bg-[#1F6F5F] text-white shadow-xs transition-colors"
             >
-              Dashboard ({auth.user.name})
+              Masuk Dashboard
               <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           ) : (
@@ -67,12 +89,12 @@ export function Navbar() {
 
       {menuOpen && (
         <div className="md:hidden border-t border-[#EEEEEE] bg-white px-6 py-4 space-y-3 text-sm">
-          <a href="#beranda" onClick={() => setMenuOpen(false)} className="block py-1 text-[#1F6F5F]/80 hover:text-[#2FA084]">Beranda</a>
-          <a href="#quote-section" onClick={() => setMenuOpen(false)} className="block py-1 text-[#1F6F5F]/80 hover:text-[#2FA084]">Esensi Rimba</a>
-          <a href="#gallery-section" onClick={() => setMenuOpen(false)} className="block py-1 text-[#1F6F5F]/80 hover:text-[#2FA084]">Stasiun Rimba</a>
-          <a href="#analisis" onClick={() => setMenuOpen(false)} className="block py-1 text-[#1F6F5F]/80 hover:text-[#2FA084]">Analisis</a>
-          <a href="#edukasi" onClick={() => setMenuOpen(false)} className="block py-1 text-[#1F6F5F]/80 hover:text-[#2FA084]">Edukasi</a>
-          <a href="#solusi" onClick={() => setMenuOpen(false)} className="block py-1 text-[#1F6F5F]/80 hover:text-[#2FA084]">Solusi</a>
+          <a href="#beranda" onClick={handleAnchorClick} className="block py-1 text-[#1F6F5F]/80 hover:text-[#2FA084]">Beranda</a>
+          <a href="#quote-section" onClick={handleAnchorClick} className="block py-1 text-[#1F6F5F]/80 hover:text-[#2FA084]">Esensi Rimba</a>
+          <a href="#gallery-section" onClick={handleAnchorClick} className="block py-1 text-[#1F6F5F]/80 hover:text-[#2FA084]">Provinsi</a>
+          <a href="#analisis" onClick={handleAnchorClick} className="block py-1 text-[#1F6F5F]/80 hover:text-[#2FA084]">Analisis</a>
+          <a href="#edukasi" onClick={handleAnchorClick} className="block py-1 text-[#1F6F5F]/80 hover:text-[#2FA084]">Edukasi</a>
+          <a href="#solusi" onClick={handleAnchorClick} className="block py-1 text-[#1F6F5F]/80 hover:text-[#2FA084]">Solusi</a>
           <div className="pt-2 border-t border-[#EEEEEE] space-y-2">
             {auth?.user ? (
               <Link
