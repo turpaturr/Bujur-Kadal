@@ -603,7 +603,7 @@ export interface UseWildfireDataOptions {
 
 export function useWildfireData({
     enabledSensors = ['VIIRS_SNPP', 'VIIRS_NOAA20'],
-    dayRange = 1,
+    dayRange = 2,
 }: UseWildfireDataOptions = {}): WildfireData {
     const [hotspots, setHotspots] = useState<WildfireHotspot[]>([]);
     const [isLoading, setIsLoading] = useState(true);

@@ -115,8 +115,8 @@ export default function HouseholdDetailModal({
                                     }`}
                                 >
                                     {isVulnerable
-                                        ? `⚠️ Prioritas Rentan (${household.vulnerable_count} Jiwa)`
-                                        : '🟢 Non-Rentan'}
+                                        ? `Prioritas Rentan (${household.vulnerable_count} Jiwa)`
+                                        : 'Non-Rentan'}
                                 </span>
                             </div>
                             <p className="text-xs text-[#262626]/60">

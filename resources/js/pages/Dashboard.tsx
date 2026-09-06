@@ -164,7 +164,7 @@ export default function Dashboard() {
         'VIIRS_NOAA20',
     ]);
 
-    const wildfire = useWildfireData({ enabledSensors, dayRange: 1 });
+    const wildfire = useWildfireData({ enabledSensors, dayRange: 2 });
     const { stats, hotspots, isLoading, lastUpdated, refresh } = wildfire;
 
     const [syncToast, setSyncToast] = useState<{

@@ -113,6 +113,28 @@ class WildfireController extends Controller
                 ], 502);
             }
 
+            // Jika NASA mengembalikan 0 titik data (hanya header CSV karena satelit belum melintas/memproses hari ini),
+            // otomatis perluas ke rentang 2 hari (48 jam terakhir) agar data hotspot aktif Kalimantan selalu tampil.
+            $csvLines = preg_split('/\r\n|\r|\n/', trim($body));
+            if (count($csvLines) <= 1 && $days < 2) {
+                $fallbackDays = 2;
+                $fallbackUrl = sprintf(
+                    'https://firms.modaps.eosdis.nasa.gov/api/area/csv/%s/%s/%s/%d',
+                    $apiKey,
+                    $sensor,
+                    self::KALIMANTAN_BBOX,
+                    $fallbackDays,
+                );
+                $fallbackResponse = Http::timeout(20)->get($fallbackUrl);
+                if ($fallbackResponse->successful() && ! str_starts_with(ltrim($fallbackResponse->body()), '<')) {
+                    $fallbackLines = preg_split('/\r\n|\r|\n/', trim($fallbackResponse->body()));
+                    if (count($fallbackLines) > 1) {
+                        $body = $fallbackResponse->body();
+                        $days = $fallbackDays;
+                    }
+                }
+            }
+
             return response()->json([
                 'sensor' => $sensor,
                 'days' => $days,

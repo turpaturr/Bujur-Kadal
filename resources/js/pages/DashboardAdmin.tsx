@@ -112,7 +112,7 @@ export default function DashboardAdmin({
         'VIIRS_NOAA20',
     ]);
 
-    const wildfire = useWildfireData({ enabledSensors, dayRange: 1 });
+    const wildfire = useWildfireData({ enabledSensors, dayRange: 2 });
     const { stats, hotspots, isLoading, refresh } = wildfire;
     const [activeCategoryFilter, setActiveCategoryFilter] = useState<'all' | HotspotCategory>('all');
     const [selectedProvinces, setSelectedProvinces] = useState<string[]>([]);

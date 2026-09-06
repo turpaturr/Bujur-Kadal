@@ -205,7 +205,7 @@ export function createRegisteredUserMarker(
 
     marker.bindTooltip(
         `<div style="font-family: 'Figtree', sans-serif; font-size: 11px; font-weight: 700; color: ${isVulnerable ? '#B91C1C' : '#0F766E'};">
-            🏠 ${household.name} (${household.total_members} Jiwa${isVulnerable ? ' &middot; Prioritas Rentan' : ''})
+            ${household.name} (${household.total_members} Jiwa${isVulnerable ? ' &middot; Prioritas Rentan' : ''})
             <div style="font-size: 9.5px; font-weight: 500; color: #64748B; margin-top: 1px;">Klik untuk melihat pop up detail lengkap</div>
         </div>`,
         {
