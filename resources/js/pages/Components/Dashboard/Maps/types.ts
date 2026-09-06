@@ -33,6 +33,10 @@ export interface RegisteredUserLocation {
     total_members: number;
     vulnerable_count: number;
     members?: RegisteredFamilyMember[];
+    evacuation_mission?: {
+        status: string;
+        safe_zone_name?: string;
+    };
 }
 
 import type { ClinicData } from './markers';

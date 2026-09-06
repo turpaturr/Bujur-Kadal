@@ -75,7 +75,7 @@ export default function CheckupReservationsView({
         const note = actionNotes[id] ?? '';
         setIsProcessing(id);
         router.post(
-            `/admin/checkup-reservations/${id}/approve`,
+            `/faskes/reservations/${id}/approve`,
             { admin_notes: note },
             {
                 preserveScroll: true,
@@ -107,7 +107,7 @@ export default function CheckupReservationsView({
 
         setIsProcessing(id);
         router.post(
-            `/admin/checkup-reservations/${id}/reject`,
+            `/faskes/reservations/${id}/reject`,
             { admin_notes: note },
             {
                 preserveScroll: true,
@@ -128,10 +128,6 @@ export default function CheckupReservationsView({
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <div className="flex items-center gap-2">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#2FA084]/15 text-[#1F6F5F] border border-[#2FA084]/25">
-                            <span className="w-2 h-2 rounded-full bg-[#2FA084] animate-pulse"></span>
-                            Faskes Mitra Satgas Karhutla
-                        </span>
                         {pendingCount > 0 && (
                             <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500 text-white animate-bounce">
                                 {pendingCount} Menunggu Konfirmasi
@@ -212,7 +208,7 @@ export default function CheckupReservationsView({
                 <div className="p-4 rounded-xl bg-amber-50/70 border border-amber-200 shadow-xs">
                     <span className="text-xs font-semibold text-amber-700 uppercase tracking-wider">Perlu Tindakan</span>
                     <div className="text-2xl font-bold text-amber-700 mt-1">{pendingCount}</div>
-                    <div className="text-[11px] text-amber-600/80 mt-0.5">Menunggu konfirmasi admin</div>
+                    <div className="text-[11px] text-amber-600/80 mt-0.5">Menunggu konfirmasi faskes</div>
                 </div>
                 <div className="p-4 rounded-xl bg-emerald-50/70 border border-emerald-200 shadow-xs">
                     <span className="text-xs font-semibold text-emerald-700 uppercase tracking-wider">Jadwal Disetujui</span>

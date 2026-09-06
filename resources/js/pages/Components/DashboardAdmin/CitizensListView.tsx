@@ -1,5 +1,6 @@
+import React, { useState } from 'react';
 import type { RegisteredUserLocation } from '@/pages/Components/Dashboard/Maps';
-import { Users, ShieldAlert, HeartPulse } from '@/pages/Components/Dashboard/Icons';
+import { Users, ShieldAlert, HeartPulse, Activity, ChevronDown } from '@/pages/Components/Dashboard/Icons';
 
 interface CitizensListViewProps {
     registeredUsers: RegisteredUserLocation[];
@@ -10,6 +11,15 @@ export default function CitizensListView({
     registeredUsers,
     onSelectHousehold,
 }: CitizensListViewProps) {
+    const [expandedHouseholdIds, setExpandedHouseholdIds] = useState<Record<string | number, boolean>>({});
+
+    const toggleExpand = (id: string | number) => {
+        setExpandedHouseholdIds((prev) => ({
+            ...prev,
+            [id]: !prev[id],
+        }));
+    };
+
     return (
         <div className="space-y-6">
             <div>
@@ -43,12 +53,28 @@ export default function CitizensListView({
                                             <div className="text-xs text-gray-500 mt-1">
                                                 {user.no_kk ? `No. KK: ${user.no_kk}` : `ID: #${user.id}`}
                                             </div>
-                                            {user.is_vulnerable && (
-                                                <span className="inline-flex items-center gap-1 mt-2 rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-bold text-rose-800">
-                                                    <ShieldAlert className="w-3 h-3" />
-                                                    Prioritas Rentan ({user.vulnerable_count} Jiwa)
-                                                </span>
-                                            )}
+                                            <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                                                {user.is_vulnerable && (
+                                                    <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-bold text-rose-800">
+                                                        <ShieldAlert className="w-3 h-3" />
+                                                        Prioritas Rentan ({user.vulnerable_count} Jiwa)
+                                                    </span>
+                                                )}
+                                                {user.evacuation_mission && (
+                                                    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-extrabold border ${
+                                                        user.evacuation_mission.status === 'waiting_team'
+                                                            ? 'bg-amber-50 text-amber-800 border-amber-300 animate-pulse'
+                                                            : user.evacuation_mission.status === 'in_transit'
+                                                                ? 'bg-blue-50 text-blue-800 border-blue-300 animate-pulse'
+                                                                : 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                                                    }`}>
+                                                        <Activity className="w-3 h-3" />
+                                                        {user.evacuation_mission.status === 'waiting_team' && 'Tim Menuju Lokasi'}
+                                                        {user.evacuation_mission.status === 'in_transit' && 'Proses Evakuasi'}
+                                                        {user.evacuation_mission.status === 'completed' && 'Tiba di Posko Oksigen'}
+                                                    </span>
+                                                )}
+                                            </div>
                                         </td>
                                         <td className="px-6 py-4 align-top">
                                             <div className="max-w-[200px] truncate" title={user.home_address ?? 'Alamat belum dilengkapi'}>
@@ -72,24 +98,51 @@ export default function CitizensListView({
                                                     {user.vulnerable_count} Rentan
                                                 </span>
                                             </div>
-                                            {user.members && user.members.length > 0 && (
-                                                <ul className="space-y-2 mt-2">
-                                                    {user.members.map((member, idx) => (
-                                                        <li key={idx} className="text-xs flex items-start gap-2 bg-white border border-gray-100 rounded p-2">
-                                                            <div className="flex-1">
-                                                                <span className="font-semibold">{member.name}</span>
-                                                                <span className="text-gray-400 ml-1">({member.role})</span>
-                                                                {member.is_vulnerable && (
-                                                                    <div className="text-[10px] text-purple-600 font-medium mt-0.5">
-                                                                        {member.vulnerability_category}
-                                                                        {member.comorbidity_notes ? ` - ${member.comorbidity_notes}` : ''}
+                                            {user.members && user.members.length > 0 && (() => {
+                                                const isExpanded = Boolean(expandedHouseholdIds[user.id]);
+                                                const displayMembers = isExpanded ? user.members : user.members.slice(0, 1);
+                                                const hasMore = user.members.length > 1;
+                                                const remainingCount = user.members.length - 1;
+
+                                                return (
+                                                    <div className="space-y-1.5 mt-2">
+                                                        <ul className="space-y-2">
+                                                            {displayMembers.map((member, idx) => (
+                                                                <li key={idx} className="text-xs flex items-start gap-2 bg-white border border-gray-100 rounded p-2 shadow-2xs">
+                                                                    <div className="flex-1">
+                                                                        <span className="font-semibold">{member.name}</span>
+                                                                        <span className="text-gray-400 ml-1">({member.role})</span>
+                                                                        {member.is_vulnerable && (
+                                                                            <div className="text-[10px] text-purple-600 font-medium mt-0.5">
+                                                                                {member.vulnerability_category}
+                                                                                {member.comorbidity_notes ? ` - ${member.comorbidity_notes}` : ''}
+                                                                            </div>
+                                                                        )}
                                                                     </div>
-                                                                )}
-                                                            </div>
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            )}
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+
+                                                        {hasMore && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => toggleExpand(user.id)}
+                                                                className="w-full flex items-center justify-center gap-1.5 py-1 px-2.5 mt-1 text-[11px] font-semibold text-gray-500 hover:text-[#1F6F5F] bg-gray-50 hover:bg-[#1F6F5F]/5 rounded border border-dashed border-gray-200 hover:border-[#1F6F5F]/30 transition-all cursor-pointer group"
+                                                                title={isExpanded ? 'Tutup daftar anggota' : `Tampilkan ${remainingCount} anggota lainnya`}
+                                                            >
+                                                                <span>
+                                                                    {isExpanded ? 'Sembunyikan' : `+${remainingCount} Anggota Lainnya`}
+                                                                </span>
+                                                                <ChevronDown
+                                                                    className={`w-3.5 h-3.5 text-gray-400 group-hover:text-[#1F6F5F] transition-transform duration-200 ${
+                                                                        isExpanded ? 'rotate-180' : ''
+                                                                    }`}
+                                                                />
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })()}
                                         </td>
                                         <td className="px-6 py-4 align-top text-right whitespace-nowrap">
                                             {onSelectHousehold && (

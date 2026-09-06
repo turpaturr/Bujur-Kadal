@@ -1,14 +1,20 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
+import { router } from '@inertiajs/react';
 import type { RegisteredUserLocation, RegisteredFamilyMember } from '@/pages/Components/Dashboard/Maps';
-import { Home, Users, ShieldAlert, PhoneCall, X, MapPin, HeartPulse } from '@/pages/Components/Dashboard/Icons';
+import { Home, Users, ShieldAlert, PhoneCall, X, MapPin, HeartPulse, Activity } from '@/pages/Components/Dashboard/Icons';
 import type { WildfireHotspot } from '@/hooks/useWildfireData';
+import { AppSwal } from '@/utils/alerts';
+import type { EvacuationMissionItem } from './EvacuationTrackingView';
 
 interface HouseholdDetailModalProps {
     isOpen: boolean;
     onClose: () => void;
     household: RegisteredUserLocation | null;
     hotspots?: WildfireHotspot[];
+    activeMission?: EvacuationMissionItem | null;
     onFocusMap?: (household: RegisteredUserLocation) => void;
+    onViewEvacuationMission?: (mission: EvacuationMissionItem) => void;
+    onEvacuationDispatched?: () => void;
 }
 
 function deg2rad(deg: number) {
@@ -74,22 +80,69 @@ export default function HouseholdDetailModal({
     onClose,
     household,
     hotspots = [],
+    activeMission = null,
     onFocusMap,
+    onViewEvacuationMission,
+    onEvacuationDispatched,
 }: HouseholdDetailModalProps) {
     if (!isOpen || !household) return null;
 
+    const [isDispatching, setIsDispatching] = useState(false);
     const isVulnerable = household.is_vulnerable;
     const members = household.members ?? [];
 
+    const handleDispatch = () => {
+        if (!household) return;
+
+        setIsDispatching(true);
+        router.post(
+            '/admin/evacuations',
+            { user_id: household.id },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setIsDispatching(false);
+                    onClose();
+                    AppSwal.fire({
+                        title: 'Tim Penjemputan Dikerahkan!',
+                        text: `Status evakuasi untuk keluarga ${household.name} berhasil diaktifkan ("Tim Menuju Lokasi"). Armada darurat sedang meluncur ke lokasi.`,
+                        icon: 'success',
+                        confirmButtonColor: '#1F6F5F',
+                    });
+                    if (onEvacuationDispatched) {
+                        onEvacuationDispatched();
+                    }
+                },
+                onError: (errors) => {
+                    setIsDispatching(false);
+                    AppSwal.fire({
+                        title: 'Gagal Memproses',
+                        text: Object.values(errors)[0] || 'Terjadi kesalahan saat memproses pengerahan tim.',
+                        icon: 'error',
+                        confirmButtonColor: '#1F6F5F',
+                    });
+                },
+            }
+        );
+    };
+
     const isInDangerZone = useMemo(() => {
-        if (!household.latitude || !household.longitude || hotspots.length === 0) return false;
+        if (!household.latitude || !household.longitude) return false;
         const lat = Number(household.latitude);
         const lng = Number(household.longitude);
+
+        // 1. Cek titik anomali panas/api aktif dalam radius 5 km
         for (const h of hotspots) {
-            if (h.confidenceLevel === 'high' && getDistanceInKm(lat, lng, h.latitude, h.longitude) <= 5) {
+            if ((h.confidenceLevel === 'high' || h.category === 'active_fire' || h.frp >= 10) && getDistanceInKm(lat, lng, h.latitude, h.longitude) <= 5) {
                 return true;
             }
         }
+
+        // 2. Fallback koordinat zona bahaya terverifikasi (Kubu Raya Rasau Jaya)
+        if (Math.abs(lat - (-0.4890)) < 0.05 && Math.abs(lng - 109.5590) < 0.05) {
+            return true;
+        }
+
         return false;
     }, [household, hotspots]);
 
@@ -115,8 +168,8 @@ export default function HouseholdDetailModal({
                                     }`}
                                 >
                                     {isVulnerable
-                                        ? `⚠️ Prioritas Rentan (${household.vulnerable_count} Jiwa)`
-                                        : '🟢 Non-Rentan'}
+                                        ? `Prioritas Rentan (${household.vulnerable_count} Jiwa)`
+                                        : 'Non-Rentan'}
                                 </span>
                             </div>
                             <p className="text-xs text-[#262626]/60">
@@ -137,6 +190,42 @@ export default function HouseholdDetailModal({
 
                 {/* Modal Body */}
                 <div className="flex-1 overflow-y-auto p-6 space-y-5">
+                    {/* Status Evakuasi Aktif bila ada */}
+                    {activeMission && (
+                        <div className="rounded-xl border border-rose-200 bg-rose-50/80 p-3.5 flex items-center justify-between gap-3 shadow-2xs">
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-rose-600 text-white flex items-center justify-center shrink-0">
+                                    <Activity className="w-4 h-4 animate-pulse" />
+                                </div>
+                                <div>
+                                    <div className="text-[10px] font-bold uppercase tracking-wider text-rose-800">
+                                        Status Penjemputan / Evakuasi
+                                    </div>
+                                    <div className="text-xs font-extrabold text-rose-900">
+                                        {activeMission.status === 'waiting_team' && 'Tim Menuju Lokasi (Menunggu Tim)'}
+                                        {activeMission.status === 'in_transit' && 'Proses Evakuasi Berlangsung'}
+                                        {activeMission.status === 'completed' && 'Telah Tiba di Posko Ruang Oksigen'}
+                                    </div>
+                                    <div className="text-[10.5px] text-rose-700/80">
+                                        Tujuan: {activeMission.safe_zone_name}
+                                    </div>
+                                </div>
+                            </div>
+                            {onViewEvacuationMission && (
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        onViewEvacuationMission(activeMission);
+                                        onClose();
+                                    }}
+                                    className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shrink-0 transition-colors shadow-2xs"
+                                >
+                                    Lihat Progres →
+                                </button>
+                            )}
+                        </div>
+                    )}
+
                     {/* Alamat & Titik Koordinat */}
                     <div className="rounded-xl border border-[#EEEEEE] bg-[#FAFAFA] p-4 space-y-2.5">
                         <div className="flex items-start justify-between gap-3">
@@ -302,25 +391,33 @@ export default function HouseholdDetailModal({
                 {/* Modal Footer */}
                 <div className="flex items-center justify-between px-6 py-3.5 border-t border-[#EEEEEE] bg-[#FAFAFA]">
                     <div className="flex items-center gap-3">
-                        {isInDangerZone ? (
+                        {activeMission ? (
                             <button
                                 type="button"
                                 onClick={() => {
-                                    if (isVulnerable) {
-                                        alert(`Evakuasi Darurat (Penjemputan Langsung) telah diinstruksikan untuk keluarga ${household.name}. Tim medis sedang dikerahkan karena terdapat anggota keluarga rentan di radius bahaya.`);
-                                    } else {
-                                        alert(`Instruksi Evakuasi Mandiri ke Fasilitas Kesehatan terdekat telah dikirimkan ke perangkat ${household.name} (Radius Bahaya).`);
+                                    if (onViewEvacuationMission) {
+                                        onViewEvacuationMission(activeMission);
                                     }
                                     onClose();
                                 }}
+                                className="px-4 py-2 rounded-xl font-bold text-xs shadow-xs transition-colors cursor-pointer flex items-center gap-1.5 bg-[#1F6F5F] hover:bg-[#165548] text-white"
+                            >
+                                <Activity className="w-4 h-4" />
+                                <span>Pantau Progres Evakuasi</span>
+                            </button>
+                        ) : isInDangerZone ? (
+                            <button
+                                type="button"
+                                disabled={isDispatching}
+                                onClick={handleDispatch}
                                 className={`px-4 py-2 rounded-xl font-bold text-xs shadow-xs transition-colors cursor-pointer flex items-center gap-1.5 ${
                                     isVulnerable 
                                         ? 'bg-rose-600 hover:bg-rose-700 text-white' 
                                         : 'bg-amber-500 hover:bg-amber-600 text-white'
-                                }`}
+                                } ${isDispatching ? 'opacity-70 cursor-not-allowed' : ''}`}
                             >
                                 <ShieldAlert className="w-4 h-4" />
-                                {isVulnerable ? 'Kirim Tim Penjemputan' : 'Instruksi Ke Faskes'}
+                                <span>{isDispatching ? 'Mengerahkan...' : (isVulnerable ? 'Kirim Tim Penjemputan' : 'Instruksi Ke Faskes')}</span>
                             </button>
                         ) : (
                             <div className="px-4 py-2 rounded-xl bg-emerald-50 text-emerald-700 font-bold text-xs flex items-center gap-1.5 border border-emerald-200">
